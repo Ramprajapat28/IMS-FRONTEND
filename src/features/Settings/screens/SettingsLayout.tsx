@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from "react-router-dom";
-import SettingsSidebar from "../components/SettingSideBar";
+import SettingsSidebar from "../components/SettingsSidebar";
 import SettingsList from "../components/SettingsList";
 
 const SettingsLayout: React.FC = () => {

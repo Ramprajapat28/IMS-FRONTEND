@@ -1,6 +1,6 @@
 import { Bell, Search, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useSidebar } from "../components/SidebarContext";
+import { useSidebar } from "@/app/providers";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -8,7 +8,6 @@ const Navbar: React.FC = () => {
 
   return (
     <header className="h-16 bg-white border-b flex items-center px-4 md:px-10">
-
       {/* LEFT */}
       <div className="flex items-center gap-3 min-w-[180px]">
         {/* HAMBURGER (mobile) */}

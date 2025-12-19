@@ -1,17 +1,11 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-// import { BrowserRouter } from "react-router-dom";
-import { SidebarProvider } from "../src/components/SidebarContext.tsx";
-import './index.css'
-import App from './App.tsx'
-import "../src/services/chartSetup.ts";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App";
+import "./index.css";
+import "@/services/chartSetup";
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <SidebarProvider>
-    {/* <BrowserRouter> */}
     <App />
-  {/* </BrowserRouter> */}
-  </SidebarProvider>
-  </StrictMode>,
-)
+  </StrictMode>
+);

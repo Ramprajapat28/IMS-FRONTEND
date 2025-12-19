@@ -12,7 +12,7 @@ import {
   Settings,
   X
 } from "lucide-react";
-import { useSidebar } from "../components/SidebarContext";
+import { useSidebar } from "@/app/providers";
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
@@ -66,7 +66,6 @@ const Sidebar: React.FC = () => {
           </h1>
 
           <nav className="space-y-1">
-
             <NavLink to="/dashboard" className={linkClass} onClick={close}>
               <LayoutDashboard size={18} />
               Dashboard
@@ -145,7 +144,6 @@ const Sidebar: React.FC = () => {
               <User size={18} />
               Profile
             </NavLink>
-
           </nav>
         </div>
 
@@ -161,7 +159,6 @@ const Sidebar: React.FC = () => {
             Settings
           </NavLink>
         </div>
-
       </aside>
     </>
   );
