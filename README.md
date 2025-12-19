@@ -2,7 +2,18 @@
 
 A modern Inventory Management System built with React, TypeScript, and Vite.
 
-## 📁 Project Structure
+## Table of Contents
+
+- [Project Structure](#project-structure)
+- [Architecture Principles](#architecture-principles)
+- [Getting Started](#getting-started)
+- [Tech Stack](#tech-stack)
+- [Configuration](#configuration)
+- [Available Scripts](#available-scripts)
+
+---
+
+## Project Structure
 
 This project follows a **feature-based architecture** for better scalability and maintainability.
 
@@ -20,7 +31,7 @@ src/
 │   │   ├── Navbar.tsx
 │   │   ├── Sidebar.tsx
 │   │   └── index.ts
-│   └── ui/                       # Reusable UI primitives (buttons, inputs, etc.)
+│   └── ui/                       # Reusable UI primitives
 │
 ├── constants/                    # Application constants
 │   └── index.ts                  # Routes, API config, UI constants
@@ -75,83 +86,130 @@ src/
 └── index.css                     # Global styles
 ```
 
-## 🏗️ Architecture Principles
+---
+
+## Architecture Principles
 
 ### Feature-Based Architecture
 
 Each feature is self-contained with its own:
-- **screens/** - Page/screen components
-- **components/** - Feature-specific components
-- **hooks/** - Feature-specific hooks (when needed)
-- **types/** - Feature-specific TypeScript types
-- **services/** - Feature-specific API calls (when needed)
-- **utils/** - Feature-specific utilities (when needed)
-- **index.ts** - Barrel file exporting public API
+
+| Directory       | Purpose                              |
+|-----------------|--------------------------------------|
+| `screens/`      | Page/screen components               |
+| `components/`   | Feature-specific components          |
+| `hooks/`        | Feature-specific hooks               |
+| `types/`        | Feature-specific TypeScript types    |
+| `services/`     | Feature-specific API calls           |
+| `utils/`        | Feature-specific utilities           |
+| `index.ts`      | Barrel file exporting public API     |
 
 ### Import Conventions
 
 Use the `@/` alias for absolute imports:
+
 ```typescript
-// ✅ Good
+// Recommended
 import { AuthPage } from "@/features/Auth";
 import { useSidebar } from "@/app/providers";
 
-// ❌ Avoid
+// Avoid
 import { AuthPage } from "../../../features/Auth";
 ```
 
 ### Barrel Files
 
 Each module has an `index.ts` barrel file that exports only the public API:
+
 ```typescript
 // features/Auth/index.ts
 export { default as AuthPage } from "./components/AuthPage";
 export { default as Login } from "./screens/Login";
 ```
 
-## 🚀 Getting Started
+---
+
+## Getting Started
 
 ### Prerequisites
-- Node.js 18+
+
+- Node.js 18 or higher
 - npm or yarn
 
 ### Installation
+
 ```bash
 npm install
 ```
 
 ### Development
+
 ```bash
 npm run dev
 ```
 
-### Build
+The application will be available at `http://localhost:5173`.
+
+### Production Build
+
 ```bash
 npm run build
 ```
 
-### Lint
-```bash
-npm run lint
-```
+---
 
-## 📦 Tech Stack
+## Tech Stack
 
-- **React 19** - UI library
-- **TypeScript** - Type safety
-- **Vite** - Build tool
-- **React Router v7** - Routing
-- **TailwindCSS** - Styling
-- **Chart.js** - Charts and visualizations
-- **Lucide React** - Icons
+| Technology       | Purpose                    |
+|------------------|----------------------------|
+| React 19         | UI library                 |
+| TypeScript       | Type safety                |
+| Vite             | Build tool                 |
+| React Router v7  | Routing                    |
+| TailwindCSS      | Styling                    |
+| Chart.js         | Charts and visualizations  |
+| Lucide React     | Icons                      |
 
-## 🎨 Styling
+---
 
-The project uses TailwindCSS for styling. Global styles are in `src/index.css`.
+## Configuration
 
-## 🔧 Path Aliases
+### Path Aliases
 
 The project uses TypeScript path aliases configured in `tsconfig.app.json`:
-- `@/*` → `src/*`
 
-This allows clean imports like `import { Button } from "@/components/ui"`.
+| Alias  | Maps To  |
+|--------|----------|
+| `@/*`  | `src/*`  |
+
+This allows clean imports such as:
+
+```typescript
+import { Button } from "@/components/ui";
+import { ROUTES } from "@/constants";
+```
+
+### Environment Variables
+
+Create a `.env` file in the project root for environment-specific configuration:
+
+```env
+VITE_API_URL=http://localhost:3000/api
+```
+
+---
+
+## Available Scripts
+
+| Command           | Description                          |
+|-------------------|--------------------------------------|
+| `npm run dev`     | Start development server             |
+| `npm run build`   | Build for production                 |
+| `npm run preview` | Preview production build locally     |
+| `npm run lint`    | Run ESLint                           |
+
+---
+
+## License
+
+This project is proprietary software. All rights reserved.
