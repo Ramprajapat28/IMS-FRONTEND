@@ -1,62 +1,3 @@
-// const InventoryChart = () => {
-//   return (
-//     <div className="bg-white p-6 rounded-xl border">
-//       <div className="flex justify-between mb-4">
-//         <h3 className="font-semibold">Inventory By Category</h3>
-//         <button className="border px-3 py-1 rounded-lg text-sm">
-//           Weekly
-//         </button>
-//       </div>
-
-//       <div className="flex justify-center">
-//         <svg width="200" height="200" viewBox="0 0 42 42">
-//           <circle
-//             cx="21"
-//             cy="21"
-//             r="15.915"
-//             fill="transparent"
-//             stroke="#FFA94D"
-//             strokeWidth="6"
-//             strokeDasharray="50 50"
-//           />
-//           <circle
-//             cx="21"
-//             cy="21"
-//             r="15.915"
-//             fill="transparent"
-//             stroke="#E8590C"
-//             strokeWidth="6"
-//             strokeDasharray="24 76"
-//             strokeDashoffset="-50"
-//           />
-//           <circle
-//             cx="21"
-//             cy="21"
-//             r="15.915"
-//             fill="transparent"
-//             stroke="#1C7ED6"
-//             strokeWidth="6"
-//             strokeDasharray="16 84"
-//             strokeDashoffset="-74"
-//           />
-//         </svg>
-//       </div>
-
-//       <div className="mt-6 space-y-2 text-sm">
-//         <div className="flex justify-between">
-//           <span>T-shirts</span>
-//           <span>698</span>
-//         </div>
-//         <div className="flex justify-between">
-//           <span>Bottle</span>
-//           <span>7899</span>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default InventoryChart;
 import { ChevronDown, ShoppingCart } from "lucide-react";
 import FilterSelect from "./FilterSelect";
 import { useState } from "react";
@@ -66,7 +7,7 @@ const InventoryByCategory = () => {
   return (
     <div className="bg-white rounded-xl border w-full max-w-md">
       {/* HEADER */}
-      <div className="flex items-center justify-between px-5 py-4 border-b">
+      <div className="flex items-center justify-between px-2 py-4 border-b">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-pink-100 flex items-center justify-center">
             <ShoppingCart className="text-pink-500" size={20} />
@@ -80,7 +21,7 @@ const InventoryByCategory = () => {
           Weekly
           <ChevronDown size={16} />
         </button> */}
-        <div className="flex px-1 py-1.5">
+        <div className="flex px-2 py-1.5">
         <FilterSelect
         value={week}
         onChange={setWeek}
