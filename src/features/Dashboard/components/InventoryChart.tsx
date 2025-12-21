@@ -1,4 +1,4 @@
-import { ChevronDown, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import FilterSelect from "./FilterSelect";
 import { useState } from "react";
 
@@ -16,11 +16,6 @@ const InventoryByCategory = () => {
             Inventory By Category
           </h2>
         </div>
-
-        {/* <button className="flex items-center gap-2 border rounded-lg px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100">
-          Weekly
-          <ChevronDown size={16} />
-        </button> */}
         <div className="flex px-2 py-1.5">
         <FilterSelect
         value={week}
