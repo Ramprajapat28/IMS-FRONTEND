@@ -13,6 +13,9 @@ import { BarcodeGenerate, BarcodeHistory } from "@/features/Barcode";
 import { AddProduct, GroupItem } from "@/features/Product";
 import { Reports } from "@/features/Report";
 import { Profile } from "@/features/Profile";
+import { Order } from "@/features/Order";
+import CategoryProducts from "@/features/Product/screens/CategoryProducts";
+import ProductDetails from "@/features/Product/screens/ProductDetails";
 
 export const AppRoutes = () => {
   return (
@@ -26,10 +29,13 @@ export const AppRoutes = () => {
       {/* Main Dashboard Layout */}
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/orders" element={<Order />} />
         <Route path="/barcode/generate" element={<BarcodeGenerate />} />
         <Route path="/barcode/history" element={<BarcodeHistory />} />
         <Route path="/products/add" element={<AddProduct />} />
-        <Route path="/products/groups" element={<GroupItem />} />
+        <Route path="/products" element={<GroupItem />} />
+        <Route path="/products/category/:name" element={<CategoryProducts />} />
+        <Route path="/products/:id" element={<ProductDetails />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/help" element={<HelpSupport />} />
