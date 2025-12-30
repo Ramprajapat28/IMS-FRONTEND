@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { MapPin } from "lucide-react";
+import { MapPin, Loader2 } from "lucide-react";
+import { ordersApi, type Order as ApiOrder } from "@/services/api";
 
 /* ---------------------------------- TYPES --------------------------------- */
-type OrderStatus = "Processing" | "Cancelled" | "Onhold";
+type OrderStatus = "Processing" | "Cancelled" | "Onhold" | string;
 
 type Order = {
   id: number;
   product: string;
+  product_id: number;
+  shelf_id: number;
+  quantity: number;
   category: string;
   price: number;
   warehouse: string;
@@ -14,19 +18,6 @@ type Order = {
   status: OrderStatus;
   image: string;
 };
-
-/* -------------------------------- SAMPLE DATA ------------------------------- */
-const ORDERS: Order[] = Array.from({ length: 150 }, (_, i) => ({
-  id: i + 1,
-  product: "Apple Watch Series 9",
-  category: "Electronics",
-  price: 640,
-  warehouse: ["Warehouse A", "Warehouse B"][i % 2],
-  datetime: "Today, 1:30 PM",
-  status: (["Processing", "Cancelled", "Onhold"] as OrderStatus[])[i % 3],
-  image:
-    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200",
-}));
 
 /* ----------------------------- PAGINATION LOGIC ------------------------------ */
 const MAX_VISIBLE_PAGES = 5;
@@ -47,6 +38,9 @@ const getVisiblePages = (page: number, totalPages: number) => {
 /* ---------------- COMPONENT ---------------- */
 
 const OrdersPage = () => {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -56,6 +50,51 @@ const OrdersPage = () => {
     warehouse: "",
     status: "",
   });
+
+  // Fetch orders from API
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await ordersApi.getAll(1, 100);
+
+        if (response.success && response.data) {
+          const mappedOrders: Order[] = response.data.map((o: ApiOrder) => ({
+            id: o.order_id,
+            product: o.product_name || `Product #${o.product_id}`,
+            product_id: o.product_id,
+            shelf_id: o.shelf_id,
+            quantity: o.quantity,
+            category: "General",
+            price: 0,
+            warehouse: o.warehouse_name || "Unknown Warehouse",
+            datetime: o.created_at ? new Date(o.created_at).toLocaleString() : "N/A",
+            status: o.status || "Processing",
+            image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200",
+          }));
+          setOrders(mappedOrders);
+        }
+      } catch (err) {
+        console.error("Failed to fetch orders:", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch orders");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  // Compute unique filter options from orders data
+  const filterOptions = useMemo(() => {
+    const warehouses = [...new Set(orders.map(o => o.warehouse).filter(Boolean))];
+    const products = [...new Set(orders.map(o => o.product).filter(Boolean))];
+    const categories = [...new Set(orders.map(o => o.category).filter(Boolean))];
+    const statuses = [...new Set(orders.map(o => o.status).filter(Boolean))];
+    return { warehouses, products, categories, statuses };
+  }, [orders]);
+
   const handleFilterChange = (
     key: keyof typeof statusFilter,
     value: string
@@ -63,10 +102,11 @@ const OrdersPage = () => {
     setStatusFilter((prev) => ({ ...prev, [key]: value }));
     setPage(1);
   };
+
   /* -------- FILTER LOGIC -------- */
 
   const filteredOrders = useMemo(() => {
-    return ORDERS.filter((o) => {
+    return orders.filter((o) => {
       return (
         (!statusFilter.category || o.category === statusFilter.category) &&
         (!statusFilter.product || o.product === statusFilter.product) &&
@@ -74,7 +114,7 @@ const OrdersPage = () => {
         (!statusFilter.status || o.status === statusFilter.status)
       );
     });
-  }, [statusFilter]);
+  }, [orders, statusFilter]);
 
   /* ----------------------------- PAGINATION -------------------------------- */
   const totalPages = Math.ceil(filteredOrders.length / rowsPerPage);
@@ -111,34 +151,41 @@ const OrdersPage = () => {
 
       {/* FILTERS */}
       <div className="bg-white border rounded-xl p-4 flex flex-wrap items-center gap-3">
-    <span className="text-sm text-gray-600">Sort by :</span>
+        <span className="text-sm text-gray-600">Filter by :</span>
 
-     <Select
+        <Select
           label="Category"
-          options={["Electronics"]}
+          options={filterOptions.categories}
+          value={statusFilter.category}
           onChange={(v) => handleFilterChange("category", v)}
         />
 
         <Select
           label="Product"
-          options={["Apple Watch Series 9"]}
+          options={filterOptions.products}
+          value={statusFilter.product}
           onChange={(v) => handleFilterChange("product", v)}
         />
 
         <Select
           label="Warehouse"
-          options={["Warehouse A", "Warehouse B"]}
+          options={filterOptions.warehouses}
+          value={statusFilter.warehouse}
           onChange={(v) => handleFilterChange("warehouse", v)}
         />
 
         <Select
           label="Status"
-          options={["Processing", "Cancelled", "Onhold"]}
+          options={filterOptions.statuses}
+          value={statusFilter.status}
           onChange={(v) => handleFilterChange("status", v)}
         />
 
-        <button className="ml-auto bg-gray-800 text-white px-4 py-1.5 rounded-lg text-sm">
-          Sort
+        <button
+          onClick={() => setStatusFilter({ category: "", product: "", warehouse: "", status: "" })}
+          className="ml-auto bg-gray-800 text-white px-4 py-1.5 rounded-lg text-sm"
+        >
+          Clear Filters
         </button>
       </div>
 
@@ -184,10 +231,9 @@ const OrdersPage = () => {
                 <td className="p-3">
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium
-                      ${
-                        o.status === "Processing"
-                          ? "bg-purple-100 text-purple-600"
-                          : o.status === "Cancelled"
+                      ${o.status === "Processing"
+                        ? "bg-purple-100 text-purple-600"
+                        : o.status === "Cancelled"
                           ? "bg-red-100 text-red-600"
                           : "bg-sky-100 text-sky-600"
                       }`}
@@ -218,52 +264,51 @@ const OrdersPage = () => {
         </div>
 
         {/* PAGINATION */}
-        
+
         <div className="flex items-center gap-2 flex-wrap justify-center">
-  {/* FIRST PAGE (only if not already visible) */}
-  {visiblePages[0] !== 1 && (
-    <button
-      onClick={() => setPage(1)}
-      className="w-9 h-9 rounded-full border text-sm hover:bg-gray-100"
-    >
-      1
-    </button>
-  )}
+          {/* FIRST PAGE (only if not already visible) */}
+          {visiblePages[0] !== 1 && (
+            <button
+              onClick={() => setPage(1)}
+              className="w-9 h-9 rounded-full border text-sm hover:bg-gray-100"
+            >
+              1
+            </button>
+          )}
 
-  {/* LEFT DOTS */}
-  {visiblePages[0] > 2 && <span className="px-1">…</span>}
+          {/* LEFT DOTS */}
+          {visiblePages[0] > 2 && <span className="px-1">…</span>}
 
-  {/* VISIBLE PAGES */}
-  {visiblePages.map((p) => (
-    <button
-      key={p}
-      onClick={() => setPage(p)}
-      className={`w-9 h-9 rounded-full border text-sm
-        ${
-          p === page
-            ? "bg-gray-900 text-white"
-            : "hover:bg-gray-100"
-        }`}
-    >
-      {p}
-    </button>
-  ))}
+          {/* VISIBLE PAGES */}
+          {visiblePages.map((p) => (
+            <button
+              key={p}
+              onClick={() => setPage(p)}
+              className={`w-9 h-9 rounded-full border text-sm
+        ${p === page
+                  ? "bg-gray-900 text-white"
+                  : "hover:bg-gray-100"
+                }`}
+            >
+              {p}
+            </button>
+          ))}
 
-  {/* RIGHT DOTS */}
-  {visiblePages[visiblePages.length - 1] < totalPages - 1 && (
-    <span className="px-1">…</span>
-  )}
+          {/* RIGHT DOTS */}
+          {visiblePages[visiblePages.length - 1] < totalPages - 1 && (
+            <span className="px-1">…</span>
+          )}
 
-  {/* LAST PAGE (only if not already visible) */}
-  {visiblePages[visiblePages.length - 1] !== totalPages && (
-    <button
-      onClick={() => setPage(totalPages)}
-      className="w-9 h-9 rounded-full border text-sm hover:bg-gray-100"
-    >
-      {totalPages}
-    </button>
-  )}
-</div>
+          {/* LAST PAGE (only if not already visible) */}
+          {visiblePages[visiblePages.length - 1] !== totalPages && (
+            <button
+              onClick={() => setPage(totalPages)}
+              className="w-9 h-9 rounded-full border text-sm hover:bg-gray-100"
+            >
+              {totalPages}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -273,19 +318,22 @@ export default OrdersPage;
 const Select = ({
   label,
   options,
+  value,
   onChange,
 }: {
   label: string;
   options: string[];
+  value: string;
   onChange: (v: string) => void;
 }) => (
   <select
+    value={value}
     onChange={(e) => onChange(e.target.value)}
     className="border rounded-lg px-3 py-1.5 text-sm"
   >
     <option value="">{label}</option>
     {options.map((o) => (
-      <option key={o}>{o}</option>
+      <option key={o} value={o}>{o}</option>
     ))}
   </select>
 );

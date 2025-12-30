@@ -499,22 +499,76 @@
 // };
 
 // export default ProductsPage;
-import { useMemo, useState } from "react";
-import { Search, Pencil, Trash2, ChevronRight } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Search, Pencil, Trash2, ChevronRight, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ProductsNavbar from "../components/ProductsNavbar";
 import ProductsFooter from "../components/ProductsFooter";
-import { PRODUCTS } from "../data/products.data";
+import { productsApi, type Product } from "@/services/api";
+
+// Map API product to display format
+interface DisplayProduct {
+  id: number;
+  name: string;
+  category: string;
+  sku: string;
+  location: string;
+  quantity: number;
+  image: string;
+}
 
 const ProductsPage = () => {
   const navigate = useNavigate();
 
-  const [data, setData] = useState(PRODUCTS);
+  const [data, setData] = useState<DisplayProduct[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] =
     useState<"none" | "name" | "category" | "quantity">("none");
   const [page, setPage] = useState(1);
   const [rows, setRows] = useState(10);
+
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await productsApi.getAll(1, 100);
+        if (response.success && response.data) {
+          const products: DisplayProduct[] = response.data.map((p: Product) => ({
+            id: p.product_id,
+            name: p.name,
+            category: p.category || "Uncategorized",
+            sku: p.sku,
+            location: "N/A",
+            quantity: 0,
+            image: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200",
+          }));
+          setData(products);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch products");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Handle delete
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+
+    try {
+      await productsApi.delete(id);
+      setData((prev) => prev.filter((x) => x.id !== id));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete product");
+    }
+  };
 
   const filtered = useMemo(() => {
     let d = data.filter((p) =>
@@ -536,6 +590,25 @@ const ProductsPage = () => {
 
   const totalPages = Math.ceil(filtered.length / rows);
   const visible = filtered.slice((page - 1) * rows, page * rows);
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-xl border p-6 flex items-center justify-center min-h-[400px]">
+        <Loader2 className="animate-spin text-gray-400" size={48} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl border p-6">
+        <div className="text-center text-red-600 py-8">
+          <p className="text-lg font-medium">Failed to load products</p>
+          <p className="text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl border p-6 space-y-5">
@@ -619,11 +692,7 @@ const ProductsPage = () => {
                     <Pencil size={16} />
                   </button>
                   <button
-                    onClick={() =>
-                      setData((prev) =>
-                        prev.filter((x) => x.id !== p.id)
-                      )
-                    }
+                    onClick={() => handleDelete(p.id)}
                     className="border p-1.5 rounded-lg"
                   >
                     <Trash2 size={16} />

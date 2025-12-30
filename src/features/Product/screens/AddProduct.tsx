@@ -297,9 +297,10 @@
 //     />
 //   </div>
 // );
-import { ArrowLeft, Upload } from "lucide-react";
+import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { productsApi, shelvesApi, roomsApi, type Shelf, type Room } from "@/services/api";
 
 /* ----------------------------- TYPES ----------------------------- */
 type ProductForm = {
@@ -334,6 +335,35 @@ const AddProduct = () => {
   });
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Dropdown data from API
+  const [shelves, setShelves] = useState<Shelf[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [isLoadingDropdowns, setIsLoadingDropdowns] = useState(true);
+
+  // Fetch shelves and rooms for dropdowns
+  useEffect(() => {
+    const fetchDropdownData = async () => {
+      setIsLoadingDropdowns(true);
+      try {
+        const [shelvesRes, roomsRes] = await Promise.all([
+          shelvesApi.getAll(1, 100),
+          roomsApi.getAll(1, 100),
+        ]);
+
+        if (shelvesRes.data) setShelves(shelvesRes.data);
+        if (roomsRes.rooms) setRooms(roomsRes.rooms);
+      } catch (err) {
+        console.error("Failed to load dropdown data:", err);
+      } finally {
+        setIsLoadingDropdowns(false);
+      }
+    };
+
+    fetchDropdownData();
+  }, []);
 
   /* ----------------------------- HANDLERS ----------------------------- */
   const updateField = <K extends keyof ProductForm>(
@@ -349,7 +379,7 @@ const AddProduct = () => {
     updateField("image", url);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (
       !form.name ||
       !form.sku ||
@@ -363,8 +393,28 @@ const AddProduct = () => {
       return;
     }
 
-    console.log("Product Added:", form);
-    navigate("/products");
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const response = await productsApi.create({
+        name: form.name,
+        sku: form.sku,
+        category: form.category,
+        description: form.description,
+        reorder_level: parseInt(form.reorderLevel) || 0,
+      });
+
+      if (response.success) {
+        navigate("/products");
+      } else {
+        setError(response.message || "Failed to create product");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create product");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   /* ----------------------------- UI ----------------------------- */
