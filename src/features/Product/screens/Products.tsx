@@ -542,9 +542,9 @@ const ProductsPage = () => {
             name: p.name,
             category: p.category || "Uncategorized",
             sku: p.sku,
-            location: "N/A",
-            quantity: 0,
-            image: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200",
+            location: p.location || "N/A",
+            quantity: p.stock_quantity || 0,
+            image: p.product_image || "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200",
           }));
           setData(products);
         }

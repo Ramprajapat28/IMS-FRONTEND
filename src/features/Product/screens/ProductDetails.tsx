@@ -1,39 +1,58 @@
-import { useRef } from "react";
-import { ArrowLeft, Download, Pencil } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Download, Loader2 } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 import JsBarcode from "jsbarcode";
 import ProductsNavbar from "../components/ProductsNavbar";
-
-/* ----------------------------- SAMPLE DATA ----------------------------- */
-const product = {
-  name: "Blue Jersey T-Shirt",
-  description:
-    "Blue Jersey DRI-FIT T-shirt with custom name and jersey no.",
-  category: "T-shirts",
-  size: "Medium",
-  sku: "TS01-BL-M",
-  quantity: 20,
-  location: "Shelf-1_Room-1_Warehouse-1 (S1-R1-W1)",
-  reorderLevel: 10,
-  refundable: true,
-  image:
-    "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?w=600",
-};
+import { productsApi, type Product } from "@/services/api";
 
 /* ----------------------------- COMPONENT ----------------------------- */
 const ProductDetail = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const barcodeRef = useRef<SVGSVGElement | null>(null);
+
+  const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) return;
+      setIsLoading(true);
+      try {
+        const response = await productsApi.getById(Number(id));
+        if (response.success && response.data) {
+          setProduct(response.data);
+        } else {
+          setError("Product not found");
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load product");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  useEffect(() => {
+    if (product && barcodeRef.current) {
+      try {
+        JsBarcode(barcodeRef.current, product.sku, {
+          format: "CODE128",
+          displayValue: true,
+          fontSize: 14,
+        });
+      } catch (e) {
+        console.error("Barcode generation failed", e);
+      }
+    }
+  }, [product]);
 
   /* ------------------------ BARCODE DOWNLOAD ------------------------ */
   const downloadBarcode = () => {
-    if (!barcodeRef.current) return;
-
-    JsBarcode(barcodeRef.current, product.sku, {
-      format: "CODE128",
-      displayValue: true,
-      fontSize: 14,
-    });
+    if (!product || !barcodeRef.current) return;
 
     const svg = barcodeRef.current;
     const serializer = new XMLSerializer();
@@ -49,40 +68,36 @@ const ProductDetail = () => {
     URL.revokeObjectURL(url);
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="animate-spin text-gray-400" size={48} />
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500 font-medium">{error || "Product not found"}</p>
+        <button
+          onClick={() => navigate("/products")}
+          className="mt-4 text-sm underline text-gray-600 hover:text-gray-900"
+        >
+          Back to Products
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* HEADER */}
-      {/* <div className="flex flex-wrap items-center gap-3">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-lg hover:bg-gray-100"
-        >
-          <ArrowLeft />
-        </button>
-
-        <div>
-          <h1 className="text-xl font-semibold">Products</h1>
-          <p className="text-sm text-gray-500">
-            Dashboard › Products › {product.name} ({product.size})
-          </p>
-        </div>
-
-        <div className="ml-auto flex gap-2">
-          <button
-            onClick={() => navigate("/products/edit")}
-            className="flex items-center gap-2 border px-4 py-2 rounded-lg text-sm hover:bg-gray-100"
-          >
-            <Pencil size={16} />
-            Edit
-          </button>
-        </div>
-      </div> */}
       <ProductsNavbar
         breadcrumbs={[
           { label: "Dashboard", path: "/dashboard" },
           { label: "Products", path: "/products" },
-          { label: "Blue Jersey T-Shirt", path:"/products/category/:name" },
-          { label: "Meduim"},
+          { label: product.category || "Uncategorized", path: `/products?category=${product.category}` },
+          { label: product.name },
         ]}
       />
 
@@ -91,16 +106,16 @@ const ProductDetail = () => {
         {/* LEFT CARD */}
         <div className="bg-white border rounded-xl p-5 space-y-4">
           <img
-            src={product.image}
+            src={product.product_image || "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?w=600"}
             alt={product.name}
             className="w-full rounded-lg bg-gray-100 object-cover"
           />
 
           <div className="text-center space-y-1">
             <h2 className="font-semibold">{product.name}</h2>
-            <span className="inline-block text-xs bg-gray-200 px-3 py-1 rounded-full">
-              ({product.size})
-            </span>
+            {/* <span className="inline-block text-xs bg-gray-200 px-3 py-1 rounded-full">
+              ({product.size || "Standard"})
+            </span> */}
           </div>
 
           {/* BARCODE */}
@@ -121,16 +136,16 @@ const ProductDetail = () => {
           <h2 className="text-lg font-semibold">Product Information</h2>
 
           <Info label="Product Name" value={product.name} />
-          <Info label="Product Description" value={product.description} />
-          <Info label="Category" value={product.category} />
-          <Info label="Size" value={product.size} />
+          <Info label="Product Description" value={product.description || "N/A"} />
+          <Info label="Category" value={product.category || "Uncategorized"} />
+          {/* <Info label="Size" value={product.size || "Standard"} /> */}
           <Info label="SKU" value={product.sku} />
-          <Info label="Available Quantity" value={product.quantity} badge />
-          <Info label="Location" value={product.location} />
-          <Info label="Re-Order Level" value={product.reorderLevel} />
+          <Info label="Available Quantity" value={product.stock_quantity || 0} badge />
+          <Info label="Location" value={product.location || "N/A"} />
+          <Info label="Re-Order Level" value={product.reorder_level || 0} />
 
           <div className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={product.refundable} readOnly />
+            <input type="checkbox" checked={true} readOnly />
             <span>
               Refundable Item{" "}
               <span className="text-gray-500">

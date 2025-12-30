@@ -139,6 +139,9 @@ export interface Product {
     category?: string;
     description?: string;
     reorder_level?: number;
+    stock_quantity?: number;
+    location?: string;
+    product_image?: string;
     created_at?: string;
     updated_at?: string;
 }
@@ -492,6 +495,8 @@ export const warehousesApi = {
         });
     },
 };
+
+
 
 // Default export for backward compatibility
 export default apiRequest;
