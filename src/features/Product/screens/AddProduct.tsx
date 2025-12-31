@@ -300,7 +300,7 @@
 import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { productsApi, shelvesApi, roomsApi, type Shelf, type Room } from "@/services/api";
+import { productsApi, shelvesApi, roomsApi, warehousesApi, itemsApi, type Shelf, type Room, type Warehouse } from "@/services/api";
 
 /* ----------------------------- TYPES ----------------------------- */
 type ProductForm = {
@@ -309,9 +309,9 @@ type ProductForm = {
   category: string;
   reorderLevel: string;
   quantity: string;
-  warehouse: string;
-  room: string;
-  shelf: string;
+  warehouse_id: string;
+  room_id: string;
+  shelf_id: string;
   description: string;
   refundable: boolean;
   image?: string;
@@ -327,9 +327,9 @@ const AddProduct = () => {
     category: "",
     reorderLevel: "",
     quantity: "",
-    warehouse: "",
-    room: "",
-    shelf: "",
+    warehouse_id: "",
+    room_id: "",
+    shelf_id: "",
     description: "",
     refundable: false,
   });
@@ -338,23 +338,31 @@ const AddProduct = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Dropdown data from API
-  const [shelves, setShelves] = useState<Shelf[]>([]);
+  // Dropdown data
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [shelves, setShelves] = useState<Shelf[]>([]);
+
+  // Filtered lists
+  const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
+  const [filteredShelves, setFilteredShelves] = useState<Shelf[]>([]);
+
   const [isLoadingDropdowns, setIsLoadingDropdowns] = useState(true);
 
-  // Fetch shelves and rooms for dropdowns
+  // Fetch initial data
   useEffect(() => {
     const fetchDropdownData = async () => {
       setIsLoadingDropdowns(true);
       try {
-        const [shelvesRes, roomsRes] = await Promise.all([
-          shelvesApi.getAll(1, 100),
+        const [warehousesRes, roomsRes, shelvesRes] = await Promise.all([
+          warehousesApi.getAll(1, 100),
           roomsApi.getAll(1, 100),
+          shelvesApi.getAll(1, 100),
         ]);
 
-        if (shelvesRes.data) setShelves(shelvesRes.data);
+        if (warehousesRes.data) setWarehouses(warehousesRes.data);
         if (roomsRes.rooms) setRooms(roomsRes.rooms);
+        if (shelvesRes.data) setShelves(shelvesRes.data);
       } catch (err) {
         console.error("Failed to load dropdown data:", err);
       } finally {
@@ -364,6 +372,38 @@ const AddProduct = () => {
 
     fetchDropdownData();
   }, []);
+
+  // Filter Rooms when Warehouse changes
+  useEffect(() => {
+    if (form.warehouse_id) {
+      const filtered = rooms.filter(r => r.warehouse_id === Number(form.warehouse_id));
+      setFilteredRooms(filtered);
+      // Reset dependent fields if invalid
+      if (!filtered.find(r => r.room_id === Number(form.room_id))) {
+        updateField("room_id", "");
+        updateField("shelf_id", "");
+      }
+    } else {
+      setFilteredRooms([]);
+    }
+  }, [form.warehouse_id, rooms]);
+
+  // Filter Shelves when Room changes
+  useEffect(() => {
+    if (form.room_id) {
+      const filtered = shelves.filter(s => s.room_id === Number(form.room_id));
+      setFilteredShelves(filtered);
+      // Reset dependent fields if invalid
+      if (!filtered.find(s => s.shelf_id === Number(form.shelf_id))) {
+        updateField("shelf_id", "");
+      }
+    } else {
+      setFilteredShelves([]);
+    }
+  }, [form.room_id, shelves]);
+
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   /* ----------------------------- HANDLERS ----------------------------- */
   const updateField = <K extends keyof ProductForm>(
@@ -376,6 +416,7 @@ const AddProduct = () => {
   const handleImageUpload = (file: File) => {
     const url = URL.createObjectURL(file);
     setImagePreview(url);
+    setSelectedFile(file);
     updateField("image", url);
   };
 
@@ -385,9 +426,9 @@ const AddProduct = () => {
       !form.sku ||
       !form.category ||
       !form.quantity ||
-      !form.warehouse ||
-      !form.room ||
-      !form.shelf
+      !form.warehouse_id ||
+      !form.room_id ||
+      !form.shelf_id
     ) {
       alert("Please fill all required fields");
       return;
@@ -397,19 +438,39 @@ const AddProduct = () => {
     setError(null);
 
     try {
-      const response = await productsApi.create({
-        name: form.name,
-        sku: form.sku,
-        category: form.category,
-        description: form.description,
-        reorder_level: parseInt(form.reorderLevel) || 0,
+      // 1. Create Product with FormData
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("sku", form.sku);
+      formData.append("category", form.category);
+      formData.append("description", form.description);
+      formData.append("reorder_level", form.reorderLevel || "0");
+
+      if (selectedFile) {
+        formData.append("image", selectedFile);
+      }
+
+      const productRes = await productsApi.create(formData);
+
+      if (!productRes.success || !productRes.data) {
+        throw new Error(productRes.message || "Failed to create product");
+      }
+
+      const newProduct = productRes.data;
+
+      // 2. Add Stock
+      const stockRes = await itemsApi.addStock({
+        product_id: newProduct.product_id,
+        shelf_id: parseInt(form.shelf_id),
+        quantity: parseInt(form.quantity),
       });
 
-      if (response.success) {
+      if (stockRes.success) {
         navigate("/products");
       } else {
-        setError(response.message || "Failed to create product");
+        throw new Error(stockRes.message || "Product created but failed to add stock");
       }
+
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create product");
     } finally {
@@ -437,6 +498,12 @@ const AddProduct = () => {
         </div>
       </div>
 
+      {error && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg border border-red-100">
+          {error}
+        </div>
+      )}
+
       {/* CONTENT */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* LEFT FORM */}
@@ -457,12 +524,12 @@ const AddProduct = () => {
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Select
+                <Input
                   label="SKU"
                   required
+                  placeholder="Enter SKU"
                   value={form.sku}
                   onChange={(v) => updateField("sku", v)}
-                  options={["SKU-001", "SKU-002"]}
                 />
 
                 <Select
@@ -470,7 +537,11 @@ const AddProduct = () => {
                   required
                   value={form.category}
                   onChange={(v) => updateField("category", v)}
-                  options={["Electronics", "Accessories"]}
+                  options={[
+                    { label: "Electronics", value: "Electronics" },
+                    { label: "Accessories", value: "Accessories" },
+                    { label: "Clothing", value: "Clothing" },
+                  ]}
                 />
               </div>
 
@@ -502,25 +573,28 @@ const AddProduct = () => {
               <Select
                 label="Warehouse"
                 required
-                value={form.warehouse}
-                onChange={(v) => updateField("warehouse", v)}
-                options={["Warehouse A", "Warehouse B"]}
+                value={form.warehouse_id}
+                onChange={(v) => updateField("warehouse_id", v)}
+                options={warehouses.map(w => ({ label: w.name, value: String(w.warehouse_id) }))}
+                disabled={isLoadingDropdowns}
               />
 
               <Select
                 label="Room"
                 required
-                value={form.room}
-                onChange={(v) => updateField("room", v)}
-                options={["Room 1", "Room 2"]}
+                value={form.room_id}
+                onChange={(v) => updateField("room_id", v)}
+                options={filteredRooms.map(r => ({ label: r.name, value: String(r.room_id) }))}
+                disabled={!form.warehouse_id}
               />
 
               <Select
                 label="Shelf"
                 required
-                value={form.shelf}
-                onChange={(v) => updateField("shelf", v)}
-                options={["Shelf A", "Shelf B"]}
+                value={form.shelf_id}
+                onChange={(v) => updateField("shelf_id", v)}
+                options={filteredShelves.map(s => ({ label: s.name, value: String(s.shelf_id) }))}
+                disabled={!form.room_id}
               />
             </div>
           </section>
@@ -588,9 +662,10 @@ const AddProduct = () => {
       {/* FOOTER BUTTON */}
       <button
         onClick={handleSubmit}
-        className="w-full bg-black text-white py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-900"
+        disabled={isSubmitting}
+        className="w-full bg-black text-white py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-900 disabled:opacity-50"
       >
-        + Add Product
+        {isSubmitting ? <Loader2 className="animate-spin" /> : "+ Add Product"}
       </button>
     </div>
   );
@@ -630,8 +705,9 @@ const Input = ({
 type SelectProps = {
   label: string;
   value: string;
-  options: string[];
+  options: { label: string; value: string }[];
   required?: boolean;
+  disabled?: boolean;
   onChange: (value: string) => void;
 };
 
@@ -641,6 +717,7 @@ const Select = ({
   onChange,
   options,
   required,
+  disabled
 }: SelectProps) => (
   <div>
     <label className="text-sm font-medium">
@@ -649,12 +726,13 @@ const Select = ({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full border rounded-lg px-4 py-2 mt-1"
+      disabled={disabled}
+      className="w-full border rounded-lg px-4 py-2 mt-1 disabled:bg-gray-100 disabled:text-gray-400"
     >
       <option value="">Select {label}</option>
       {options.map((o) => (
-        <option key={o} value={o}>
-          {o}
+        <option key={o.value} value={o.value}>
+          {o.label}
         </option>
       ))}
     </select>

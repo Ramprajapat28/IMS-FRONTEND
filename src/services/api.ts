@@ -45,6 +45,11 @@ const apiRequest = async <T>(
         (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
     }
 
+    // If body is FormData, let browser set Content-Type
+    if (fetchOptions.body instanceof FormData) {
+        delete (headers as Record<string, string>)['Content-Type'];
+    }
+
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...fetchOptions,
         headers,
@@ -141,6 +146,14 @@ export interface Product {
     reorder_level?: number;
     stock_quantity?: number;
     location?: string;
+    stock_details?: {
+        item_id: number;
+        product_id: number;
+        warehouse_name: string;
+        room_name: string;
+        shelf_name: string;
+        status: string;
+    }[];
     product_image?: string;
     created_at?: string;
     updated_at?: string;
@@ -169,10 +182,10 @@ export const productsApi = {
         return apiRequest<ApiResponse<Product>>(`/api/products/sku/${sku}`);
     },
 
-    create: async (data: CreateProductData) => {
+    create: async (data: CreateProductData | FormData) => {
         return apiRequest<ApiResponse<Product>>('/api/products/create', {
             method: 'POST',
-            body: JSON.stringify(data),
+            body: data instanceof FormData ? data : JSON.stringify(data),
         });
     },
 
@@ -487,7 +500,20 @@ export interface WarehouseDetails {
     shelf_id?: number;
 }
 
+export interface Warehouse {
+    warehouse_id: number;
+    name: string;
+    location?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
 export const warehousesApi = {
+    getAll: async (page = 1, limit = 100) => {
+        return apiRequest<ApiResponse<Warehouse[]> & { pagination: PaginationInfo }>(
+            `/api/warehouses/get_all_warehouses?page=${page}&limit=${limit}`
+        );
+    },
     getDetailsByIds: async (ids: WarehouseDetails) => {
         return apiRequest<ApiResponse<unknown>>('/api/warehouses/manage/by-ids', {
             method: 'POST',

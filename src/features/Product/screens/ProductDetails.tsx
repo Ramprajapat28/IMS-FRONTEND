@@ -140,8 +140,25 @@ const ProductDetail = () => {
           <Info label="Category" value={product.category || "Uncategorized"} />
           {/* <Info label="Size" value={product.size || "Standard"} /> */}
           <Info label="SKU" value={product.sku} />
-          <Info label="Available Quantity" value={product.stock_quantity || 0} badge />
-          <Info label="Location" value={product.location || "N/A"} />
+          <Info
+            label="Available Quantity"
+            value={product.stock_details?.length || 0}
+            badge
+          />
+          <Info
+            label="Location"
+            value={(() => {
+              if (!product.stock_details?.length) return "N/A";
+              const locationMap = new Map<string, number>();
+              product.stock_details.forEach((item) => {
+                const loc = `${item.warehouse_name} > ${item.room_name} > ${item.shelf_name}`;
+                locationMap.set(loc, (locationMap.get(loc) || 0) + 1);
+              });
+              return Array.from(locationMap.entries())
+                .map(([loc, qty]) => `${loc} (${qty})`)
+                .join(", ");
+            })()}
+          />
           <Info label="Re-Order Level" value={product.reorder_level || 0} />
 
           <div className="flex items-center gap-2 text-sm">

@@ -537,15 +537,30 @@ const ProductsPage = () => {
       try {
         const response = await productsApi.getAll(1, 100);
         if (response.success && response.data) {
-          const products: DisplayProduct[] = response.data.map((p: Product) => ({
-            id: p.product_id,
-            name: p.name,
-            category: p.category || "Uncategorized",
-            sku: p.sku,
-            location: p.location || "N/A",
-            quantity: p.stock_quantity || 0,
-            image: p.product_image || "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200",
-          }));
+          const products: DisplayProduct[] = response.data.map((p: Product) => {
+            const totalQty = p.stock_details?.length || 0;
+
+            // Aggregate stock by location
+            const locationMap = new Map<string, number>();
+            p.stock_details?.forEach((item) => {
+              const loc = `${item.warehouse_name} > ${item.room_name} > ${item.shelf_name}`;
+              locationMap.set(loc, (locationMap.get(loc) || 0) + 1);
+            });
+
+            const locationStrings = Array.from(locationMap.entries()).map(
+              ([loc, qty]) => `${loc} (${qty})`
+            );
+
+            return {
+              id: p.product_id,
+              name: p.name,
+              category: p.category || "Uncategorized",
+              sku: p.sku,
+              location: locationStrings.length > 0 ? locationStrings.join(", ") : "N/A",
+              quantity: totalQty,
+              image: p.product_image || "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200",
+            };
+          });
           setData(products);
         }
       } catch (err) {
