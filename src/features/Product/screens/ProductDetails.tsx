@@ -3,7 +3,8 @@ import { Download, Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import JsBarcode from "jsbarcode";
 import ProductsNavbar from "../components/ProductsNavbar";
-import { productsApi, type Product } from "@/features/Product/api/product.api";
+import { productsApi } from "@/features/Product/api/product.api";
+import type { Product } from "@/features/Product/types";
 
 /* ----------------------------- COMPONENT ----------------------------- */
 const ProductDetail = () => {

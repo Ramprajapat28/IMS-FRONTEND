@@ -1,28 +1,11 @@
 import apiRequest, { type ApiResponse, type PaginationInfo } from '@/services/api';
+import type { Order, OrderFilters } from '../types';
+
+export type { Order, OrderFilters };
 
 // ============================================
 // ORDERS API
 // ============================================
-export interface Order {
-    order_id: number;
-    product_id: number;
-    shelf_id: number;
-    quantity: number;
-    status: string;
-    product_name?: string;
-    product_sku?: string;
-    warehouse_name?: string;
-    room_name?: string;
-    shelf_name?: string;
-    created_at?: string;
-    updated_at?: string;
-}
-
-export interface OrderFilters {
-    product_id?: number;
-    shelf_id?: number;
-    status?: string;
-}
 
 export const ordersApi = {
     getAll: async (page = 1, limit = 10, filters?: OrderFilters) => {
