@@ -64,7 +64,7 @@ const EditProduct = () => {
                         name: product.name,
                         description: product.description || "",
                         category: product.category || "",
-                        size: "", // TODO: Get from variant if applicable
+                        size: product.size || "", // TODO: Get from variant if applicable
                         sku: product.sku,
                         quantity: String(product.stock_quantity || 0),
                         reorderLevel: String(product.reorder_level || 0),

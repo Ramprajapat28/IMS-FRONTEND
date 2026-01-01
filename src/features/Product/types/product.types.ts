@@ -7,6 +7,7 @@ export interface Product {
     reorder_level?: number;
     stock_quantity?: number;
     location?: string;
+    size?: string;
     stock_details?: {
         item_id: number;
         product_id: number;

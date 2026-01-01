@@ -1,12 +1,14 @@
-import { TrendingUp, TrendingDown, Calendar } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { useState } from "react";
-import DatePicker from "react-datepicker";
+// import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+
+import type { SellingProduct } from "../types";
 
 type CardType = "top" | "least";
 type Trend = "up" | "down";
 
-const SellingCard = ({ title, type }: { title: string; type: CardType }) => {
+const SellingCard = ({ title, type, products }: { title: string; type: CardType; products: SellingProduct[] }) => {
   const [date, setDate] = useState<Date | null>(null);
   const isTop = type === "top";
 
@@ -28,7 +30,7 @@ const SellingCard = ({ title, type }: { title: string; type: CardType }) => {
           <h2 className="font-semibold">{title}</h2>
         </div>
 
-        <div className="flex items-center gap-2 border rounded-lg px-4 py-1.5">
+        {/* <div className="flex items-center gap-2 border rounded-lg px-4 py-1.5">
           <Calendar size={16} className="text-gray-500" />
           <DatePicker
             selected={date}
@@ -38,14 +40,18 @@ const SellingCard = ({ title, type }: { title: string; type: CardType }) => {
             className="outline-none text-sm w-[110px]"
             popperPlacement="bottom-end"
           />
-        </div>
+        </div> */}
       </div>
 
       {/* LIST */}
       <div className="divide-y">
-        <ProductRow trend="up" />
-        <ProductRow trend={isTop ? "up" : "down"} />
-        <ProductRow trend={isTop ? "up" : "down"} />
+        {products && Array.isArray(products) && products.length > 0 ? (
+          products.map((product) => (
+            <ProductRow key={product.product_id} product={product} trend={isTop ? "up" : "down"} />
+          ))
+        ) : (
+          <div className="p-4 text-center text-gray-500 text-sm">No data available</div>
+        )}
       </div>
     </div>
   );
@@ -53,30 +59,32 @@ const SellingCard = ({ title, type }: { title: string; type: CardType }) => {
 
 export default SellingCard;
 
-const ProductRow = ({ trend }: { trend: Trend }) => (
+const ProductRow = ({ product, trend }: { product: SellingProduct; trend?: Trend }) => (
   <div className="flex gap-4 px-4 py-4">
     <img
-      src="https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200"
+      src={product.image || "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200"}
       className="w-12 h-12 rounded-lg object-cover"
+      alt={product.name}
     />
 
     <div className="flex-1">
-      <p className="font-medium">Charger Cable - Lighting</p>
+      <p className="font-medium">{product?.name || "Unknown Product"}</p>
       <p className="text-sm text-gray-500">
-        $187 • 247 Units sold
+        {product?.total_quantity || 0} Units sold
       </p>
 
       <div className="mt-2">
         {trend === "up" ? (
           <span className="text-xs px-2 py-0.5 rounded border border-emerald-500 text-emerald-600">
-            ↑ 25%
+            ↑ {product?.trend || 0}%
           </span>
         ) : (
           <span className="text-xs px-2 py-0.5 rounded border border-red-500 text-red-600">
-            ↓ 21%
+            ↓ {product?.trend || 0}%
           </span>
         )}
       </div>
     </div>
   </div>
 );
+

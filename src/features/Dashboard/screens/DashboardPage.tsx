@@ -1,13 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import StatsCards from "../components/StatsCards";
 import InventoryChart from "../components/InventoryChart";
 import RecentActivity from "../components/RecentActivity";
 import SellingCard from "../components/SellingCard";
 import FilterSelect from "../components/FilterSelect";
+import { dashboardApi } from "../api/dashboard.api";
+import type { SellingProduct } from "../types";
 
 const Dashboard = () => {
   const [month, setMonth] = useState("Month");
   const [year, setYear] = useState("Year");
+  const [topSelling, setTopSelling] = useState<SellingProduct[]>([]);
+  const [leastSelling, setLeastSelling] = useState<SellingProduct[]>([]);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const [topRes, leastRes] = await Promise.all([
+          dashboardApi.getTopSelling(),
+          dashboardApi.getLeastSelling(),
+        ]);
+
+        if (topRes.success && topRes.data) setTopSelling(topRes.data);
+        if (leastRes.success && leastRes.data) setLeastSelling(leastRes.data);
+      } catch (err) {
+        console.error("Failed to fetch dashboard analytics:", err);
+      }
+    };
+
+    fetchAnalytics();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -47,8 +69,8 @@ const Dashboard = () => {
           <RecentActivity />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <SellingCard title="Top Selling Products" type="top" />
-            <SellingCard title="Least Selling Products" type="least" />
+            <SellingCard title="Top Selling Products" type="top" products={topSelling} />
+            <SellingCard title="Least Selling Products" type="least" products={leastSelling} />
           </div>
         </div>
       </div>
