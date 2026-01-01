@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock, Loader2 } from "lucide-react";
-import { authApi } from "@/services/api";
+import { authApi } from "../api";
 
 interface Props {
   switchToSignup: () => void;
@@ -109,23 +109,12 @@ const Login: React.FC<Props> = ({ switchToSignup }) => {
           )}
         </button>
       </form>
-
-      {/* GOOGLE */}
-      <button className="w-full mt-4 border py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50">
-        Continue with Google
-      </button>
-
       {/* SWITCH */}
       <p className="text-center text-sm text-gray-600 mt-4">
         Don’t have an account?{" "}
         <button onClick={switchToSignup} className="text-blue-600 font-medium">
           Sign up
         </button>
-      </p>
-
-      {/* COPYRIGHT */}
-      <p className="text-xs text-gray-400 text-center mt-6">
-        © 2025 FitInventory. All rights reserved.
       </p>
     </div>
   );

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   Home,
@@ -10,10 +11,12 @@ import {
   X,
 } from "lucide-react";
 import { useSidebar } from "@/app/providers";
+import { LogoutModal } from "@/features/Auth";
 import logo from "../../assets/logo.png";
 
 const Sidebar = () => {
   const { isOpen, close } = useSidebar();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
@@ -97,16 +100,21 @@ const Sidebar = () => {
 
         {/* FOOTER */}
         <div className="px-4 py-4 border-t border-gray-200">
-          <NavLink
-            to="/logout"
-            onClick={close}
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 transition-all duration-200"
+          <button
+            onClick={() => setShowLogoutModal(true)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 transition-all duration-200"
           >
             <LogOut size={20} />
             Log Out
-          </NavLink>
+          </button>
         </div>
       </aside>
+
+      {/* LOGOUT MODAL */}
+      <LogoutModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+      />
     </>
   );
 };

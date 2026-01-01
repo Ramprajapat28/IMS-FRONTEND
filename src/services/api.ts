@@ -6,20 +6,10 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000
 // ============================================
 // TOKEN MANAGEMENT
 // ============================================
-export const getToken = (): string | null => {
+// Note: Token management has been moved to @/features/Auth/api
+// This getToken is kept here for backward compatibility with other APIs
+const getToken = (): string | null => {
     return localStorage.getItem('authToken');
-};
-
-export const setToken = (token: string): void => {
-    localStorage.setItem('authToken', token);
-};
-
-export const removeToken = (): void => {
-    localStorage.removeItem('authToken');
-};
-
-export const isAuthenticated = (): boolean => {
-    return !!getToken();
 };
 
 // ============================================
@@ -90,49 +80,9 @@ export interface ApiResponse<T> {
 }
 
 // ============================================
-// AUTH API
+// NOTE: AUTH API has been moved to @/features/Auth
+// Import from: import { authApi } from '@/features/Auth'
 // ============================================
-export interface LoginCredentials {
-    email: string;
-    password: string;
-}
-
-export interface LoginResponse {
-    success: boolean;
-    message: string;
-    jwt_token: string;
-    user: {
-        user_id: number;
-        email: string;
-        name: string;
-        role: string;
-    };
-}
-
-export const authApi = {
-    login: async (credentials: LoginCredentials): Promise<LoginResponse> => {
-        const response = await apiRequest<LoginResponse>('/open/api/auth/login_user', {
-            method: 'POST',
-            body: JSON.stringify(credentials),
-            skipAuth: true,
-        });
-
-        // Backend returns jwt_token, not token
-        if (response.success && response.jwt_token) {
-            setToken(response.jwt_token);
-        }
-
-        return response;
-    },
-
-    logout: (): void => {
-        removeToken();
-    },
-
-    getProfile: async () => {
-        return apiRequest<ApiResponse<{ user: unknown }>>('/api/auth/profile');
-    },
-};
 
 // ============================================
 // PRODUCTS API

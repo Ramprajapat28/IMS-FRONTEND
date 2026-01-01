@@ -46,9 +46,6 @@ export const AppRoutes = () => {
         <Route path="/notifications" element={<Notifications />} />
       </Route>
 
-      {/* Logout route */}
-      <Route path="/logout" element={<Logout />} />
-
       {/* Settings Layout */}
       <Route path="/settings" element={<SettingsLayout />}>
         <Route path="general" element={<GeneralSettings />} />
@@ -76,11 +73,5 @@ const NotFound = () => (
     </div>
   </div>
 );
-
-const Logout = () => {
-  // Clear any auth tokens or session data here
-  // For now, just redirect to auth page
-  return <Navigate to="/auth" replace />;
-};
 
 export default AppRoutes;
