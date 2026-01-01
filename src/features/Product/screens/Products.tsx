@@ -659,21 +659,13 @@ const ProductsPage = () => {
 
           <tbody>
             {visible.map((p, index) => {
-              // TODO: Add hasVariants field to product data to determine navigation
-              const hasVariants = p.category === "T-Shirts"; // Temporary logic
-
               return (
                 <tr
                   key={p.id}
                   className="border-b hover:bg-gray-50 cursor-pointer"
                   onClick={() => {
-                    if (hasVariants) {
-                      // Navigate to variants list
-                      navigate(`/products/variants/${p.id}`);
-                    } else {
-                      // Navigate to edit product
-                      navigate(`/products/edit/${p.id}`);
-                    }
+                    // Always navigate to product details when clicking row
+                    navigate(`/products/details/${p.id}`);
                   }}
                 >
                   <td className="p-3">{(page - 1) * rows + index + 1}</td>

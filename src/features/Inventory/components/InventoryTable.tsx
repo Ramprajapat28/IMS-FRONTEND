@@ -1,4 +1,4 @@
-import { ChevronRight, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { InventoryProduct } from "../data/inventory.data";
 import type { InventoryVariant } from "../data/variants.data";
@@ -40,7 +40,11 @@ const InventoryTable = ({ data, mode, onDelete, onRowClick }: InventoryTableProp
 
                 <tbody>
                     {data.map((item, index) => (
-                        <tr key={item.id} className="border-b last:border-none hover:bg-gray-50">
+                        <tr
+                            key={item.id}
+                            className="border-b last:border-none hover:bg-gray-50 cursor-pointer"
+                            onClick={() => handleRowClick(item)}
+                        >
                             <td className="p-3">{index + 1}</td>
 
                             <td className="p-3">
@@ -70,18 +74,8 @@ const InventoryTable = ({ data, mode, onDelete, onRowClick }: InventoryTableProp
                             <td className="p-3 text-gray-600">{item.location}</td>
                             <td className="p-3">{item.quantity}</td>
 
-                            <td className="p-3">
+                            <td className="p-3" onClick={(e) => e.stopPropagation()}>
                                 <div className="flex gap-2">
-                                    {mode === "PRODUCTS" && (item as InventoryProduct).hasVariants && (
-                                        <button
-                                            onClick={() => handleRowClick(item)}
-                                            className="border rounded-lg p-1.5 hover:bg-gray-100"
-                                            title="View variants"
-                                        >
-                                            <ChevronRight size={16} />
-                                        </button>
-                                    )}
-
                                     <button
                                         onClick={() => onDelete(item.id)}
                                         className="border rounded-lg p-1.5 hover:bg-gray-100"

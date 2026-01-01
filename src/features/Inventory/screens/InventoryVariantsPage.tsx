@@ -39,7 +39,7 @@ const InventoryVariantsPage = () => {
 
     // Handle variant click - navigate to product details
     const handleVariantClick = (variant: InventoryVariant) => {
-        navigate(`/products/${variant.id}`);
+        navigate(`/products/details/${variant.id}`);
     };
 
     return (

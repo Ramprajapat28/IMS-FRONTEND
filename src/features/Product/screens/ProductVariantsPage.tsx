@@ -63,8 +63,8 @@ const ProductVariantsPage = () => {
     );
 
     const handleRowClick = (variantId: number) => {
-        // Navigate to edit product for this specific variant
-        navigate(`/products/edit/${variantId}`);
+        // Navigate to product details for this specific variant
+        navigate(`/products/details/${variantId}`);
     };
 
     const handleDelete = (variantId: number, e: React.MouseEvent) => {

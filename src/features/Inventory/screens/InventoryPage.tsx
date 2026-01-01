@@ -44,8 +44,8 @@ const InventoryPage = () => {
             // Navigate to variants page
             navigate(`/inventory/variants/${item.id}`);
         } else {
-            // Navigate directly to product details
-            navigate(`/products/${item.id}`);
+            // Navigate to product details
+            navigate(`/products/details/${item.id}`);
         }
     };
 
