@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ShoppingCart, MapPin, Loader2 } from "lucide-react";
-import { ordersApi, type Order } from "@/services/api";
+import { ordersApi, type Order } from "@/features/Order/api/order.api";
 
 const statusStyles: Record<string, string> = {
   Processing: "bg-purple-100 text-purple-600",

@@ -1,44 +1,14 @@
 // Auth API Client
 import type { LoginCredentials, LoginResponse, ApiResponse, User } from '../types';
-import { getToken, setToken, removeToken } from './token.utils';
+import {  setToken, removeToken } from './token.utils';
+import apiRequest from '@/services/api';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+
 
 // ============================================
 // API REQUEST HELPER
 // ============================================
-interface ApiRequestOptions extends RequestInit {
-    skipAuth?: boolean;
-}
 
-const apiRequest = async <T>(
-    endpoint: string,
-    options: ApiRequestOptions = {}
-): Promise<T> => {
-    const { skipAuth, ...fetchOptions } = options;
-    const token = getToken();
-
-    const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-        ...fetchOptions.headers,
-    };
-
-    if (token && !skipAuth) {
-        (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...fetchOptions,
-        headers,
-    });
-
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Request failed' }));
-        throw new Error(error.message || `HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
-};
 
 // ============================================
 // AUTH API

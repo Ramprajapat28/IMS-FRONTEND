@@ -300,7 +300,9 @@
 import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { productsApi, shelvesApi, roomsApi, warehousesApi, itemsApi, type Shelf, type Room, type Warehouse } from "@/services/api";
+import { productsApi } from "@/features/Product/api/product.api";
+import { shelvesApi, roomsApi, warehousesApi, type Shelf, type Room, type Warehouse } from "@/features/Inventory/api/location.api";
+import { itemsApi } from "@/features/Inventory/api/item.api";
 
 /* ----------------------------- TYPES ----------------------------- */
 type ProductForm = {

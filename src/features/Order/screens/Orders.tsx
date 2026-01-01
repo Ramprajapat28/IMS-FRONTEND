@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { MapPin, Loader2 } from "lucide-react";
-import { ordersApi, type Order as ApiOrder } from "@/services/api";
+import { MapPin } from "lucide-react";
+import { ordersApi, type Order as ApiOrder } from "@/features/Order/api/order.api";
 
 /* ---------------------------------- TYPES --------------------------------- */
 type OrderStatus = "Processing" | "Cancelled" | "Onhold" | string;

@@ -504,7 +504,7 @@ import { Search, Pencil, Trash2, ChevronRight, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ProductsNavbar from "../components/ProductsNavbar";
 import ProductsFooter from "../components/ProductsFooter";
-import { productsApi, type Product } from "@/services/api";
+import { productsApi, type Product } from "@/features/Product/api/product.api";
 
 // Map API product to display format
 interface DisplayProduct {
