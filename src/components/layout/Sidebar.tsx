@@ -2,10 +2,10 @@ import { NavLink } from "react-router-dom";
 import {
   Home,
   Box,
+  Package,
+  ScanBarcode,
   ShoppingCart,
   User,
-  HelpCircle,
-  Settings,
   LogOut,
   X,
 } from "lucide-react";
@@ -16,12 +16,11 @@ const Sidebar = () => {
   const { isOpen, close } = useSidebar();
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-3 px-4 py-2 rounded-lg transition
-     ${
-       isActive
-         ? "bg-gray-100 font-semibold text-gray-900"
-         : "text-gray-700 hover:bg-gray-100"
-     }`;
+    `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
+     ${isActive
+      ? "bg-blue-50 font-semibold text-blue-600"
+      : "text-gray-700 hover:bg-gray-50"
+    }`;
 
   return (
     <>
@@ -37,7 +36,7 @@ const Sidebar = () => {
       <aside
         className={`
           fixed md:static top-0 left-0 z-50
-          w-64 h-screen bg-white border-r
+          w-64 h-screen bg-white border-r border-gray-200
           transform transition-transform duration-300
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
@@ -66,44 +65,44 @@ const Sidebar = () => {
         {/* NAV */}
         <nav className="flex-1 px-4 space-y-1">
           <NavLink to="/dashboard" className={linkClass} onClick={close}>
-            <Home size={18} />
+            <Home size={20} />
             Dashboard
           </NavLink>
 
+          <NavLink to="/inventory" className={linkClass} onClick={close}>
+            <Package size={20} />
+            Inventory
+          </NavLink>
+
           <NavLink to="/products" className={linkClass} onClick={close}>
-            <Box size={18} />
+            <Box size={20} />
             Products
           </NavLink>
 
+          <NavLink to="/barcode-scanning" className={linkClass} onClick={close}>
+            <ScanBarcode size={20} />
+            Barcode scanning
+          </NavLink>
+
           <NavLink to="/orders" className={linkClass} onClick={close}>
-            <ShoppingCart size={18} />
+            <ShoppingCart size={20} />
             Orders
           </NavLink>
 
           <NavLink to="/profile" className={linkClass} onClick={close}>
-            <User size={18} />
+            <User size={20} />
             Profile
           </NavLink>
         </nav>
 
         {/* FOOTER */}
-        <div className="px-4 py-4 space-y-1">
-          <NavLink to="/help" className={linkClass} onClick={close}>
-            <HelpCircle size={18} />
-            Help
-          </NavLink>
-
-          <NavLink to="/settings" className={linkClass} onClick={close}>
-            <Settings size={18} />
-            Settings
-          </NavLink>
-
+        <div className="px-4 py-4 border-t border-gray-200">
           <NavLink
             to="/logout"
             onClick={close}
-            className="flex items-center gap-3 px-4 py-2 rounded-lg text-red-500 hover:bg-gray-100"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 transition-all duration-200"
           >
-            <LogOut size={18} />
+            <LogOut size={20} />
             Log Out
           </NavLink>
         </div>

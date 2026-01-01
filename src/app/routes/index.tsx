@@ -9,11 +9,12 @@ import {
   HelpSupport,
   Notifications,
 } from "@/features/Settings";
-import { BarcodeGenerate, BarcodeHistory } from "@/features/Barcode";
+import { BarcodeGenerate, BarcodeHistory, BarcodeScanningPage } from "@/features/Barcode";
 import { AddProduct, GroupItem } from "@/features/Product";
 import { Reports } from "@/features/Report";
 import { Profile } from "@/features/Profile";
 import { Order } from "@/features/Order";
+import { InventoryPage, InventoryVariantsPage } from "@/features/Inventory";
 import CategoryProducts from "@/features/Product/screens/CategoryProducts";
 import ProductDetails from "@/features/Product/screens/ProductDetails";
 
@@ -29,9 +30,12 @@ export const AppRoutes = () => {
       {/* Main Dashboard Layout */}
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/inventory" element={<InventoryPage />} />
+        <Route path="/inventory/variants/:productId" element={<InventoryVariantsPage />} />
         <Route path="/orders" element={<Order />} />
         <Route path="/barcode/generate" element={<BarcodeGenerate />} />
         <Route path="/barcode/history" element={<BarcodeHistory />} />
+        <Route path="/barcode-scanning" element={<BarcodeScanningPage />} />
         <Route path="/products/add" element={<AddProduct />} />
         <Route path="/products" element={<GroupItem />} />
         <Route path="/products/category/:name" element={<CategoryProducts />} />
@@ -41,6 +45,9 @@ export const AppRoutes = () => {
         <Route path="/help" element={<HelpSupport />} />
         <Route path="/notifications" element={<Notifications />} />
       </Route>
+
+      {/* Logout route */}
+      <Route path="/logout" element={<Logout />} />
 
       {/* Settings Layout */}
       <Route path="/settings" element={<SettingsLayout />}>
@@ -69,5 +76,11 @@ const NotFound = () => (
     </div>
   </div>
 );
+
+const Logout = () => {
+  // Clear any auth tokens or session data here
+  // For now, just redirect to auth page
+  return <Navigate to="/auth" replace />;
+};
 
 export default AppRoutes;
