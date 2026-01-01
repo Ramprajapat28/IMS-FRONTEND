@@ -500,7 +500,7 @@
 
 // export default ProductsPage;
 import { useEffect, useMemo, useState } from "react";
-import { Search, Pencil, Trash2, ChevronRight, Loader2 } from "lucide-react";
+import { Search, Pencil, Trash2, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ProductsNavbar from "../components/ProductsNavbar";
 import ProductsFooter from "../components/ProductsFooter";
@@ -513,8 +513,6 @@ interface DisplayProduct {
   name: string;
   category: string;
   sku: string;
-  location: string;
-  quantity: number;
   image: string;
 }
 
@@ -526,7 +524,7 @@ const ProductsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] =
-    useState<"none" | "name" | "category" | "quantity">("none");
+    useState<"none" | "name" | "category">("none");
   const [page, setPage] = useState(1);
   const [rows, setRows] = useState(10);
 
@@ -539,26 +537,11 @@ const ProductsPage = () => {
         const response = await productsApi.getAll(1, 100);
         if (response.success && response.data) {
           const products: DisplayProduct[] = response.data.map((p: Product) => {
-            const totalQty = p.stock_details?.length || 0;
-
-            // Aggregate stock by location
-            const locationMap = new Map<string, number>();
-            p.stock_details?.forEach((item) => {
-              const loc = `${item.warehouse_name} > ${item.room_name} > ${item.shelf_name}`;
-              locationMap.set(loc, (locationMap.get(loc) || 0) + 1);
-            });
-
-            const locationStrings = Array.from(locationMap.entries()).map(
-              ([loc, qty]) => `${loc} (${qty})`
-            );
-
             return {
               id: p.product_id,
               name: p.name,
               category: p.category || "Uncategorized",
-              sku: p.sku,
-              location: locationStrings.length > 0 ? locationStrings.join(", ") : "N/A",
-              quantity: totalQty,
+              sku: p.sku || "-----",
               image: p.product_image || "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200",
             };
           });
@@ -588,16 +571,14 @@ const ProductsPage = () => {
 
   const filtered = useMemo(() => {
     let d = data.filter((p) =>
-      `${p.name} ${p.sku} ${p.category} ${p.location}`
+      `${p.name} ${p.sku} ${p.category}`
         .toLowerCase()
         .includes(search.toLowerCase())
     );
 
     if (sortBy !== "none") {
       d = [...d].sort((a, b) =>
-        sortBy === "quantity"
-          ? b.quantity - a.quantity
-          : a[sortBy].localeCompare(b[sortBy])
+        a[sortBy].localeCompare(b[sortBy])
       );
     }
 
@@ -641,7 +622,7 @@ const ProductsPage = () => {
           <Search className="absolute left-3 top-3 text-gray-400" size={16} />
           <input
             className="w-full border rounded-lg pl-9 pr-3 py-2 text-sm"
-            placeholder="Search products"
+            placeholder="Search"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -660,62 +641,75 @@ const ProductsPage = () => {
           <option value="none">Sort By</option>
           <option value="name">Name</option>
           <option value="category">Category</option>
-          <option value="quantity">Quantity</option>
         </select>
       </div>
 
       {/* TABLE */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-100">
+          <thead className="bg-gray-100 text-left">
             <tr>
-              <th className="p-3">#</th>
-              <th className="p-3">Product</th>
+              <th className="p-3">Sr.no</th>
+              <th className="p-3">Product Name</th>
               <th className="p-3">Category</th>
-              <th className="p-3">SKU</th>
-              <th className="p-3">Location</th>
-              <th className="p-3">Qty</th>
+              <th className="p-3">SKU #</th>
               <th className="p-3"></th>
             </tr>
           </thead>
 
           <tbody>
-            {visible.map((p) => (
-              <tr key={p.id} className="border-b">
-                <td className="p-3">{p.id}</td>
-                <td className="p-3 flex gap-3 items-center">
-                  <img
-                    src={p.image}
-                    className="w-10 h-10 rounded-lg"
-                  />
-                  {p.name}
-                </td>
-                <td className="p-3">{p.category}</td>
-                <td className="p-3">{p.sku}</td>
-                <td className="p-3">{p.location}</td>
-                <td className="p-3">{p.quantity}</td>
-                <td className="p-3 flex gap-2">
-                  <button
-                    onClick={() => navigate(`/products/category/${p.category}`)}
-                    className="border p-1.5 rounded-lg"
-                  >
-                    <ChevronRight size={16} />
-                  </button>
-                  <button
-                    onClick={() => navigate(`/products/${p.id}`)}
-                    className="border p-1.5 rounded-lg"
-                  >
-                    <Pencil size={16} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(p.id)}
-                    className="border p-1.5 rounded-lg"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {visible.map((p, index) => {
+              // TODO: Add hasVariants field to product data to determine navigation
+              const hasVariants = p.category === "T-Shirts"; // Temporary logic
+
+              return (
+                <tr
+                  key={p.id}
+                  className="border-b hover:bg-gray-50 cursor-pointer"
+                  onClick={() => {
+                    if (hasVariants) {
+                      // Navigate to variants list
+                      navigate(`/products/variants/${p.id}`);
+                    } else {
+                      // Navigate to edit product
+                      navigate(`/products/edit/${p.id}`);
+                    }
+                  }}
+                >
+                  <td className="p-3">{(page - 1) * rows + index + 1}</td>
+                  <td className="p-3">
+                    <div className="flex gap-3 items-center">
+                      <img
+                        src={p.image}
+                        alt={p.name}
+                        className="w-10 h-10 rounded-lg object-cover"
+                      />
+                      <span className="font-medium">{p.name}</span>
+                    </div>
+                  </td>
+                  <td className="p-3 text-gray-600">{p.category}</td>
+                  <td className="p-3 text-gray-600">{p.sku}</td>
+                  <td className="p-3">
+                    <div className="flex gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => navigate(`/products/edit/${p.id}`)}
+                        className="border p-1.5 rounded-lg hover:bg-gray-100"
+                        title="Edit"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(p.id)}
+                        className="border p-1.5 rounded-lg hover:bg-gray-100"
+                        title="Delete"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

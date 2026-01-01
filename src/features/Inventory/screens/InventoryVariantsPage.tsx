@@ -43,7 +43,7 @@ const InventoryVariantsPage = () => {
     };
 
     return (
-        <div className="p-6">
+        <div className="">
             <div className="max-w-7xl mx-auto bg-white rounded-xl border p-6 space-y-5">
                 {/* NAVBAR */}
                 <InventoryNavbar

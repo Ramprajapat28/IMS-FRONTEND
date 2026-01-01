@@ -30,7 +30,7 @@ const Sidebar = () => {
       {/* MOBILE OVERLAY */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/30 z-40 md:hidden"
+          className="fixed inset-0 bg-black/30 z-40 xl:hidden"
           onClick={close}
         />
       )}
@@ -38,16 +38,16 @@ const Sidebar = () => {
       {/* SIDEBAR */}
       <aside
         className={`
-          fixed md:static top-0 left-0 z-50
+          fixed xl:static top-0 left-0 z-50
           w-64 h-screen bg-white border-r border-gray-200
           transform transition-transform duration-300
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          md:translate-x-0
+          xl:translate-x-0
           flex flex-col
         `}
       >
         {/* MOBILE CLOSE */}
-        <div className="md:hidden flex justify-end p-4">
+        <div className="xl:hidden flex justify-end p-4">
           <button onClick={close}>
             <X size={20} />
           </button>

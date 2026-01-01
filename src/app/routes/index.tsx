@@ -17,6 +17,8 @@ import { Order } from "@/features/Order";
 import { InventoryPage, InventoryVariantsPage } from "@/features/Inventory";
 import CategoryProducts from "@/features/Product/screens/CategoryProducts";
 import ProductDetails from "@/features/Product/screens/ProductDetails";
+import EditProduct from "@/features/Product/screens/EditProduct";
+import ProductVariantsPage from "@/features/Product/screens/ProductVariantsPage";
 
 export const AppRoutes = () => {
   return (
@@ -39,6 +41,8 @@ export const AppRoutes = () => {
         <Route path="/products/add" element={<AddProduct />} />
         <Route path="/products" element={<GroupItem />} />
         <Route path="/products/category/:name" element={<CategoryProducts />} />
+        <Route path="/products/variants/:id" element={<ProductVariantsPage />} />
+        <Route path="/products/edit/:id" element={<EditProduct />} />
         <Route path="/products/:id" element={<ProductDetails />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/profile" element={<Profile />} />

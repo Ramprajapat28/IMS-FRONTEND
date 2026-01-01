@@ -13,7 +13,7 @@ const Navbar: React.FC = () => {
         {/* MOBILE MENU */}
         <button
           onClick={open}
-          className="md:hidden p-2 rounded hover:bg-gray-100"
+          className="xl:hidden p-2 rounded hover:bg-gray-100"
         >
           <Menu size={22} />
         </button>
