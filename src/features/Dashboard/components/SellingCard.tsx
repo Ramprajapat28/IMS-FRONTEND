@@ -1,5 +1,5 @@
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { useState } from "react";
+
 // import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -9,7 +9,7 @@ type CardType = "top" | "least";
 type Trend = "up" | "down";
 
 const SellingCard = ({ title, type, products }: { title: string; type: CardType; products: SellingProduct[] }) => {
-  const [date, setDate] = useState<Date | null>(null);
+
   const isTop = type === "top";
 
   return (
@@ -70,7 +70,7 @@ const ProductRow = ({ product, trend }: { product: SellingProduct; trend?: Trend
     <div className="flex-1">
       <p className="font-medium">{product?.name || "Unknown Product"}</p>
       <p className="text-sm text-gray-500">
-        {product?.total_quantity || 0} Units sold
+        {product?.total_sold || 0} Units sold
       </p>
 
       <div className="mt-2">

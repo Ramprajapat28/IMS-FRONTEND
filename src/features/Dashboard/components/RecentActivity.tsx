@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ShoppingCart, MapPin, Loader2 } from "lucide-react";
 import { ordersApi } from "@/features/Order/api/order.api";
 import type { Order } from "@/features/Order/types";
+import { useNavigate } from "react-router-dom";
 
 const statusStyles: Record<string, string> = {
   Processing: "bg-purple-100 text-purple-600",
@@ -26,11 +27,12 @@ interface ActivityItem {
 const RecentActivity = () => {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchActivity = async () => {
       try {
-        const response = await ordersApi.getAll(1, 5);
+        const response = await ordersApi.getAll(1, 3);
         if (response.success && response.data) {
           const mappedActivities: ActivityItem[] = response.data.map((order: Order) => ({
             order_id: order.order_id,
@@ -65,7 +67,9 @@ const RecentActivity = () => {
           <h2 className="font-semibold">Recent Activities</h2>
         </div>
 
-        <button className="text-sm border rounded-lg px-3 py-1.5">
+        <button className="text-sm border rounded-lg px-3 py-1.5"
+        
+        onClick={() => navigate("/orders")}>
           View More
         </button>
       </div>
@@ -100,7 +104,8 @@ const ActivityItemRow = ({ item }: { item: ActivityItem }) => (
       <div className="min-w-0">
         <p className="font-medium truncate">{item.product_name}</p>
         <p className="text-sm text-gray-500 truncate">
-          Qty: {item.quantity} • {item.category}
+          
+          {item.category}
         </p>
       </div>
     </div>

@@ -1,9 +1,9 @@
 import { ShoppingCart } from "lucide-react";
-import FilterSelect from "./FilterSelect";
-import { useState } from "react";
+// import FilterSelect from "./FilterSelect";
+// import { useState } from "react";
 
 const InventoryByCategory = () => {
-    const [week, setWeek] = useState("Week");
+    // const [week, setWeek] = useState("Week");
   return (
     <div className="bg-white rounded-xl border w-full max-w-md">
       {/* HEADER */}
@@ -17,11 +17,12 @@ const InventoryByCategory = () => {
           </h2>
         </div>
         <div className="flex px-2 py-1.5">
-        <FilterSelect
+        {/* <FilterSelect
         value={week}
         onChange={setWeek}
         options={["Week", "Monday", "Tuesday", "Wednesday","Thusday", "Friday", "Saturday", "Sunday"]}
-      /></div>
+      /> */}
+      </div>
       </div>
 
       {/* CHART CONTAINER */}

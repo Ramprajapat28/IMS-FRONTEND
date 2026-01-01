@@ -3,13 +3,13 @@ import StatsCards from "../components/StatsCards";
 import InventoryChart from "../components/InventoryChart";
 import RecentActivity from "../components/RecentActivity";
 import SellingCard from "../components/SellingCard";
-import FilterSelect from "../components/FilterSelect";
+// import FilterSelect from "../components/FilterSelect";
 import { dashboardApi } from "../api/dashboard.api";
 import type { SellingProduct } from "../types";
 
 const Dashboard = () => {
-  const [month, setMonth] = useState("Month");
-  const [year, setYear] = useState("Year");
+  // const [month, setMonth] = useState("Month");
+  // const [year, setYear] = useState("Year");
   const [topSelling, setTopSelling] = useState<SellingProduct[]>([]);
   const [leastSelling, setLeastSelling] = useState<SellingProduct[]>([]);
 
@@ -42,7 +42,7 @@ const Dashboard = () => {
           </p>
         </div>
 
-        <div className="flex gap-3">
+        {/* <div className="flex gap-3">
           <FilterSelect
             value={month}
             onChange={setMonth}
@@ -53,7 +53,7 @@ const Dashboard = () => {
             onChange={setYear}
             options={["Year", "2023", "2024", "2025"]}
           />
-        </div>
+        </div> */}
       </div>
 
       {/* STATS */}
