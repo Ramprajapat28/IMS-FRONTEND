@@ -27,3 +27,18 @@ export interface CreateProductData {
     description?: string;
     reorder_level?: number;
 }
+
+export interface ProductFormData {
+    name: string;
+    sku: string;
+   
+    description: string;
+    image?: File;
+}
+
+export interface ProductGroup {
+    id: number;
+    name: string;
+    productIds: number[];
+    createdAt?: Date;
+}
