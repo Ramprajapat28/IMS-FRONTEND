@@ -2,12 +2,15 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2, Plus, ChevronLeft, Save } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
+import { categoriesApi, type Category } from "@/features/Product/api/category.api";
+import { itemsApi } from "@/features/Inventory/api/item.api";
 import { shelvesApi, roomsApi, warehousesApi, type Shelf, type Room, type Warehouse } from "@/features/Inventory/api/location.api";
 
 type ProductForm = {
     name: string;
     description: string;
     category: string;
+    category_id?: number;
     size: string;
     sku: string;
     quantity: string;
@@ -44,6 +47,7 @@ const EditProduct = () => {
     const [error, setError] = useState<string | null>(null);
 
     // Dropdown data
+    const [categories, setCategories] = useState<Category[]>([]);
     const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [shelves, setShelves] = useState<Shelf[]>([]);
@@ -63,10 +67,11 @@ const EditProduct = () => {
                     setForm({
                         name: product.name,
                         description: product.description || "",
-                        category: product.category || "",
-                        size: product.size || "", // TODO: Get from variant if applicable
+                        category: product.category_name || "",
+                        category_id: product.category_id,
+                        size: product.size || "",
                         sku: product.sku,
-                        quantity: String(product.stock_quantity || 0),
+                        quantity: "", // Reset quantity for "Add Stock", don't prefill with total stock
                         reorderLevel: String(product.reorder_level || 0),
                         warehouse_id: "",
                         room_id: "",
@@ -92,15 +97,31 @@ const EditProduct = () => {
     useEffect(() => {
         const fetchDropdownData = async () => {
             try {
-                const [warehousesRes, roomsRes, shelvesRes] = await Promise.all([
+                const [categoriesRes, warehousesRes, roomsRes, shelvesRes] = await Promise.all([
+                    categoriesApi.getAll(),
                     warehousesApi.getAll(1, 100),
                     roomsApi.getAll(1, 100),
                     shelvesApi.getAll(1, 100),
                 ]);
 
+                if (categoriesRes.success && categoriesRes.data) setCategories(categoriesRes.data);
                 if (warehousesRes.data) setWarehouses(warehousesRes.data);
-                if (roomsRes.rooms) setRooms(roomsRes.rooms);
-                if (shelvesRes.data) setShelves(shelvesRes.data);
+
+                if (roomsRes.rooms) {
+                    const mappedRooms = roomsRes.rooms.map((r: any) => ({
+                        ...r,
+                        name: r.room_name || r.name
+                    }));
+                    setRooms(mappedRooms);
+                }
+
+                if (shelvesRes.data) {
+                    const mappedShelves = shelvesRes.data.map((s: any) => ({
+                        ...s,
+                        name: s.shelf_name || s.name
+                    }));
+                    setShelves(mappedShelves);
+                }
             } catch (err) {
                 console.error("Failed to load dropdown data:", err);
             }
@@ -136,6 +157,18 @@ const EditProduct = () => {
         setForm((prev) => ({ ...prev, [key]: value }));
     };
 
+    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedId = Number(e.target.value);
+        const selectedCat = categories.find(c => c.category_id === selectedId);
+        if (selectedCat) {
+            setForm(prev => ({
+                ...prev,
+                category_id: selectedCat.category_id,
+                category: selectedCat.category_name
+            }));
+        }
+    };
+
     const handleImageUpload = (file: File) => {
         const url = URL.createObjectURL(file);
         setImagePreview(url);
@@ -155,29 +188,46 @@ const EditProduct = () => {
     };
 
     const handleSubmit = async () => {
-        if (!form.quantity || !form.warehouse_id || !form.room_id || !form.shelf_id) {
-            alert("Please fill all required fields");
-            return;
+        // Validation: basic fields required. Stock fields optional if quantity is 0 or empty.
+        // If quantity is provided, warehouse info is required.
+        const stockQuantity = parseInt(form.quantity) || 0;
+
+        if (stockQuantity > 0) {
+            if (!form.warehouse_id || !form.room_id || !form.shelf_id) {
+                alert("Please select a location to add stock.");
+                return;
+            }
         }
 
         setIsSubmitting(true);
+        setError(null);
+
         try {
-            // TODO: Implement actual update logic with API
             const formData = new FormData();
             formData.append("name", form.name);
             formData.append("sku", form.sku);
-            formData.append("category", form.category);
+            formData.append("category_name", form.category);
+            if (form.category_id) formData.append("category_id", String(form.category_id));
             if (form.description) formData.append("description", form.description);
+            if (form.size) formData.append("size", form.size);
             if (form.reorderLevel) formData.append("reorder_level", form.reorderLevel);
 
             if (selectedFile) {
                 formData.append("image", selectedFile);
             }
 
-            // await productsApi.update(Number(id), formData);
-            // await itemsApi.addStock({ product_id: Number(id), shelf_id: Number(form.shelf_id), quantity: Number(form.quantity) });
+            // 1. Update Product Details
+            await productsApi.update(Number(id), formData);
 
-            console.log("Saving product:", form);
+            // 2. Add Stock if quantity is specified
+            if (stockQuantity > 0) {
+                await itemsApi.addStock({
+                    product_id: Number(id),
+                    shelf_id: Number(form.shelf_id),
+                    quantity: stockQuantity
+                });
+            }
+
             navigate("/products");
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to update product");
@@ -257,19 +307,31 @@ const EditProduct = () => {
                                     Product Category:
                                 </label>
                                 <select
-                                    value={form.category}
-                                    onChange={(e) => updateField("category", e.target.value)}
+                                    value={form.category_id || ""}
+                                    onChange={handleCategoryChange}
                                     className="w-48 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                                 >
-                                    <option value="">Size</option>
-                                    <option value="T-Shirts">T-Shirts</option>
-                                    <option value="Caps">Caps</option>
-                                    <option value="Bottles">Bottles</option>
-                                    <option value="Mugs">Mugs</option>
-                                    <option value="Cases">Cases</option>
-                                    <option value="Bags">Bags</option>
-                                    <option value="Phone">Phone</option>
-                                    <option value="Furniture">Furniture</option>
+                                    {/* Current Selection (hidden in list) */}
+                                    {form.category_id ? (
+                                        <option value={form.category_id} hidden>
+                                            {form.category}
+                                        </option>
+                                    ) : (
+                                        <option value="" disabled>Select Category</option>
+                                    )}
+
+                                    {/* Available Options (excluding current) */}
+                                    {categories.map((c) => (
+                                        c.category_id !== form.category_id && (
+                                            <option key={c.category_id} value={c.category_id}>
+                                                {c.category_name}
+                                            </option>
+                                        )
+                                    ))}
+
+                                    {categories.length === 0 && (
+                                        <option value="" disabled>Loading...</option>
+                                    )}
                                 </select>
                             </div>
 
@@ -283,7 +345,10 @@ const EditProduct = () => {
                                     onChange={(e) => updateField("size", e.target.value)}
                                     className="w-48 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                                 >
-                                    <option value="">Size</option>
+                                    <option value="">{form.size || "Select Size"}</option>
+                                    {form.size && !["S", "M", "L", "XL", "XXL"].includes(form.size) && (
+                                        <option value={form.size}>{form.size}</option>
+                                    )}
                                     <option value="S">Small</option>
                                     <option value="M">Medium</option>
                                     <option value="L">Large</option>
@@ -383,7 +448,7 @@ const EditProduct = () => {
                         {/* Quantity */}
                         <div>
                             <label className="text-sm font-medium text-gray-700 mb-2 block">
-                                Update Quantity <span className="text-red-500">*</span>
+                                Add Stock Quantity <span className="text-xs text-gray-500 font-normal">(Optional - leave 0 to only update details)</span>
                             </label>
                             <input
                                 type="number"
@@ -459,9 +524,19 @@ const EditProduct = () => {
                                         disabled={!form.warehouse_id}
                                         className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                                     >
-                                        <option value="">Select Room</option>
+                                        {/* Current Selection */}
+                                        {form.room_id ? (
+                                            <option value={form.room_id} hidden>
+                                                {filteredRooms.find(r => String(r.room_id) === String(form.room_id))?.name || "Selected Room"}
+                                            </option>
+                                        ) : (
+                                            <option value="">Select Room</option>
+                                        )}
+
                                         {filteredRooms.map(r => (
-                                            <option key={r.room_id} value={r.room_id}>{r.name}</option>
+                                            String(r.room_id) !== String(form.room_id) && (
+                                                <option key={r.room_id} value={r.room_id}>{r.name}</option>
+                                            )
                                         ))}
                                     </select>
                                     {!form.warehouse_id && (
@@ -487,9 +562,19 @@ const EditProduct = () => {
                                         disabled={!form.room_id}
                                         className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                                     >
-                                        <option value="">Select Shelf</option>
+                                        {/* Current Selection */}
+                                        {form.shelf_id ? (
+                                            <option value={form.shelf_id} hidden>
+                                                {filteredShelves.find(s => String(s.shelf_id) === String(form.shelf_id))?.name || "Selected Shelf"}
+                                            </option>
+                                        ) : (
+                                            <option value="">Select Shelf</option>
+                                        )}
+
                                         {filteredShelves.map(s => (
-                                            <option key={s.shelf_id} value={s.shelf_id}>{s.name}</option>
+                                            String(s.shelf_id) !== String(form.shelf_id) && (
+                                                <option key={s.shelf_id} value={s.shelf_id}>{s.name}</option>
+                                            )
                                         ))}
                                     </select>
                                     {!form.room_id && form.warehouse_id && (

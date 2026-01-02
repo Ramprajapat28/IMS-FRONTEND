@@ -29,10 +29,10 @@ export const productsApi = {
         });
     },
 
-    update: async (id: number, data: Partial<CreateProductData>) => {
+    update: async (id: number, data: Partial<CreateProductData> | FormData) => {
         return apiRequest<ApiResponse<Product>>(`/api/products/update/${id}`, {
             method: 'PUT',
-            body: JSON.stringify(data),
+            body: data instanceof FormData ? data : JSON.stringify(data),
         });
     },
 
