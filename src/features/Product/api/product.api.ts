@@ -18,6 +18,10 @@ export const productsApi = {
         return apiRequest<ApiResponse<Product>>(`/api/products/${id}`);
     },
 
+    getDetails: async (id: number) => {
+        return apiRequest<ApiResponse<Product>>(`/api/products/productDetails/${id}`);
+    },
+
     getBySku: async (sku: string) => {
         return apiRequest<ApiResponse<Product>>(`/api/products/sku/${sku}`);
     },
