@@ -30,3 +30,9 @@ export interface DashboardAnalytics {
     leastSelling: SellingProduct[];
     stockStatus?: StockStatusResponse;
 }
+
+export interface CategoryCount {
+    category_id: number;
+    category_name: string;
+    total_products: number;
+}

@@ -6,7 +6,7 @@ import SellingCard from "../components/SellingCard";
 // import FilterSelect from "../components/FilterSelect";
 // import StockAlerts from "../components/StockAlerts";
 import { dashboardApi } from "../api/dashboard.api";
-import type { SellingProduct, StockStatusCounts } from "../types";
+import type { SellingProduct, StockStatusCounts, CategoryCount } from "../types";
 
 const Dashboard = () => {
   // const [month, setMonth] = useState("Month");
@@ -18,16 +18,18 @@ const Dashboard = () => {
   // const [stockAlerts, setStockAlerts] = useState<StockProduct[]>([]);
   const [totalProducts, setTotalProducts] = useState<number>(0);
   const [totalOrders, setTotalOrders] = useState<number>(0);
+  const [categoryCounts, setCategoryCounts] = useState<CategoryCount[]>([]);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const [topRes, leastRes, stockRes, totalProdRes, totalOrdRes] = await Promise.all([
+        const [topRes, leastRes, stockRes, totalProdRes, totalOrdRes, categoryRes] = await Promise.all([
           dashboardApi.getTopSelling(),
           dashboardApi.getLeastSelling(),
           dashboardApi.getStockStatus(),
           dashboardApi.getTotalProducts(),
           dashboardApi.getTotalOrders(),
+          dashboardApi.getCategoryCount(),
         ]);
 
         if (topRes.success && topRes.data) setTopSelling(topRes.data);
@@ -38,6 +40,14 @@ const Dashboard = () => {
         }
         if (totalProdRes.success && totalProdRes.data) setTotalProducts(totalProdRes.data.totalProducts);
         if (totalOrdRes.success && totalOrdRes.data) setTotalOrders(totalOrdRes.data.totalOrder);
+
+        console.log("Category Response:", categoryRes);
+        if (categoryRes.success && categoryRes.data) {
+          console.log("Setting category counts:", categoryRes.data);
+          setCategoryCounts(categoryRes.data);
+        } else {
+          console.error("Failed to load category counts", categoryRes);
+        }
 
       } catch (err) {
         console.error("Failed to fetch dashboard analytics:", err);
@@ -83,7 +93,7 @@ const Dashboard = () => {
       {/* MAIN GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* LEFT */}
-        <InventoryChart />
+        <InventoryChart categories={categoryCounts} />
 
         {/* RIGHT */}
         <div className="flex flex-col gap-6 lg:col-span-2">

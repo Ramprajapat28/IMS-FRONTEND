@@ -18,4 +18,7 @@ export const dashboardApi = {
     getTotalOrders: async () => {
         return apiRequest<ApiResponse<{ totalOrder: number }>>('/api/dashboard/total_order');
     },
+    getCategoryCount: async () => {
+        return apiRequest<ApiResponse<import('../types').CategoryCount[]>>('/api/dashboard/category_count');
+    },
 };
