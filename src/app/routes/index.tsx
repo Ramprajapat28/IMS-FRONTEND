@@ -10,11 +10,11 @@ import {
   Notifications,
 } from "@/features/Settings";
 import { BarcodeGenerate, BarcodeHistory } from "@/features/Barcode";
-import { AddProduct, GroupItem } from "@/features/Product";
+import { AddProduct, GroupItem, ProductCategoriesPage } from "@/features/Product";
 import { Reports } from "@/features/Report";
 import { Profile } from "@/features/Profile";
 import { Order } from "@/features/Order";
-import { InventoryPage, InventoryVariantsPage } from "@/features/Inventory";
+import { InventoryPage, InventoryVariantsPage, InventoryCategoriesPage } from "@/features/Inventory";
 import CategoryProducts from "@/features/Product/screens/CategoryProducts";
 import EditProduct from "@/features/Product/screens/EditProduct";
 import ProductVariantsPage from "@/features/Product/screens/ProductVariantsPage";
@@ -32,18 +32,26 @@ export const AppRoutes = () => {
       {/* Main Dashboard Layout */}
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/inventory" element={<InventoryPage />} />
+
+        {/* Inventory Routes - Start with categories */}
+        <Route path="/inventory" element={<InventoryCategoriesPage />} />
+        <Route path="/inventory/category/:categoryId" element={<InventoryPage />} />
         <Route path="/inventory/variants/:productId" element={<InventoryVariantsPage />} />
+
         <Route path="/orders" element={<Order />} />
         <Route path="/barcode/generate" element={<BarcodeGenerate />} />
         <Route path="/barcode/history" element={<BarcodeHistory />} />
         <Route path="/barcode/scanner" element={<BarcodeHistory />} />
         <Route path="/products/add" element={<AddProduct />} />
-        <Route path="/products" element={<GroupItem />} />
+
+        {/* Products Routes - Start with categories */}
+        <Route path="/products" element={<ProductCategoriesPage />} />
+        <Route path="/products/category/:categoryId" element={<GroupItem />} />
         <Route path="/products/category/:name" element={<CategoryProducts />} />
         <Route path="/products/variants/:id" element={<ProductVariantsPage />} />
         <Route path="/products/edit/:id" element={<EditProduct />} />
         <Route path="/products/details/:id" element={<ProductDetailsPage />} />
+
         <Route path="/reports" element={<Reports />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/help" element={<HelpSupport />} />

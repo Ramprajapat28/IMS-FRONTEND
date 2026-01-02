@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Search } from "lucide-react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { Search, ChevronLeft } from "lucide-react";
 import InventoryNavbar from "../components/InventoryNavbar";
 import InventoryTable from "../components/InventoryTable";
 import InventoryFooter from "../components/InventoryFooter";
@@ -8,6 +8,9 @@ import { INVENTORY_PRODUCTS, type InventoryProduct } from "../data/inventory.dat
 
 const InventoryPage = () => {
     const navigate = useNavigate();
+    const { categoryId } = useParams();
+    const location = useLocation();
+    const categoryName = location.state?.categoryName || categoryId?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
     const [data, setData] = useState<InventoryProduct[]>(INVENTORY_PRODUCTS);
     const [search, setSearch] = useState("");
@@ -15,9 +18,18 @@ const InventoryPage = () => {
     const [page, setPage] = useState(1);
     const [rows, setRows] = useState(10);
 
-    // Filter and sort
+    // Filter by category if categoryId exists, then apply search and sort
     const filtered = useMemo(() => {
-        let d = data.filter((p) =>
+        let d = data;
+
+        // Filter by category if provided
+        if (categoryId) {
+            const categoryFilter = categoryId.replace(/-/g, ' ').toLowerCase();
+            d = d.filter((p) => p.category.toLowerCase().includes(categoryFilter));
+        }
+
+        // Apply search filter
+        d = d.filter((p) =>
             `${p.name} ${p.sku} ${p.category} ${p.location}`
                 .toLowerCase()
                 .includes(search.toLowerCase())
@@ -32,7 +44,7 @@ const InventoryPage = () => {
         }
 
         return d;
-    }, [data, search, sortBy]);
+    }, [data, search, sortBy, categoryId]);
 
     // Pagination
     const totalPages = Math.ceil(filtered.length / rows);
@@ -52,9 +64,24 @@ const InventoryPage = () => {
     return (
         <div className="">
             <div className="max-w-7xl mx-auto bg-white rounded-xl border p-4 space-y-5">
+                {/* Back button if viewing category */}
+                {categoryId && (
+                    <button
+                        onClick={() => navigate("/inventory")}
+                        className="flex items-center text-gray-600 hover:text-gray-900 text-sm mb-2"
+                    >
+                        <ChevronLeft className="w-4 h-4 mr-1" />
+                        Back to Categories
+                    </button>
+                )}
+
                 {/* NAVBAR */}
                 <InventoryNavbar
-                    breadcrumbs={[
+                    breadcrumbs={categoryId ? [
+                        { label: "Dashboard", path: "/dashboard" },
+                        { label: "Inventory", path: "/inventory" },
+                        { label: categoryName || "Category" },
+                    ] : [
                         { label: "Dashboard", path: "/dashboard" },
                         { label: "Inventory" },
                     ]}

@@ -11,7 +11,6 @@ type ProfileData = {
   firstName: string;
   lastName: string;
   email: string;
-  address: string;
   phone: string;
   dob: string;
   location: string;
@@ -26,7 +25,6 @@ const DEFAULT_PROFILE: ProfileData = {
   firstName: "Admin",
   lastName: "User",
   email: "abc@gmail.com",
-  address: "305, Parker Road, etc...",
   phone: "+91 00990 99009",
   dob: "1 Jan, 2004",
   location: "Mumbai, INDIA",
@@ -151,9 +149,8 @@ const Profile = () => {
             <Input label="First Name" value={formProfile.firstName} onChange={(v) => handleChange("firstName", v)} />
             <Input label="Last Name" value={formProfile.lastName} onChange={(v) => handleChange("lastName", v)} />
             <Input label="E-mail" value={formProfile.email} onChange={(v) => handleChange("email", v)} full />
-            <Input label="Address" value={formProfile.address} onChange={(v) => handleChange("address", v)} full />
             <Input label="Phone Number" value={formProfile.phone} onChange={(v) => handleChange("phone", v)} />
-            <Input label="DOB" value={formProfile.dob} onChange={(v) => handleChange("dob", v)} />
+            <Input label="Date of Birth" value={formProfile.dob} onChange={(v) => handleChange("dob", v)} />
             <Input label="Location" value={formProfile.location} onChange={(v) => handleChange("location", v)} />
             <Input label="Postal Code" value={formProfile.postalCode} onChange={(v) => handleChange("postalCode", v)} />
           </div>
