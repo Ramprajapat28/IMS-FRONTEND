@@ -49,4 +49,10 @@ export const productsApi = {
     getBarcode: async (barcode: string): Promise<Blob> => {
         return apiRequest<Blob>(`/api/products/barcode/${barcode}`);
     },
+
+    getByCategoryWithStock: async (categoryName: string, page = 1, limit = 10) => {
+        return apiRequest<ApiResponse<Product[]> & { pagination: PaginationInfo }>(
+            `/api/products/category/${categoryName}/with-stock?page=${page}&limit=${limit}`
+        );
+    },
 };
