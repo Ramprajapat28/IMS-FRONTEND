@@ -64,16 +64,6 @@ const InventoryPage = () => {
     return (
         <div className="">
             <div className="max-w-7xl mx-auto bg-white rounded-xl border p-4 space-y-5">
-                {/* Back button if viewing category */}
-                {categoryId && (
-                    <button
-                        onClick={() => navigate("/inventory")}
-                        className="flex items-center text-gray-600 hover:text-gray-900 text-sm mb-2"
-                    >
-                        <ChevronLeft className="w-4 h-4 mr-1" />
-                        Back to Categories
-                    </button>
-                )}
 
                 {/* NAVBAR */}
                 <InventoryNavbar

@@ -10,7 +10,7 @@ import {
   Notifications,
 } from "@/features/Settings";
 import { BarcodeGenerate, BarcodeHistory } from "@/features/Barcode";
-import { AddProduct, GroupItem, ProductCategoriesPage } from "@/features/Product";
+import { AddProduct, GroupItem } from "@/features/Product";
 import { Reports } from "@/features/Report";
 import { Profile } from "@/features/Profile";
 import { Order } from "@/features/Order";
@@ -33,7 +33,7 @@ export const AppRoutes = () => {
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
 
-        {/* Inventory Routes - Start with categories */}
+        {/* Inventory Routes - WITH categories */}
         <Route path="/inventory" element={<InventoryCategoriesPage />} />
         <Route path="/inventory/category/:categoryId" element={<InventoryPage />} />
         <Route path="/inventory/variants/:productId" element={<InventoryVariantsPage />} />
@@ -42,11 +42,10 @@ export const AppRoutes = () => {
         <Route path="/barcode/generate" element={<BarcodeGenerate />} />
         <Route path="/barcode/history" element={<BarcodeHistory />} />
         <Route path="/barcode/scanner" element={<BarcodeHistory />} />
-        <Route path="/products/add" element={<AddProduct />} />
 
-        {/* Products Routes - Start with categories */}
-        <Route path="/products" element={<ProductCategoriesPage />} />
-        <Route path="/products/category/:categoryId" element={<GroupItem />} />
+        {/* Products Routes - WITHOUT categories (back to original) */}
+        <Route path="/products" element={<GroupItem />} />
+        <Route path="/products/add" element={<AddProduct />} />
         <Route path="/products/category/:name" element={<CategoryProducts />} />
         <Route path="/products/variants/:id" element={<ProductVariantsPage />} />
         <Route path="/products/edit/:id" element={<EditProduct />} />

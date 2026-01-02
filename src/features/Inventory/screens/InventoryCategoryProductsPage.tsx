@@ -1,5 +1,5 @@
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { ChevronLeft, Search, Filter } from "lucide-react";
+import {  Search, Filter } from "lucide-react";
 import { useState } from "react";
 
 // Mock data - replace with actual API call
@@ -32,17 +32,6 @@ const InventoryCategoryProductsPage = () => {
     return (
         <div className="max-w-7xl mx-auto">
             {/* Header */}
-            <div className="mb-6">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="flex items-center text-gray-600 hover:text-gray-900 mb-3 text-sm"
-                >
-                    <ChevronLeft className="w-4 h-4 mr-1" />
-                    Back to Categories
-                </button>
-                <h1 className="text-2xl font-bold text-blue-600">{categoryName} - Inventory</h1>
-                <p className="text-sm text-gray-600 mt-1">{filteredProducts.length} items in stock</p>
-            </div>
 
             {/* Search and Filter */}
             <div className="bg-white rounded-xl border p-4 mb-6">

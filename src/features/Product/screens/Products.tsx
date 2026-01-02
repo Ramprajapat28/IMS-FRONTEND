@@ -500,8 +500,8 @@
 
 // export default ProductsPage;
 import { useEffect, useMemo, useState } from "react";
-import { Search, Pencil, Trash2, Loader2, ChevronLeft } from "lucide-react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { Search, Pencil, Trash2, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import ProductsNavbar from "../components/ProductsNavbar";
 import ProductsFooter from "../components/ProductsFooter";
 import { productsApi } from "@/features/Product/api/product.api";
@@ -519,9 +519,6 @@ interface DisplayProduct {
 
 const ProductsPage = () => {
   const navigate = useNavigate();
-  const { categoryId } = useParams();
-  const location = useLocation();
-  const categoryName = location.state?.categoryName || categoryId?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   const [data, setData] = useState<DisplayProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -575,16 +572,7 @@ const ProductsPage = () => {
   };
 
   const filtered = useMemo(() => {
-    let d = data;
-
-    // Filter by category if provided
-    if (categoryId) {
-      const categoryFilter = categoryId.replace(/-/g, ' ').toLowerCase();
-      d = d.filter((p) => p.category_name.toLowerCase().includes(categoryFilter));
-    }
-
-    // Apply search filter
-    d = d.filter((p) =>
+    let d = data.filter((p) =>
       `${p.name} ${p.sku} ${p.category_name}`
         .toLowerCase()
         .includes(search.toLowerCase())
@@ -599,7 +587,7 @@ const ProductsPage = () => {
     }
 
     return d;
-  }, [data, search, sortBy, categoryId]);
+  }, [data, search, sortBy]);
 
   const totalPages = Math.ceil(filtered.length / rows);
   const visible = filtered.slice((page - 1) * rows, page * rows);
@@ -625,23 +613,8 @@ const ProductsPage = () => {
 
   return (
     <div className="bg-white rounded-xl border p-6 space-y-5">
-      {/* Back button if viewing category */}
-      {categoryId && (
-        <button
-          onClick={() => navigate("/products")}
-          className="flex items-center text-gray-600 hover:text-gray-900 text-sm mb-2"
-        >
-          <ChevronLeft className="w-4 h-4 mr-1" />
-          Back to Categories
-        </button>
-      )}
-
       <ProductsNavbar
-        breadcrumbs={categoryId ? [
-          { label: "Dashboard", path: "/dashboard" },
-          { label: "Products", path: "/products" },
-          { label: categoryName || "Category" },
-        ] : [
+        breadcrumbs={[
           { label: "Dashboard", path: "/dashboard" },
           { label: "Products" },
         ]}
