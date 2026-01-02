@@ -14,7 +14,7 @@ import { AddProduct, GroupItem } from "@/features/Product";
 import { Reports } from "@/features/Report";
 import { Profile } from "@/features/Profile";
 import { Order } from "@/features/Order";
-import { InventoryPage, InventoryVariantsPage, InventoryCategoriesPage } from "@/features/Inventory";
+import { InventoryPage, InventoryCategoriesPage } from "@/features/Inventory";
 import CategoryProducts from "@/features/Product/screens/CategoryProducts";
 import EditProduct from "@/features/Product/screens/EditProduct";
 import ProductVariantsPage from "@/features/Product/screens/ProductVariantsPage";
@@ -36,7 +36,7 @@ export const AppRoutes = () => {
         {/* Inventory Routes - WITH categories */}
         <Route path="/inventory" element={<InventoryCategoriesPage />} />
         <Route path="/inventory/category/:categoryId" element={<InventoryPage />} />
-        <Route path="/inventory/variants/:productId" element={<InventoryVariantsPage />} />
+        {/* <Route path="/inventory/variants/:productId" element={<InventoryVariantsPage />} /> */}
 
         <Route path="/orders" element={<Order />} />
         <Route path="/barcode/generate" element={<BarcodeGenerate />} />

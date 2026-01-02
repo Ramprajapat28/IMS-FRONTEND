@@ -49,11 +49,7 @@ const InventoryTable = ({ data, mode, onDelete, onRowClick }: InventoryTableProp
 
                             <td className="p-3">
                                 <div className="flex items-center gap-3 min-w-[220px]">
-                                    <img
-                                        src={item.image}
-                                        alt={item.name}
-                                        className="w-10 h-10 rounded-lg object-cover"
-                                    />
+
                                     <span className="font-medium">{item.name}</span>
                                 </div>
                             </td>

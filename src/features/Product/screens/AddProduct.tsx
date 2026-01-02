@@ -2,7 +2,7 @@ import { ArrowLeft, Loader2, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { productsApi } from "@/features/Product/api/product.api";
-import { categoriesApi, type Category } from "@/features/Product/api/category.api";
+import { categoriesApi, type Category } from "@/features/Inventory/api/category.api";
 
 /* ----------------------------- TYPES ----------------------------- */
 type ProductForm = {

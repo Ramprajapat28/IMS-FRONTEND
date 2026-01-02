@@ -4,7 +4,7 @@ import {
     Package, Shirt, Droplet, Briefcase, Coffee, Smartphone, ArrowRight,
     Box, Loader2
 } from "lucide-react";
-import { categoriesApi } from "@/features/Product/api/category.api";
+import { categoriesApi } from "@/features/Inventory/api/category.api";
 
 interface CategoryUI {
     id: string; // Keep as string for URL/routing

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2, Plus, ChevronLeft, Save } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
-import { categoriesApi, type Category } from "@/features/Product/api/category.api";
+import { categoriesApi, type Category } from "@/features/Inventory/api/category.api";
 import { itemsApi } from "@/features/Inventory/api/item.api";
 import { shelvesApi, roomsApi, warehousesApi, type Shelf, type Room, type Warehouse } from "@/features/Inventory/api/location.api";
 

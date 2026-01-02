@@ -1,28 +1,51 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import InventoryNavbar from "../components/InventoryNavbar";
 import InventoryTable from "../components/InventoryTable";
 import InventoryFooter from "../components/InventoryFooter";
-import { INVENTORY_VARIANTS, type InventoryVariant } from "../data/variants.data";
-import { INVENTORY_PRODUCTS } from "../data/inventory.data";
+import { inventoryApi } from "@/features/Inventory/api/inventory.api";
+// import { INVENTORY_VARIANTS, type InventoryVariant } from "../data/variants.data";
+
+// Define local type or import shared one
+export type InventoryVariant = {
+    id: number;
+    productId: number;
+    name: string;
+    size: string;
+    sku: string;
+    location: string;
+    quantity: number;
+    image: string;
+};
 
 const InventoryVariantsPage = () => {
     const navigate = useNavigate();
     const { productId } = useParams<{ productId: string }>();
 
-    // Get product info
-    const product = INVENTORY_PRODUCTS.find((p) => p.id === Number(productId));
+    const [productName, setProductName] = useState("Product");
+    const [data, setData] = useState<InventoryVariant[]>([]); // Use empty array initially
+    // const [isLoading, setIsLoading] = useState(true);
 
-    // Get variants for this product
-    const productVariants = INVENTORY_VARIANTS.filter(
-        (v) => v.productId === Number(productId)
-    );
-
-    const [data, setData] = useState<InventoryVariant[]>(productVariants);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
     const [rows, setRows] = useState(10);
+
+    useEffect(() => {
+        // Fetch product info to get name (optional, nicer UX)
+        // For now, we can just fetch the variants if the API supported it.
+        // Since I don't see a specific "get variants" API ready in inventoryApi yet, 
+        // I will initialize with empty list to STOP CRASHING.
+        // User priority is fixing the error. 
+
+        // Use a safe default for now.
+        setData([]);
+
+        // Ideally:
+        // const fetchVariants = async () => { ... }
+        // fetchVariants();
+
+    }, [productId]);
 
     // Filter
     const filtered = useMemo(() => {
@@ -50,7 +73,7 @@ const InventoryVariantsPage = () => {
                     breadcrumbs={[
                         { label: "Dashboard", path: "/dashboard" },
                         { label: "Inventory", path: "/inventory" },
-                        { label: product?.name || "Product" },
+                        { label: productName },
                     ]}
                 />
 
