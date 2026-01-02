@@ -9,7 +9,7 @@ import {
   HelpSupport,
   Notifications,
 } from "@/features/Settings";
-import { BarcodeGenerate, BarcodeHistory } from "@/features/Barcode";
+import { BarcodeGenerate, BarcodeHistory, BarcodeScanner } from "@/features/Barcode";
 import { AddProduct, GroupItem } from "@/features/Product";
 import { Reports } from "@/features/Report";
 import { Profile } from "@/features/Profile";
@@ -41,7 +41,7 @@ export const AppRoutes = () => {
         <Route path="/orders" element={<Order />} />
         <Route path="/barcode/generate" element={<BarcodeGenerate />} />
         <Route path="/barcode/history" element={<BarcodeHistory />} />
-        <Route path="/barcode/scanner" element={<BarcodeHistory />} />
+        <Route path="/barcode/scanner" element={<BarcodeScanner />} />
 
         {/* Products Routes - WITHOUT categories (back to original) */}
         <Route path="/products" element={<GroupItem />} />

@@ -6,22 +6,28 @@ import {
     Image as ImageIcon,
     Edit3,
     ChevronDown,
+    Loader2
 } from "lucide-react";
 import { BrowserMultiFormatReader, type IScannerControls } from "@zxing/browser";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import ProductSoldSuccess from "./ProductSoldSuccess";
+import { productsApi } from "@/features/Product/api/product.api";
+import { itemsApi } from "@/features/Inventory/api/item.api";
+import type { Product } from "@/features/Product/types";
 
 /* ---------------- Types ---------------- */
 
 type Mode = "camera" | "upload";
 
-interface ProductInfo {
-    name: string;
-    category: string;
-    size: string;
-    sku: string;
-    image: string;
+interface StockLocation {
+    warehouse_id: number;
+    warehouse_name: string;
+    room_id: number;
+    room_name: string;
+    shelf_id: number;
+    shelf_name: string;
+    item_count: number;
 }
 
 /* ---------------- Component ---------------- */
@@ -36,13 +42,83 @@ const BarcodeScannerPage: React.FC = () => {
     const controlsRef = useRef<IScannerControls | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const [product, setProduct] = useState<ProductInfo | null>(null);
+    // State
+    const [product, setProduct] = useState<Product | null>(null);
+    const [stockDetails, setStockDetails] = useState<StockLocation[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [sold, setSold] = useState(false);
     const [dragActive, setDragActive] = useState(false);
 
+    // Selection State
+    const [selectedWarehouseId, setSelectedWarehouseId] = useState<number | "">("");
+    const [selectedRoomId, setSelectedRoomId] = useState<number | "">("");
+    const [selectedShelfId, setSelectedShelfId] = useState<number | "">("");
+    const [sellingMode, setSellingMode] = useState<"Online" | "Offline">("Online");
+
+    const [isSelling, setIsSelling] = useState(false);
+
+
+    /* ---------------- API CALLS ---------------- */
+
+    const fetchProductBySku = async (sku: string) => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            // 1. Get Product Basic Info
+            const res = await productsApi.getBySku(sku);
+            if (res.success && res.data) {
+                const prod = res.data;
+                setProduct(prod);
+
+                // 2. Get Full Details (Stock)
+                // We need the ID from the first call to get details
+                if (prod.product_id) {
+                    const detailRes = await productsApi.getDetails(prod.product_id);
+                    if (detailRes.success && detailRes.data && detailRes.data.stock_details) {
+                        setStockDetails(detailRes.data.stock_details as any);
+                    }
+                }
+            } else {
+                setError("Product not found");
+                setProduct(null);
+            }
+        } catch (err: any) {
+            console.error(err);
+            setError("Failed to fetch product. " + (err.message || ""));
+            setProduct(null);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleSell = async () => {
+        if (!product || !selectedShelfId) return;
+
+        setIsSelling(true);
+        try {
+            const res = await itemsApi.removeStock({
+                product_id: product.product_id,
+                shelf_id: Number(selectedShelfId),
+                quantity: 1,
+                status: 'sold'
+            });
+
+            if (res.success) {
+                setSold(true);
+            } else {
+                alert("Failed to sell item: " + res.message);
+            }
+        } catch (err: any) {
+            alert("Error processing sale: " + err.message);
+        } finally {
+            setIsSelling(false);
+        }
+    };
+
     /* ---------------- CAMERA SCAN ---------------- */
     useEffect(() => {
-        if (mode !== "camera" || !videoRef.current || product) return;
+        if (mode !== "camera" || !videoRef.current || product || isLoading) return;
 
         const reader = new BrowserMultiFormatReader();
 
@@ -52,16 +128,11 @@ const BarcodeScannerPage: React.FC = () => {
             (result, _err, controls) => {
                 if (result) {
                     controlsRef.current = controls;
-
-                    setProduct({
-                        name: "Blue Jersey T-shirt",
-                        category: "T-shirts",
-                        size: "MEDIUM",
-                        sku: result.getText(),
-                        image: "https://via.placeholder.com/140x170.png",
-                    });
-
-                    controls.stop();
+                    const text = result.getText();
+                    if (text) {
+                        controls.stop();
+                        fetchProductBySku(text);
+                    }
                 }
             }
         );
@@ -69,22 +140,26 @@ const BarcodeScannerPage: React.FC = () => {
         return () => {
             controlsRef.current?.stop();
         };
-    }, [mode, product]);
+    }, [mode, product, isLoading]);
 
     /* ---------------- IMAGE UPLOAD ---------------- */
-    const handleFiles = (files: FileList | null) => {
+    // Simulating scan from image (not implementing OCR for now unless library supports it easily, 
+    // replacing with manual SKU entry simulation if image uploaded for demo purpose or just keeping existing mock?)
+    // Actually BrowserMultiFormatReader can decode from image too.
+    const handleFiles = async (files: FileList | null) => {
         if (!files || files.length === 0) return;
+        const imageFile = files[0];
 
-        const image = files[0];
-        if (!image.type.startsWith("image/")) return;
-
-        setProduct({
-            name: "Blue Jersey T-shirt",
-            category: "T-shirts",
-            size: "MEDIUM",
-            sku: "TS01-BL-M",
-            image: URL.createObjectURL(image),
-        });
+        // Decode from image
+        const reader = new BrowserMultiFormatReader();
+        try {
+            const result = await reader.decodeFromImageUrl(URL.createObjectURL(imageFile));
+            if (result) {
+                fetchProductBySku(result.getText());
+            }
+        } catch (e) {
+            alert("Could not detect barcode in image");
+        }
     };
 
     const handleDrag = (e: React.DragEvent) => {
@@ -100,14 +175,29 @@ const BarcodeScannerPage: React.FC = () => {
         handleFiles(e.dataTransfer.files);
     };
 
-    /* ---------------- CLEANUP IMAGE PREVIEW ---------------- */
-    useEffect(() => {
-        return () => {
-            if (product?.image?.startsWith("blob:")) {
-                URL.revokeObjectURL(product.image);
-            }
-        };
-    }, [product]);
+    /* ---------------- DROPDOWN LOGIC ---------------- */
+    // Unique Warehouses
+    const uniqueWarehouses = Array.from(new Set(stockDetails.map(s => s.warehouse_id)))
+        .filter(id => id !== undefined && id !== null)
+        .map(id => stockDetails.find(s => s.warehouse_id === id))
+        .filter(x => x !== undefined);
+
+    // Unique Rooms for selected Warehouse
+    const uniqueRooms = selectedWarehouseId
+        ? Array.from(new Set(stockDetails.filter(s => s.warehouse_id === Number(selectedWarehouseId)).map(s => s.room_id)))
+            .filter(id => id !== undefined && id !== null)
+            .map(id => stockDetails.find(s => s.room_id === id))
+            .filter(x => x !== undefined)
+        : [];
+
+    // Unique Shelves for selected Room
+    const uniqueShelves = selectedRoomId
+        ? Array.from(new Set(stockDetails.filter(s => s.room_id === Number(selectedRoomId)).map(s => s.shelf_id)))
+            .filter(id => id !== undefined && id !== null)
+            .map(id => stockDetails.find(s => s.shelf_id === id))
+            .filter(x => x !== undefined)
+        : [];
+
 
     /* ---------------- UI ---------------- */
 
@@ -129,11 +219,25 @@ const BarcodeScannerPage: React.FC = () => {
                                     </div>
                                 )}
 
-                                {!product && !sold && (
+                                {!product && !sold && !isLoading && !error && (
                                     <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
-                                        The result will appear here
+                                        Scan a barcode to see details
                                     </div>
                                 )}
+
+                                {isLoading && !sold && (
+                                    <div className="flex-1 flex items-center justify-center text-blue-600">
+                                        <Loader2 className="w-8 h-8 animate-spin" />
+                                    </div>
+                                )}
+
+                                {error && !sold && (
+                                    <div className="flex-1 flex flex-col items-center justify-center text-red-500 gap-2">
+                                        <p>{error}</p>
+                                        <button onClick={() => { setError(null); setProduct(null); }} className="text-blue-600 hover:underline text-sm">Try Again</button>
+                                    </div>
+                                )}
+
 
                                 {product && !sold && (
                                     <div className="flex-1 overflow-hidden p-3">
@@ -147,7 +251,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                         <div className="flex-shrink-0">
                                                             <div className="w-24 h-28 rounded-lg border-2 border-gray-300 overflow-hidden bg-white">
                                                                 <img
-                                                                    src={product.image}
+                                                                    src={product.product_image || "https://via.placeholder.com/140x170?text=No+Image"}
                                                                     alt="Product"
                                                                     className="w-full h-full object-cover"
                                                                 />
@@ -174,20 +278,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                 </div>
                                                                 <div className="flex-1">
                                                                     <p className="text-[10px] text-gray-400 uppercase mb-0.5">Category</p>
-                                                                    <p className="text-sm font-medium text-gray-900">{product.category}</p>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Size */}
-                                                            <div className="flex items-start gap-2">
-                                                                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                                                    <svg className="w-3.5 h-3.5 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                                        <path d="M4 7h16M4 12h16M4 17h10"></path>
-                                                                    </svg>
-                                                                </div>
-                                                                <div className="flex-1">
-                                                                    <p className="text-[10px] text-gray-400 uppercase mb-0.5">Size</p>
-                                                                    <p className="text-sm font-bold text-gray-900">{product.size}</p>
+                                                                    <p className="text-sm font-medium text-gray-900">{product.category_name || "-"}</p>
                                                                 </div>
                                                             </div>
 
@@ -213,50 +304,78 @@ const BarcodeScannerPage: React.FC = () => {
                                                             <p className="text-sm font-semibold mb-2 text-gray-900">1. Select Location :</p>
 
                                                             <div className="space-y-1.5">
+                                                                {/* WAREHOUSE */}
                                                                 <div>
                                                                     <label className="text-[11px] text-gray-500 mb-1 block">
                                                                         Warehouse <span className="text-red-500">*</span>
                                                                     </label>
                                                                     <div className="relative">
-                                                                        <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent">
-                                                                            <option>Select Warehouse</option>
+                                                                        <select
+                                                                            className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                                            value={selectedWarehouseId}
+                                                                            onChange={(e) => {
+                                                                                setSelectedWarehouseId(Number(e.target.value));
+                                                                                setSelectedRoomId("");
+                                                                                setSelectedShelfId("");
+                                                                            }}
+                                                                        >
+                                                                            <option value="">Select Warehouse</option>
+                                                                            {uniqueWarehouses.map((w) => (
+                                                                                <option key={w?.warehouse_id} value={w?.warehouse_id}>{w?.warehouse_name}</option>
+                                                                            ))}
                                                                         </select>
                                                                         <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                                                                     </div>
                                                                 </div>
 
-                                                                <div className="flex items-center justify-center">
-                                                                    <ChevronDown className="w-3 h-3 text-gray-300" />
-                                                                </div>
 
+                                                                {/* ROOM */}
                                                                 <div>
                                                                     <label className="text-[11px] text-gray-500 mb-1 block">
                                                                         Room <span className="text-red-500">*</span>
                                                                     </label>
                                                                     <div className="relative">
-                                                                        <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent">
-                                                                            <option>Select Warehouse</option>
+                                                                        <select
+                                                                            className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                                            value={selectedRoomId}
+                                                                            onChange={(e) => {
+                                                                                setSelectedRoomId(Number(e.target.value));
+                                                                                setSelectedShelfId("");
+                                                                            }}
+                                                                            disabled={!selectedWarehouseId}
+                                                                        >
+                                                                            <option value="">Select Room</option>
+                                                                            {uniqueRooms.map((r) => (
+                                                                                <option key={r?.room_id} value={r?.room_id}>{r?.room_name}</option>
+                                                                            ))}
                                                                         </select>
                                                                         <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                                                                     </div>
-                                                                    <p className="text-[10px] text-gray-400 mt-0.5">Select a warehouse first</p>
                                                                 </div>
 
-                                                                <div className="flex items-center justify-center">
-                                                                    <ChevronDown className="w-3 h-3 text-gray-300" />
-                                                                </div>
 
+
+                                                                {/* SHELF */}
                                                                 <div>
                                                                     <label className="text-[11px] text-gray-500 mb-1 block">
                                                                         Shelf <span className="text-red-500">*</span>
                                                                     </label>
                                                                     <div className="relative">
-                                                                        <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent">
-                                                                            <option>Select Warehouse</option>
+                                                                        <select
+                                                                            className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                                            value={selectedShelfId}
+                                                                            onChange={(e) => setSelectedShelfId(Number(e.target.value))}
+                                                                            disabled={!selectedRoomId}
+                                                                        >
+                                                                            <option value="">Select Shelf</option>
+                                                                            {uniqueShelves.map((s) => (
+                                                                                <option key={s?.shelf_id} value={s?.shelf_id}>
+                                                                                    {s?.shelf_name} ({s?.item_count} available)
+                                                                                </option>
+                                                                            ))}
                                                                         </select>
                                                                         <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                                                                     </div>
-                                                                    <p className="text-[10px] text-gray-400 mt-0.5">Select a warehouse first</p>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -269,7 +388,8 @@ const BarcodeScannerPage: React.FC = () => {
                                                                     <input
                                                                         type="radio"
                                                                         name="selling-mode"
-                                                                        defaultChecked
+                                                                        checked={sellingMode === "Online"}
+                                                                        onChange={() => setSellingMode("Online")}
                                                                         className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                                                                     />
                                                                     <span className="text-sm text-gray-900">Online</span>
@@ -278,6 +398,8 @@ const BarcodeScannerPage: React.FC = () => {
                                                                     <input
                                                                         type="radio"
                                                                         name="selling-mode"
+                                                                        checked={sellingMode === "Offline"}
+                                                                        onChange={() => setSellingMode("Offline")}
                                                                         className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                                                                     />
                                                                     <span className="text-sm text-gray-900">Offline</span>
@@ -291,13 +413,19 @@ const BarcodeScannerPage: React.FC = () => {
                                             {/* Sell Button - Below boxes, inside container */}
                                             <div className="flex justify-end mt-3">
                                                 <button
-                                                    onClick={() => setSold(true)}
-                                                    className="bg-blue-600 text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition flex items-center gap-2 shadow-sm"
+                                                    onClick={handleSell}
+                                                    disabled={!selectedShelfId || isSelling}
+                                                    className={`px-5 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 shadow-sm
+                                                        ${!selectedShelfId || isSelling ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                                                 >
-                                                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                                                        <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                                                    </svg>
+                                                    {isSelling ? (
+                                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                    ) : (
+                                                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                                            <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                                                        </svg>
+                                                    )}
                                                     Sell
                                                 </button>
                                             </div>
@@ -306,7 +434,22 @@ const BarcodeScannerPage: React.FC = () => {
                                 )}
 
                                 {sold && (
-                                    <ProductSoldSuccess />
+                                    <div className="flex-1 flex flex-col items-center justify-center p-6">
+                                        <ProductSoldSuccess />
+                                        <button
+                                            onClick={() => {
+                                                setSold(false);
+                                                setProduct(null);
+                                                setStockDetails([]);
+                                                setSelectedWarehouseId("");
+                                                setSelectedRoomId("");
+                                                setSelectedShelfId("");
+                                            }}
+                                            className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                                        >
+                                            Scan Another Product
+                                        </button>
+                                    </div>
                                 )}
 
                             </div>
@@ -337,7 +480,7 @@ const BarcodeScannerPage: React.FC = () => {
                                             className="w-full h-full object-cover"
                                         />
 
-                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white">
+                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white pointer-events-none">
                                             <p className="font-semibold text-base mb-1">SCAN THE BARCODE</p>
                                             <p className="text-[10px] text-gray-200 mb-4">
                                                 Line up the barcode inside the red corners.
@@ -383,7 +526,7 @@ const BarcodeScannerPage: React.FC = () => {
                                             </p>
 
                                             <p className="text-[10px] text-gray-400 text-center mt-2 max-w-xs leading-relaxed">
-                                                You can upload up to 15 images, each not exceeding 5 MB in size and 7000 × 7000 pixels resolution.
+                                                You can upload images containing barcodes.
                                             </p>
 
                                             <input
