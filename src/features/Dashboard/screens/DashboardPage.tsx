@@ -4,9 +4,9 @@ import InventoryChart from "../components/InventoryChart";
 import RecentActivity from "../components/RecentActivity";
 import SellingCard from "../components/SellingCard";
 // import FilterSelect from "../components/FilterSelect";
-import StockAlerts from "../components/StockAlerts";
+// import StockAlerts from "../components/StockAlerts";
 import { dashboardApi } from "../api/dashboard.api";
-import type { SellingProduct, StockStatusCounts, StockProduct } from "../types";
+import type { SellingProduct, StockStatusCounts } from "../types";
 
 const Dashboard = () => {
   // const [month, setMonth] = useState("Month");
@@ -15,7 +15,7 @@ const Dashboard = () => {
   const [leastSelling, setLeastSelling] = useState<SellingProduct[]>([]);
 
   const [stockCounts, setStockCounts] = useState<StockStatusCounts>({ low_stock_products: 0, out_of_stock_products: 0 });
-  const [stockAlerts, setStockAlerts] = useState<StockProduct[]>([]);
+  // const [stockAlerts, setStockAlerts] = useState<StockProduct[]>([]);
   const [totalProducts, setTotalProducts] = useState<number>(0);
   const [totalOrders, setTotalOrders] = useState<number>(0);
 
@@ -34,7 +34,7 @@ const Dashboard = () => {
         if (leastRes.success && leastRes.data) setLeastSelling(leastRes.data);
         if (stockRes.success && stockRes.data?.stock_status) {
           setStockCounts(stockRes.data.stock_status);
-          setStockAlerts(stockRes.data.products);
+          // setStockAlerts(stockRes.data.products);
         }
         if (totalProdRes.success && totalProdRes.data) setTotalProducts(totalProdRes.data.totalProducts);
         if (totalOrdRes.success && totalOrdRes.data) setTotalOrders(totalOrdRes.data.totalOrder);
@@ -92,7 +92,7 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <SellingCard title="Top Selling Products" type="top" products={topSelling} />
             <SellingCard title="Least Selling Products" type="least" products={leastSelling} />
-            <StockAlerts products={stockAlerts} />
+            {/* <StockAlerts products={stockAlerts} /> */}
           </div>
         </div>
       </div>

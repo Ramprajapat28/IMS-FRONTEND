@@ -16,7 +16,7 @@ const StatsCards = ({ totalProducts = 0, lowStockCount = 0, outOfStockCount = 0,
     { title: "Total Products", value: totalProducts, image: totalProduct },
     { title: "Low Stock", value: lowStockCount, image: lowStock },
     { title: "Out Of Stock", value: outOfStockCount, image: outOfStock },
-    { title: "Total Others", value: totalOrders, image: totalOrder },
+    { title: "Total Orders", value: totalOrders, image: totalOrder },
   ];
 
   return (
