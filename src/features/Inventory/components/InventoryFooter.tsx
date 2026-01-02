@@ -13,7 +13,7 @@ const InventoryFooter = ({
     page,
     totalPages,
     rowsPerPage,
-    totalEntries,
+    // totalEntries,
     onPageChange,
     onRowsChange,
 }: InventoryFooterProps) => {

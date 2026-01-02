@@ -212,7 +212,7 @@ const ProductDetailsPage = () => {
                             <Tag size={18} className="text-gray-400 mt-0.5 flex-shrink-0" />
                             <div>
                                 <p className="text-xs text-gray-500 mb-0.5">CATEGORY</p>
-                                <p className="font-medium text-gray-900 text-sm">{product.category || "T-shirts"}</p>
+                                <p className="font-medium text-gray-900 text-sm">{product.category_name || "T-shirts"}</p>
                             </div>
                         </div>
 

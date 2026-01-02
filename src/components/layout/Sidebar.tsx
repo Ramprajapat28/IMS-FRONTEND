@@ -82,9 +82,9 @@ const Sidebar = () => {
             Products
           </NavLink>
 
-          <NavLink to="/barcode-scanning" className={linkClass} onClick={close}>
+          <NavLink to="/barcode/generate" className={linkClass} onClick={close}>
             <ScanBarcode size={20} />
-            Barcode scanning
+            BarCode Scanner
           </NavLink>
 
           <NavLink to="/orders" className={linkClass} onClick={close}>
