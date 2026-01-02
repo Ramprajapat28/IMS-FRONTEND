@@ -312,21 +312,11 @@ const EditProduct = () => {
                                     className="w-48 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                                 >
                                     {/* Current Selection (hidden in list) */}
-                                    {form.category_id ? (
-                                        <option value={form.category_id} hidden>
-                                            {form.category}
-                                        </option>
-                                    ) : (
-                                        <option value="" disabled>Select Category</option>
-                                    )}
-
-                                    {/* Available Options (excluding current) */}
+                                    <option value="" disabled>Select Category</option>
                                     {categories.map((c) => (
-                                        c.category_id !== form.category_id && (
-                                            <option key={c.category_id} value={c.category_id}>
-                                                {c.category_name}
-                                            </option>
-                                        )
+                                        <option key={c.category_id} value={c.category_id}>
+                                            {c.category_name}
+                                        </option>
                                     ))}
 
                                     {categories.length === 0 && (
@@ -525,18 +515,9 @@ const EditProduct = () => {
                                         className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                                     >
                                         {/* Current Selection */}
-                                        {form.room_id ? (
-                                            <option value={form.room_id} hidden>
-                                                {filteredRooms.find(r => String(r.room_id) === String(form.room_id))?.name || "Selected Room"}
-                                            </option>
-                                        ) : (
-                                            <option value="">Select Room</option>
-                                        )}
-
+                                        <option value="">Select Room</option>
                                         {filteredRooms.map(r => (
-                                            String(r.room_id) !== String(form.room_id) && (
-                                                <option key={r.room_id} value={r.room_id}>{r.name}</option>
-                                            )
+                                            <option key={r.room_id} value={r.room_id}>{r.name}</option>
                                         ))}
                                     </select>
                                     {!form.warehouse_id && (
@@ -563,18 +544,9 @@ const EditProduct = () => {
                                         className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                                     >
                                         {/* Current Selection */}
-                                        {form.shelf_id ? (
-                                            <option value={form.shelf_id} hidden>
-                                                {filteredShelves.find(s => String(s.shelf_id) === String(form.shelf_id))?.name || "Selected Shelf"}
-                                            </option>
-                                        ) : (
-                                            <option value="">Select Shelf</option>
-                                        )}
-
+                                        <option value="">Select Shelf</option>
                                         {filteredShelves.map(s => (
-                                            String(s.shelf_id) !== String(form.shelf_id) && (
-                                                <option key={s.shelf_id} value={s.shelf_id}>{s.name}</option>
-                                            )
+                                            <option key={s.shelf_id} value={s.shelf_id}>{s.name}</option>
                                         ))}
                                     </select>
                                     {!form.room_id && form.warehouse_id && (

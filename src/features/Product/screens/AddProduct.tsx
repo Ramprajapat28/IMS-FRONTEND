@@ -1,7 +1,8 @@
 import { ArrowLeft, Loader2, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { productsApi } from "@/features/Product/api/product.api";
+import { categoriesApi, type Category } from "@/features/Product/api/category.api";
 
 /* ----------------------------- TYPES ----------------------------- */
 type ProductForm = {
@@ -28,6 +29,23 @@ const AddProduct = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  // Load categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await categoriesApi.getAll();
+        if (response.success && response.data) {
+          setCategories(response.data);
+        }
+      } catch (err) {
+        console.error("Failed to load categories:", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   /* ----------------------------- HANDLERS ----------------------------- */
   const updateField = <K extends keyof ProductForm>(
@@ -60,6 +78,7 @@ const AddProduct = () => {
       formData.append("sku", form.sku);
       formData.append("category", form.category);
       if (form.description) formData.append("description", form.description);
+      if (form.size) formData.append("size", form.size);
 
       if (selectedFile) {
         formData.append("image", selectedFile);
@@ -148,14 +167,14 @@ const AddProduct = () => {
                 className="w-72 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
               >
                 <option value="" className="text-gray-400">Select Category</option>
-                <option value="T-Shirts">T-Shirts</option>
-                <option value="Caps">Caps</option>
-                <option value="Bottles">Bottles</option>
-                <option value="Mugs">Mugs</option>
-                <option value="Cases">Cases</option>
-                <option value="Bags">Bags</option>
-                <option value="Phone">Phone</option>
-                <option value="Furniture">Furniture</option>
+                {categories.map((c) => (
+                  <option key={c.category_id} value={c.category_name}>
+                    {c.category_name}
+                  </option>
+                ))}
+                {categories.length === 0 && (
+                  <option value="" disabled>Loading...</option>
+                )}
               </select>
             </div>
 
