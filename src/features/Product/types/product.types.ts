@@ -2,7 +2,8 @@ export interface Product {
     product_id: number;
     name: string;
     sku: string;
-    category?: string;
+    category_name?: string;
+    category_id?: number;
     description?: string;
     reorder_level?: number;
     stock_quantity?: number;

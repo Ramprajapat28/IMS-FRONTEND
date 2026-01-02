@@ -3,14 +3,22 @@ import lowStock from "../../../assets/lowStock.png";
 import outOfStock from "../../../assets/outOfStock.png";
 import totalOrder from "../../../assets/totalOrder.png";
 
-const stats = [
-  { title: "Total Products", value: 300, image: totalProduct },
-  { title: "Low Stock", value: 5, image: lowStock },
-  { title: "Out Of Stock", value: 3, image: outOfStock },
-  { title: "Total Orders", value: 100, image: totalOrder },
-];
+interface StatsCardsProps {
+  totalProducts?: number;
+  lowStockCount?: number;
+  outOfStockCount?: number;
+  totalOrders?: number; // Kept for now, even if not fully dynamic yet
+}
 
-const StatsCards = () => {
+const StatsCards = ({ totalProducts = 0, lowStockCount = 0, outOfStockCount = 0, totalOrders = 0 }: StatsCardsProps) => {
+
+  const stats = [
+    { title: "Total Products", value: totalProducts, image: totalProduct },
+    { title: "Low Stock", value: lowStockCount, image: lowStock },
+    { title: "Out Of Stock", value: outOfStockCount, image: outOfStock },
+    { title: "Total Others", value: totalOrders, image: totalOrder },
+  ];
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((item) => (

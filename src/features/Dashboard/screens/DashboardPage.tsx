@@ -4,8 +4,9 @@ import InventoryChart from "../components/InventoryChart";
 import RecentActivity from "../components/RecentActivity";
 import SellingCard from "../components/SellingCard";
 // import FilterSelect from "../components/FilterSelect";
+import StockAlerts from "../components/StockAlerts";
 import { dashboardApi } from "../api/dashboard.api";
-import type { SellingProduct } from "../types";
+import type { SellingProduct, StockStatusCounts, StockProduct } from "../types";
 
 const Dashboard = () => {
   // const [month, setMonth] = useState("Month");
@@ -13,16 +14,31 @@ const Dashboard = () => {
   const [topSelling, setTopSelling] = useState<SellingProduct[]>([]);
   const [leastSelling, setLeastSelling] = useState<SellingProduct[]>([]);
 
+  const [stockCounts, setStockCounts] = useState<StockStatusCounts>({ low_stock_products: 0, out_of_stock_products: 0 });
+  const [stockAlerts, setStockAlerts] = useState<StockProduct[]>([]);
+  const [totalProducts, setTotalProducts] = useState<number>(0);
+  const [totalOrders, setTotalOrders] = useState<number>(0);
+
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const [topRes, leastRes] = await Promise.all([
+        const [topRes, leastRes, stockRes, totalProdRes, totalOrdRes] = await Promise.all([
           dashboardApi.getTopSelling(),
           dashboardApi.getLeastSelling(),
+          dashboardApi.getStockStatus(),
+          dashboardApi.getTotalProducts(),
+          dashboardApi.getTotalOrders(),
         ]);
 
         if (topRes.success && topRes.data) setTopSelling(topRes.data);
         if (leastRes.success && leastRes.data) setLeastSelling(leastRes.data);
+        if (stockRes.success && stockRes.data?.stock_status) {
+          setStockCounts(stockRes.data.stock_status);
+          setStockAlerts(stockRes.data.products);
+        }
+        if (totalProdRes.success && totalProdRes.data) setTotalProducts(totalProdRes.data.totalProducts);
+        if (totalOrdRes.success && totalOrdRes.data) setTotalOrders(totalOrdRes.data.totalOrder);
+
       } catch (err) {
         console.error("Failed to fetch dashboard analytics:", err);
       }
@@ -57,7 +73,12 @@ const Dashboard = () => {
       </div>
 
       {/* STATS */}
-      <StatsCards />
+      <StatsCards
+        totalProducts={totalProducts}
+        lowStockCount={stockCounts.low_stock_products}
+        outOfStockCount={stockCounts.out_of_stock_products}
+        totalOrders={totalOrders}
+      />
 
       {/* MAIN GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -71,6 +92,7 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <SellingCard title="Top Selling Products" type="top" products={topSelling} />
             <SellingCard title="Least Selling Products" type="least" products={leastSelling} />
+            <StockAlerts products={stockAlerts} />
           </div>
         </div>
       </div>

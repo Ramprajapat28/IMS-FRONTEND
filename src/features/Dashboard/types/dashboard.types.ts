@@ -7,7 +7,26 @@ export interface SellingProduct {
     image?: string;
 }
 
+export interface StockProduct {
+    product_id: number;
+    product_name: string;
+    available_count: number;
+    stock_status: "low_stock" | "out_of_stock";
+    image?: string;
+}
+
+export interface StockStatusCounts {
+    low_stock_products: number;
+    out_of_stock_products: number;
+}
+
+export interface StockStatusResponse {
+    stock_status: StockStatusCounts;
+    products: StockProduct[];
+}
+
 export interface DashboardAnalytics {
     topSelling: SellingProduct[];
     leastSelling: SellingProduct[];
+    stockStatus?: StockStatusResponse;
 }

@@ -511,7 +511,8 @@ import type { Product } from "@/features/Product/types";
 interface DisplayProduct {
   id: number;
   name: string;
-  category: string;
+  category_name: string;
+  category_id: number;
   sku: string;
   image: string;
 }
@@ -540,7 +541,8 @@ const ProductsPage = () => {
             return {
               id: p.product_id,
               name: p.name,
-              category: p.category || "Uncategorized",
+              category_name: p.category_name || "Uncategorized",
+              category_id: p.category_id || 0,
               sku: p.sku || "-----",
               image: p.product_image || "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200",
             };
@@ -571,15 +573,17 @@ const ProductsPage = () => {
 
   const filtered = useMemo(() => {
     let d = data.filter((p) =>
-      `${p.name} ${p.sku} ${p.category}`
+      `${p.name} ${p.sku} ${p.category_name}`
         .toLowerCase()
         .includes(search.toLowerCase())
     );
 
     if (sortBy !== "none") {
-      d = [...d].sort((a, b) =>
-        a[sortBy].localeCompare(b[sortBy])
-      );
+      d = [...d].sort((a, b) => {
+        const key = sortBy === "category" ? "category_name" : sortBy;
+        // @ts-ignore
+        return a[key].localeCompare(b[key]);
+      });
     }
 
     return d;
@@ -679,7 +683,7 @@ const ProductsPage = () => {
                       <span className="font-medium">{p.name}</span>
                     </div>
                   </td>
-                  <td className="p-3 text-gray-600">{p.category}</td>
+                  <td className="p-3 text-gray-600">{p.category_name}</td>
                   <td className="p-3 text-gray-600">{p.sku}</td>
                   <td className="p-3">
                     <div className="flex gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
