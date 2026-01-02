@@ -6,7 +6,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import type { SellingProduct } from "../types";
 
 type CardType = "top" | "least";
-type Trend = "up" | "down";
+
 
 const SellingCard = ({ title, type, products }: { title: string; type: CardType; products: SellingProduct[] }) => {
 
@@ -47,8 +47,8 @@ const SellingCard = ({ title, type, products }: { title: string; type: CardType;
       <div className="divide-y">
         {products && Array.isArray(products) && products.length > 0 ? (
           products.map((product) => (
-            <ProductRow key={product.product_id} product={product} trend={isTop ? "up" : "down"} />
-          ))
+              <ProductRow key={product.product_id} product={product} />
+            ))
         ) : (
           <div className="p-4 text-center text-gray-500 text-sm">No data available</div>
         )}
@@ -59,7 +59,7 @@ const SellingCard = ({ title, type, products }: { title: string; type: CardType;
 
 export default SellingCard;
 
-const ProductRow = ({ product, trend }: { product: SellingProduct; trend?: Trend }) => (
+const ProductRow = ({ product }: { product: SellingProduct }) => (
   <div className="flex gap-4 px-4 py-4">
     <img
       src={product.image || "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200"}
@@ -73,7 +73,7 @@ const ProductRow = ({ product, trend }: { product: SellingProduct; trend?: Trend
         {product?.total_sold || 0} Units sold
       </p>
 
-      <div className="mt-2">
+      {/* <div className="mt-2">
         {trend === "up" ? (
           <span className="text-xs px-2 py-0.5 rounded border border-emerald-500 text-emerald-600">
             ↑ {product?.trend || 0}%
@@ -83,7 +83,7 @@ const ProductRow = ({ product, trend }: { product: SellingProduct; trend?: Trend
             ↓ {product?.trend || 0}%
           </span>
         )}
-      </div>
+      </div> */}
     </div>
   </div>
 );
