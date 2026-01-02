@@ -6,17 +6,7 @@ import InventoryTable from "../components/InventoryTable";
 import InventoryFooter from "../components/InventoryFooter";
 import { inventoryApi } from "@/features/Inventory/api/inventory.api";
 
-// Define the type locally since we are detaching from inventory.data.ts
-export type InventoryProduct = {
-    id: number;
-    name: string;
-    category: string;
-    sku: string;
-    location: string;
-    quantity: number;
-
-
-};
+import { type InventoryProduct } from "../types/inventory.types";
 
 const InventoryPage = () => {
     const navigate = useNavigate();
@@ -182,7 +172,6 @@ const InventoryPage = () => {
                 ) : (
                     <InventoryTable
                         data={filtered}
-                        mode="PRODUCTS"
                         onDelete={(id) => setData((prev) => prev.filter((p) => p.id !== id))}
                         onRowClick={handleRowClick}
                     />

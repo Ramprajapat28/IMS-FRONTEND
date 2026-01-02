@@ -1,24 +1,22 @@
 import { Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import type { InventoryProduct } from "../data/inventory.data";
-import type { InventoryVariant } from "../data/variants.data";
+import type { InventoryProduct } from "../types/inventory.types";
 
 type InventoryTableProps = {
-    data: (InventoryProduct | InventoryVariant)[];
-    mode: "PRODUCTS" | "VARIANTS";
+    data: InventoryProduct[];
     onDelete: (id: number) => void;
-    onRowClick?: (item: any) => void;
+    onRowClick?: (item: InventoryProduct) => void;
 };
 
-const InventoryTable = ({ data, mode, onDelete, onRowClick }: InventoryTableProps) => {
+const InventoryTable = ({ data, onDelete, onRowClick }: InventoryTableProps) => {
     const navigate = useNavigate();
 
-    const handleRowClick = (item: InventoryProduct | InventoryVariant) => {
+    const handleRowClick = (item: InventoryProduct) => {
         if (onRowClick) {
             onRowClick(item);
         } else {
             // Default behavior: navigate to product details
-            navigate(`/products/${item.id}`);
+            navigate(`/products/details/${item.id}`);
         }
     };
 
@@ -29,8 +27,7 @@ const InventoryTable = ({ data, mode, onDelete, onRowClick }: InventoryTableProp
                     <tr>
                         <th className="p-3">Sr.no</th>
                         <th className="p-3">Product Name</th>
-                        {mode === "PRODUCTS" && <th className="p-3">Category</th>}
-                        {mode === "VARIANTS" && <th className="p-3">Size</th>}
+                        <th className="p-3">Category</th>
                         <th className="p-3">SKU #</th>
                         <th className="p-3">Location</th>
                         <th className="p-3">Qty</th>
@@ -49,22 +46,15 @@ const InventoryTable = ({ data, mode, onDelete, onRowClick }: InventoryTableProp
 
                             <td className="p-3">
                                 <div className="flex items-center gap-3 min-w-[220px]">
-
                                     <span className="font-medium">{item.name}</span>
                                 </div>
                             </td>
 
-                            {mode === "PRODUCTS" && (
-                                <td className="p-3 text-gray-600">
-                                    {(item as InventoryProduct).category}
-                                </td>
-                            )}
+                            <td className="p-3 text-gray-600">
+                                {item.category}
+                            </td>
 
-                            {mode === "VARIANTS" && (
-                                <td className="p-3 font-medium">
-                                    {(item as InventoryVariant).size}
-                                </td>
-                            )}
+
 
                             <td className="p-3 text-gray-500">{item.sku}</td>
                             <td className="p-3 text-gray-600">{item.location}</td>
