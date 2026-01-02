@@ -1,6 +1,6 @@
 // Auth API Client
 import type { LoginCredentials, LoginResponse, ApiResponse, User } from '../types';
-import {  setToken, removeToken } from './token.utils';
+import { setToken, removeToken } from './token.utils';
 import apiRequest from '@/services/api';
 
 
@@ -27,6 +27,8 @@ export const authApi = {
         // Backend returns jwt_token, not token
         if (response.success && response.jwt_token) {
             setToken(response.jwt_token);
+            // Store user data for later use
+            localStorage.setItem('user', JSON.stringify(response.user));
         }
 
         return response;
@@ -37,6 +39,7 @@ export const authApi = {
      */
     logout: (): void => {
         removeToken();
+        localStorage.removeItem('user');
     },
 
     /**
