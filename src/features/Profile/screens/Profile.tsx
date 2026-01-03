@@ -76,7 +76,7 @@ const Profile = () => {
             lastName: nameParts.slice(1).join(' ') || '',
             email: apiProfile.email || '',
             phone: apiProfile.phone || '',
-            dob: apiProfile.date_of_birth || '', // Keep as YYYY-MM-DD
+            dob: apiProfile.date_of_birth || '', // API now returns YYYY-MM-DD string
             address: apiProfile.address || '',
             location: apiProfile.location || '',
             postalCode: apiProfile.postal_code?.toString() || '',
@@ -123,7 +123,7 @@ const Profile = () => {
 
   /* -------- ACTIONS -------- */
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Validation
     if (!formProfile.firstName.trim()) {
       toast.error('First name is required');
@@ -159,9 +159,35 @@ const Profile = () => {
       }
     }
 
-    // Update local state (no API call for now)
-    setSavedProfile(formProfile);
-    toast.success("Profile updated successfully");
+    const payload = {
+      name: `${formProfile.firstName} ${formProfile.lastName}`.trim(),
+      email: formProfile.email,
+      phone: formProfile.phone,
+      gender: formProfile.gender,
+      address: formProfile.address,
+      location: formProfile.location,
+      postal_code: formProfile.postalCode,
+      date_of_birth: formProfile.dob,
+      profile_picture_url: formProfile.avatar,
+    };
+
+    try {
+      // Get user from local storage to get ID
+      const userStr = localStorage.getItem('user');
+      if (!userStr) throw new Error("User not found");
+
+      const user = JSON.parse(userStr);
+      const userId = user.user_id;
+
+      await profileApi.updateProfile(userId, payload);
+
+      // Update local state
+      setSavedProfile(formProfile);
+      toast.success("Profile updated successfully");
+    } catch (err) {
+      console.error("Failed to update profile", err);
+      toast.error("Failed to update profile");
+    }
   };
 
   const handleDiscard = () => {
