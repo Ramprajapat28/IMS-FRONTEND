@@ -116,9 +116,9 @@ const InventoryPage = () => {
     }, [data, search, sortBy]);
 
 
-    // Handle row click - navigate based on hasVariants
+    // Handle row click - navigate to inventory details page
     const handleRowClick = (item: InventoryProduct) => {
-        navigate(`/products/details/${item.id}`);
+        navigate(`/inventory/details/${item.id}`);
     };
 
     return (
