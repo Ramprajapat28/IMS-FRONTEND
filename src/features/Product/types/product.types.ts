@@ -30,6 +30,11 @@ export interface CreateProductData {
     category?: string;
     description?: string;
     reorder_level?: number;
+    size?: string;
+    product_image?: {
+        file_path: string;
+        view: string;
+    }[];
 }
 
 export interface ProductFormData {

@@ -141,7 +141,7 @@ const AddProduct = () => {
         category: form.category,
         description: form.description,
         size: form.size,
-        product_images: uploadedImages // Array of { file_path, view }
+        product_image: uploadedImages // Array of { file_path, view }
       };
 
       const productRes = await productsApi.create(payload as any); // Type assertion if needed
