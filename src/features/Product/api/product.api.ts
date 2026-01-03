@@ -55,4 +55,11 @@ export const productsApi = {
             `/api/products/category/${categoryName}/with-stock?page=${page}&limit=${limit}`
         );
     },
+
+    getPresignedUrl: async (fileName: string, functionality: string, subFunctionality?: string) => {
+        return apiRequest<{ presignedUrl: string; cdnUrl: string; filePath: string }>('/api/products/presigned-url', {
+            method: 'POST',
+            body: JSON.stringify({ fileName, functionality, subFunctionality }),
+        });
+    },
 };

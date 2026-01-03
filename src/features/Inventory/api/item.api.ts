@@ -23,6 +23,7 @@ export interface RemoveStockData {
     shelf_id: number;
     quantity: number;
     status?: string;
+    mode?: string; // 🆕 Added mode
     order_id?: number; // Required for returns to update existing order
 }
 

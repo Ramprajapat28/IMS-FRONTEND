@@ -101,7 +101,8 @@ const BarcodeScannerPage: React.FC = () => {
                 product_id: product.product_id,
                 shelf_id: Number(selectedShelfId),
                 quantity: 1,
-                status: 'sold'
+                status: 'sold',
+                mode: sellingMode // 🆕 Pass selected mode
             });
 
             if (res.success) {
