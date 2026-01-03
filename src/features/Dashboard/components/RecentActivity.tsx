@@ -37,9 +37,9 @@ const RecentActivity = () => {
           const mappedActivities: ActivityItem[] = response.data.map((order: Order) => ({
             order_id: order.order_id,
             product_name: order.product_name || `Order #${order.order_id}`,
-            category: "Uncategorized", // Order doesn't include category yet
+            category: order.category_name || "General",
             product_image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100", // Fallback
-            warehouse_name: order.warehouse_name || "Main Warehouse",
+            warehouse_name: order.warehouse_name || "Unknown Warehouse",
             status: order.status,
             created_at: order.created_at || new Date().toISOString(),
             quantity: order.quantity
@@ -68,8 +68,8 @@ const RecentActivity = () => {
         </div>
 
         <button className="text-sm border rounded-lg px-3 py-1.5"
-        
-        onClick={() => navigate("/orders")}>
+
+          onClick={() => navigate("/orders")}>
           View More
         </button>
       </div>
@@ -104,7 +104,7 @@ const ActivityItemRow = ({ item }: { item: ActivityItem }) => (
       <div className="min-w-0">
         <p className="font-medium truncate">{item.product_name}</p>
         <p className="text-sm text-gray-500 truncate">
-          
+
           {item.category}
         </p>
       </div>

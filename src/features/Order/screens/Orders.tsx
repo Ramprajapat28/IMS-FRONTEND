@@ -13,10 +13,10 @@ type Order = {
   shelf_id: number;
   quantity: number;
   category: string;
-  price: number;
   warehouse: string;
   datetime: string;
   status: OrderStatus;
+  mode?: string;
   image: string;
 };
 
@@ -67,11 +67,11 @@ const OrdersPage = () => {
             product_id: o.product_id,
             shelf_id: o.shelf_id,
             quantity: o.quantity,
-            category: "General",
-            price: 0,
+            category: o.category_name || "General",
             warehouse: o.warehouse_name || "Unknown Warehouse",
             datetime: o.created_at ? new Date(o.created_at).toLocaleString() : "N/A",
             status: o.status || "Processing",
+            mode: o.mode,
             image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200",
           }));
           setOrders(mappedOrders);
@@ -215,7 +215,7 @@ const OrdersPage = () => {
                   <div>
                     <p className="font-medium">{o.product}</p>
                     <p className="text-gray-500 text-xs">
-                      {o.category} • ${o.price}
+                      {o.category}
                     </p>
                   </div>
                 </td>

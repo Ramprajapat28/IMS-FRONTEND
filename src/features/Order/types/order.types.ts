@@ -11,6 +11,8 @@ export interface Order {
     shelf_name?: string;
     created_at?: string;
     updated_at?: string;
+    category_name?: string;
+    mode?: string;
 }
 
 export interface OrderFilters {
