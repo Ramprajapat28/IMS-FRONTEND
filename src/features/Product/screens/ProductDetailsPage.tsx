@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, Tag, Hash, Package,  Download, FileText } from "lucide-react";
+import { ArrowLeft, Loader2, Tag, Hash, Package, Download, FileText } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
 import type { Product } from "@/features/Product/types";
 
@@ -35,8 +35,19 @@ const ProductDetailsPage = () => {
         fetchProduct();
     }, [id]);
     console.log(product)
-    // Helper to extract URL from various formats
-    const getBarcodeUrl = (image: any): string => {
+    const [selectedImage, setSelectedImage] = useState<string>("");
+
+    useEffect(() => {
+        if (product?.product_image) {
+            const initialImage = Array.isArray(product.product_image) && product.product_image.length > 0
+                ? resolveUrl(product.product_image[0])
+                : resolveUrl(product.product_image);
+            setSelectedImage(initialImage);
+        }
+    }, [product]);
+
+    // Helper to extract URL from a SINGLE image object/string
+    const resolveUrl = (image: any): string => {
         if (!image) return "";
         if (typeof image === 'object') {
             return image.file_path || image.cdnUrl || image.url || "";
@@ -55,8 +66,20 @@ const ProductDetailsPage = () => {
         return "";
     };
 
+    // Helper to get ALL valid image URLs
+    const getAllImages = (): string[] => {
+        if (!product?.product_image) return [];
+
+        if (Array.isArray(product.product_image)) {
+            return product.product_image.map(resolveUrl).filter(Boolean);
+        }
+
+        const single = resolveUrl(product.product_image);
+        return single ? [single] : [];
+    };
+
     const handleDownloadBarcode = async () => {
-        const imageUrl = getBarcodeUrl(product?.barcode_image);
+        const imageUrl = resolveUrl(product?.barcode_image);
         if (!imageUrl) return;
 
         try {
@@ -102,9 +125,8 @@ const ProductDetailsPage = () => {
         );
     }
 
-
-
     const isInStock = (product.stock_quantity || 0) > 0;
+    const allImages = getAllImages();
 
     return (
         <div className="max-w-7xl mx-auto space-y-2">
@@ -125,9 +147,6 @@ const ProductDetailsPage = () => {
                         <span className="cursor-pointer hover:text-blue-600" onClick={() => navigate("/inventory")}>Inventory</span>
                         <span>›</span>
                         <div className="flex items-center gap-2">
-                            <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-blue-600">
-                                <path d="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M7.5,13A2.5,2.5 0 0,0 5,15.5A2.5,2.5 0 0,0 7.5,18A2.5,2.5 0 0,0 10,15.5A2.5,2.5 0 0,0 7.5,13M16.5,13A2.5,2.5 0 0,0 14,15.5A2.5,2.5 0 0,0 16.5,18A2.5,2.5 0 0,0 19,15.5A2.5,2.5 0 0,0 16.5,13Z" />
-                            </svg>
                             <span className="text-blue-600 font-medium">{product.name}</span>
                             <span className="text-gray-600">› {product.size}</span>
                         </div>
@@ -139,18 +158,37 @@ const ProductDetailsPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
                 {/* LEFT - Product Image & Barcode */}
                 <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border p-4 space-y-4">
-                    {/* Product Image */}
-                    <div className="bg-gray-100 rounded-xl p-4 flex items-center justify-center h-56">
-                        {product.product_image ? (
-                            <img
-                                src={product.product_image}
-                                alt={product.name}
-                                className="w-full h-full object-contain"
-                            />
-                        ) : (
-                            <div className="text-gray-400 text-center">
-                                <Package size={48} className="mx-auto mb-2" />
-                                <p className="text-sm">No image available</p>
+                    {/* Product Image Gallery */}
+                    <div className="space-y-3">
+                        {/* Main Image */}
+                        <div className="bg-gray-100 rounded-xl p-4 flex items-center justify-center h-64 border">
+                            {selectedImage ? (
+                                <img
+                                    src={selectedImage}
+                                    alt={product.name}
+                                    className="w-full h-full object-contain"
+                                />
+                            ) : (
+                                <div className="text-gray-400 text-center">
+                                    <Package size={48} className="mx-auto mb-2" />
+                                    <p className="text-sm">No image available</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Thumbnails */}
+                        {allImages.length > 1 && (
+                            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                {allImages.map((img, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setSelectedImage(img)}
+                                        className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden ${selectedImage === img ? 'border-blue-600' : 'border-transparent hover:border-gray-300'
+                                            }`}
+                                    >
+                                        <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                                    </button>
+                                ))}
                             </div>
                         )}
                     </div>
@@ -168,7 +206,7 @@ const ProductDetailsPage = () => {
                         <div className="flex justify-center mb-1">
                             {product.barcode_image && (
                                 <img
-                                    src={getBarcodeUrl(product.barcode_image)}
+                                    src={resolveUrl(product.barcode_image)}
                                     alt="Barcode"
                                     className="w-full h-auto max-h-52 object-contain"
                                     style={{ imageRendering: "pixelated" }}

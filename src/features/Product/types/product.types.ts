@@ -18,7 +18,7 @@ export interface Product {
         status: string;
         item_count: number | string;
     }[];
-    product_image?: string;
+    product_image?: any;
     barcode_image?: string;
     created_at?: string;
     updated_at?: string;

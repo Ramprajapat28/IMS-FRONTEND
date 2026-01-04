@@ -544,7 +544,9 @@ const ProductsPage = () => {
               category_name: p.category_name || "Uncategorized",
               category_id: p.category_id || 0,
               sku: p.sku || "-----",
-              image: p.product_image || "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200",
+              image: Array.isArray(p.product_image) && p.product_image.length > 0
+                ? p.product_image[0].file_path
+                : "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200",
             };
           });
           setData(products);

@@ -97,15 +97,21 @@ const AddProduct = () => {
         const presigned = await productsApi.getPresignedUrl(file.name, "product", "images");
 
         // 2. Upload to S3
+        console.log(`Uploading ${file.name} to ${presigned.presignedUrl} with type ${presigned.contentType}`);
+
         const uploadRes = await fetch(presigned.presignedUrl, {
           method: "PUT",
           body: file,
           headers: {
-            "Content-Type": file.type,
+            "Content-Type": presigned.contentType, // Must match signature exactly
           },
         });
 
-        if (!uploadRes.ok) throw new Error("Failed to upload to S3");
+        if (!uploadRes.ok) {
+          const errorText = await uploadRes.text();
+          console.error(`S3 Upload Failed: ${uploadRes.status} ${uploadRes.statusText}`, errorText);
+          throw new Error(`Failed to upload to S3: ${uploadRes.status}`);
+        }
 
         return {
           file_path: presigned.cdnUrl,
