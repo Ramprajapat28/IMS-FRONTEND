@@ -1,10 +1,46 @@
+import { useState, useEffect } from "react";
 import { Bell, Search, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSidebar } from "@/app/providers";
+import { profileApi } from "@/features/Profile/api/profile.api";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const { open } = useSidebar();
+  const [avatar, setAvatar] = useState("https://i.pravatar.cc/40"); // Default
+
+  const updateAvatar = async () => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.user_id) {
+          try {
+            const res = await profileApi.getProfile(user.user_id);
+            if (res.success && res.data && res.data.profile_picture_url) {
+              setAvatar(res.data.profile_picture_url);
+            }
+          } catch (apiErr) {
+            console.error("Failed to fetch profile for navbar", apiErr);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to parse user from local storage", e);
+      }
+    }
+  };
+
+  useEffect(() => {
+    // Initial load
+    updateAvatar();
+
+    // Listen for updates
+    window.addEventListener("user_updated", updateAvatar);
+
+    return () => {
+      window.removeEventListener("user_updated", updateAvatar);
+    };
+  }, []);
 
   return (
     <header className="h-16 bg-white border-b flex items-center px-4 sm:px-6">
@@ -60,9 +96,9 @@ const Navbar: React.FC = () => {
 
         <img
           onClick={() => navigate("/profile")}
-          src="https://i.pravatar.cc/40"
+          src={avatar}
           alt="profile"
-          className="w-8 h-8 rounded-full cursor-pointer"
+          className="w-8 h-8 rounded-full cursor-pointer object-cover border"
         />
       </div>
     </header>

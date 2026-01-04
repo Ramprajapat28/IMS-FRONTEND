@@ -19,7 +19,7 @@ export interface Product {
         status: string;
         item_count: number | string;
     }[];
-    product_image?: string;
+    product_image?: any;
     barcode_image?: string;
     created_at?: string;
     updated_at?: string;
@@ -32,6 +32,11 @@ export interface CreateProductData {
     category?: string;
     description?: string;
     reorder_level?: number;
+    size?: string;
+    product_image?: {
+        file_path: string;
+        view: string;
+    }[];
 }
 
 export interface ProductFormData {

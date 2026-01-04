@@ -26,6 +26,13 @@ export const profileApi = {
         });
         return response;
     },
+
+    getPresignedUrl: async (fileName: string, functionality: string, subFunctionality?: string) => {
+        return apiRequest<{ presignedUrl: string; cdnUrl: string; filePath: string; contentType: string }>('/api/products/presigned-url', {
+            method: 'POST',
+            body: JSON.stringify({ fileName, functionality, subFunctionality }),
+        });
+    },
 };
 
 export default profileApi;

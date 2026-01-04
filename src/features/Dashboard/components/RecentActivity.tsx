@@ -24,6 +24,43 @@ interface ActivityItem {
   quantity: number;
 }
 
+const resolveUrl = (image: any): string => {
+  if (!image) return "";
+
+  // 1. Handle Array (extract first item)
+  if (Array.isArray(image)) {
+    if (image.length === 0) return "";
+    const first = image[0];
+    return typeof first === 'object' ? (first.file_path || first.cdnUrl || first.url || "") : String(first);
+  }
+
+  // 2. Handle Object (single image object)
+  if (typeof image === 'object') {
+    return image.file_path || image.cdnUrl || image.url || "";
+  }
+
+  // 3. Handle String (potential JSON)
+  if (typeof image === 'string') {
+    if (image.startsWith('{') || image.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(image);
+        if (Array.isArray(parsed) || typeof parsed === 'object') {
+          if (Array.isArray(parsed)) {
+            if (parsed.length === 0) return "";
+            const first = parsed[0];
+            return typeof first === 'object' ? (first.file_path || first.cdnUrl || first.url || "") : String(first);
+          }
+          return parsed.file_path || parsed.cdnUrl || parsed.url || "";
+        }
+      } catch {
+        return image;
+      }
+    }
+    return image;
+  }
+  return "";
+};
+
 const RecentActivity = () => {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,11 +71,11 @@ const RecentActivity = () => {
       try {
         const response = await ordersApi.getAll(1, 3);
         if (response.success && response.data) {
-          const mappedActivities: ActivityItem[] = response.data.map((order: Order) => ({
+          const mappedActivities: ActivityItem[] = response.data.map((order: Order & { product_image?: any }) => ({
             order_id: order.order_id,
             product_name: order.product_name || `Order #${order.order_id}`,
             category: order.category_name || "General",
-            product_image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100", // Fallback
+            product_image: resolveUrl(order.product_image) || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100",
             warehouse_name: order.warehouse_name || "Unknown Warehouse",
             status: order.status,
             created_at: order.created_at || new Date().toISOString(),

@@ -47,8 +47,8 @@ const SellingCard = ({ title, type, products }: { title: string; type: CardType;
       <div className="divide-y">
         {products && Array.isArray(products) && products.length > 0 ? (
           products.map((product) => (
-              <ProductRow key={product.product_id} product={product} />
-            ))
+            <ProductRow key={product.product_id} product={product} />
+          ))
         ) : (
           <div className="p-4 text-center text-gray-500 text-sm">No data available</div>
         )}
@@ -59,10 +59,48 @@ const SellingCard = ({ title, type, products }: { title: string; type: CardType;
 
 export default SellingCard;
 
+const resolveUrl = (image: any): string => {
+  if (!image) return "";
+
+  // 1. Handle Array (extract first item)
+  if (Array.isArray(image)) {
+    if (image.length === 0) return "";
+    const first = image[0];
+    return typeof first === 'object' ? (first.file_path || first.cdnUrl || first.url || "") : String(first);
+  }
+
+  // 2. Handle Object (single image object)
+  if (typeof image === 'object') {
+    return image.file_path || image.cdnUrl || image.url || "";
+  }
+
+  // 3. Handle String (potential JSON)
+  if (typeof image === 'string') {
+    if (image.startsWith('{') || image.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(image);
+        if (Array.isArray(parsed) || typeof parsed === 'object') {
+          if (Array.isArray(parsed)) {
+            if (parsed.length === 0) return "";
+            const first = parsed[0];
+            return typeof first === 'object' ? (first.file_path || first.cdnUrl || first.url || "") : String(first);
+          }
+          return parsed.file_path || parsed.cdnUrl || parsed.url || "";
+        }
+      } catch {
+        return image;
+      }
+    }
+    return image;
+  }
+  return "";
+};
+
+
 const ProductRow = ({ product }: { product: SellingProduct }) => (
   <div className="flex gap-4 px-4 py-4">
     <img
-      src={product.image || "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200"}
+      src={resolveUrl((product as any).product_image || product.image) || "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200"}
       className="w-12 h-12 rounded-lg object-cover"
       alt={product.name}
     />
