@@ -3,6 +3,8 @@ export interface InventoryProduct {
     name: string;
     category: string;
     sku: string;
+    realSku?: string;
     location: string;
     quantity: number;
+    type?: string;
 }

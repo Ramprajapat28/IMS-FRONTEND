@@ -10,6 +10,7 @@ export interface Product {
     stock_quantity?: number;
     location?: string;
     size?: string;
+    product_code?: string;
     stock_details?: {
         product_id: number;
         warehouse_name: string;
@@ -27,6 +28,7 @@ export interface Product {
 export interface CreateProductData {
     name: string;
     sku: string;
+    product_code?: string;
     category?: string;
     description?: string;
     reorder_level?: number;

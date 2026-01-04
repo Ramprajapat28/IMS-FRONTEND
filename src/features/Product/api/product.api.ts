@@ -62,4 +62,12 @@ export const productsApi = {
             body: JSON.stringify({ fileName, functionality, subFunctionality }),
         });
     },
+
+    getByCode: async (code: string) => {
+        return apiRequest<ApiResponse<Product[]>>(`/api/products/code/${code}`);
+    },
+
+    searchCodes: async (query: string) => {
+        return apiRequest<ApiResponse<{ id: number, code: string, name: string }[]>>(`/api/products/codes/search?query=${query}`);
+    },
 };

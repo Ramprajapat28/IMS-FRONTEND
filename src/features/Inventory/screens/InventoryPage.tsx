@@ -40,23 +40,17 @@ const InventoryPage = () => {
                 if (Array.isArray(productList)) {
                     const mapped: InventoryProduct[] = productList.map((p: any) => {
                         // Format location string from stock details
-                        let locationStr = "-";
-                        if (p.stock_details && p.stock_details.length > 0) {
-                            locationStr = p.stock_details.map((d: any) => {
-                                const parts = [d.warehouse_name, d.room_name, d.shelf_name].filter((x: any) => x && x !== "-" && x !== "Unassigned");
-                                const locName = parts.length > 0 ? parts.join(", ") : "Unassigned";
-                                return `${locName} (${d.item_count})`;
-                            }).join(" | ");
-                        }
+
 
                         return {
                             id: p.product_id,
                             name: p.name,
                             category: p.category_name,
-                            sku: p.sku || "-----",
-                            location: locationStr,
+                            sku: p.type === 'group' ? "-----" : (p.sku || "-----"),
+                            realSku: p.sku || "-----",
+                            location: p.type === 'group' ? `Mixed (${p.variant_count} variants)` : (p.location || "See Details"),
                             quantity: p.stock_quantity || 0,
-
+                            type: p.type // "group" or "product"
                         };
                     });
 
@@ -116,9 +110,15 @@ const InventoryPage = () => {
     }, [data, search, sortBy]);
 
 
-    // Handle row click - navigate to inventory details page
+    // Handle row click - navigate to inventory details page or variants page
     const handleRowClick = (item: InventoryProduct) => {
-        navigate(`/inventory/details/${item.id}`);
+        if ((item as any).type === 'group') {
+            // Navigate to variants page using the code (sku field holds the code for groups)
+            // Use realSku because item.sku is masked as "-----"
+            navigate(`/products/variants/${item.realSku}`);
+        } else {
+            navigate(`/inventory/details/${item.id}`);
+        }
     };
 
     return (

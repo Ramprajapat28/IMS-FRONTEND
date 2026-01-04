@@ -12,6 +12,7 @@ export type BaseProduct = {
   quantity: number;
   category?: string;
   size?: string;
+  product_code?: string;
 };
 
 type Props = {
@@ -68,7 +69,13 @@ const ProductsTable = ({ data, mode, onDelete }: Props) => {
 
               <td className="p-3 flex gap-2">
                 <button
-                  onClick={() => navigate(`/products/${p.id}`)}
+                  onClick={() => {
+                    if (p.product_code) {
+                      navigate(`/products/variants/${p.product_code}`);
+                    } else {
+                      navigate(`/products/${p.id}`);
+                    }
+                  }}
                   className="border rounded-lg p-1.5 hover:bg-gray-100"
                 >
                   <ChevronRight size={16} />

@@ -24,7 +24,9 @@ const MOCK_VARIANTS: Variant[] = [
 
 const ProductVariantsPage = () => {
     const navigate = useNavigate();
-    const { id } = useParams<{ id: string }>();
+    const { id } = useParams<{ id: string }>(); // "id" here should be likely interpreted as "code" if we changed route, OR we handle logic.
+    // If route is /products/variants/:code, then we receive "code".
+    // Let's assume the router uses :id or :code.
 
     const [variants, setVariants] = useState<Variant[]>([]);
     const [productName, setProductName] = useState("");
@@ -37,16 +39,33 @@ const ProductVariantsPage = () => {
 
             setIsLoading(true);
             try {
-                // Load product details
-                const response = await productsApi.getById(Number(id));
-                if (response.success && response.data) {
-                    setProductName(response.data.name);
+                // Determine if 'id' is a code or ID? 
+                // The URL is /products/variants/:code
+                const productCode = id;
+
+                const response = await productsApi.getByCode(productCode);
+                if (response.success && response.data && response.data.length > 0) {
+                    // Using the first product's name (should be same group name, or utilize Code table name if available)
+                    // Backend product model returns "product_code" string, but not the code name necessarily.
+                    // But ProductCodeModel creation put name = product name.
+                    setProductName(response.data[0].name.split('-')[0] + " (Group)"); // Heuristic or just use first name
+
+                    // Map Product[] to Variant[]
+                    const mappedVariants = response.data.map(p => ({
+                        id: p.product_id,
+                        productId: p.product_id,
+                        productName: p.name,
+                        size: p.size || "-",
+                        sku: p.sku,
+                        location: p.location || "-", // Location string or mapped
+                        qty: p.stock_quantity || 0 // Backend return stock_quantity in findByCodeIdWithStock
+                    }));
+                    setVariants(mappedVariants as any);
+                } else {
+                    setVariants([]);
+                    setProductName("Unknown Variant Group");
                 }
 
-                // TODO: Load actual variants from API
-                // For now, using mock data
-                const productVariants = MOCK_VARIANTS.filter(v => v.productId === Number(id));
-                setVariants(productVariants);
             } catch (err) {
                 console.error("Failed to load variants:", err);
             } finally {

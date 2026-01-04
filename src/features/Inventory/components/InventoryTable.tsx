@@ -36,43 +36,46 @@ const InventoryTable = ({ data, onDelete, onRowClick }: InventoryTableProps) => 
                 </thead>
 
                 <tbody>
-                    {data.map((item, index) => (
-                        <tr
-                            key={item.id}
-                            className="border-b last:border-none hover:bg-gray-50 cursor-pointer"
-                            onClick={() => handleRowClick(item)}
-                        >
-                            <td className="p-3">{index + 1}</td>
+                    {data.map((item, index) => {
+                        return (
+                            <tr
+                                key={item.id}
+                                className="border-b last:border-none hover:bg-gray-50 cursor-pointer"
+                                onClick={() => handleRowClick(item)}
+                            >
+                                <td className="p-3">{index + 1}</td>
 
-                            <td className="p-3">
-                                <div className="flex items-center gap-3 min-w-[220px]">
-                                    <span className="font-medium">{item.name}</span>
-                                </div>
-                            </td>
+                                <td className="p-3">
+                                    <div className="flex items-center gap-3 min-w-[220px]">
+                                        <span className="font-medium">{item.name}</span>
+                                    </div>
+                                </td>
 
-                            <td className="p-3 text-gray-600">
-                                {item.category}
-                            </td>
+                                <td className="p-3 text-gray-600">
+                                    {item.category}
+                                </td>
 
+                                <td className="p-3 text-gray-500">
+                                    {item.sku}
+                                </td>
 
+                                <td className="p-3 text-gray-600">{item.location}</td>
+                                <td className="p-3">{item.quantity}</td>
 
-                            <td className="p-3 text-gray-500">{item.sku}</td>
-                            <td className="p-3 text-gray-600">{item.location}</td>
-                            <td className="p-3">{item.quantity}</td>
-
-                            <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => onDelete(item.id)}
-                                        className="border rounded-lg p-1.5 hover:bg-gray-100"
-                                        title="Delete"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
+                                <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => onDelete(item.id)}
+                                            className="border rounded-lg p-1.5 hover:bg-gray-100"
+                                            title="Delete"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
         </div>

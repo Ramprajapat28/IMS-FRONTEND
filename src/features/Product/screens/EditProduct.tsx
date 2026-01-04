@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2 , ChevronLeft, Save } from "lucide-react";
+import { ArrowLeft, Loader2, ChevronLeft, Save } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
 import { categoriesApi, type Category } from "@/features/Inventory/api/category.api";
 import { itemsApi } from "@/features/Inventory/api/item.api";
@@ -13,6 +13,7 @@ type ProductForm = {
     category_id?: number;
     size: string;
     sku: string;
+    product_code: string;
     quantity: string;
     reorderLevel: string;
     warehouse_id: string;
@@ -32,6 +33,7 @@ const EditProduct = () => {
         category: "",
         size: "",
         sku: "",
+        product_code: "",
         quantity: "",
         reorderLevel: "",
         warehouse_id: "",
@@ -48,6 +50,10 @@ const EditProduct = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Autocomplete State
+    const [suggestions, setSuggestions] = useState<{ id: number, code: string, name: string }[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
     // Dropdown data
     const [categories, setCategories] = useState<Category[]>([]);
@@ -74,6 +80,7 @@ const EditProduct = () => {
                         category_id: product.category_id,
                         size: product.size || "",
                         sku: product.sku,
+                        product_code: product.product_code || "",
                         quantity: "", // Reset quantity for "Add Stock", don't prefill with total stock
                         reorderLevel: String(product.reorder_level || 0),
                         warehouse_id: "",
@@ -309,6 +316,7 @@ const EditProduct = () => {
             const payload = {
                 name: form.name,
                 sku: form.sku,
+                product_code: form.product_code,
                 category_name: form.category,
                 category_id: form.category_id,
                 description: form.description,
@@ -459,6 +467,57 @@ const EditProduct = () => {
                                     placeholder="Enter SKU"
                                     className="w-72 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 />
+                            </div>
+
+                            {/* Product Code (Autocomplete) */}
+                            <div className="relative">
+                                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                                    Product Code (Variant Group):
+                                </label>
+                                <input
+                                    value={form.product_code}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        updateField("product_code", val);
+                                        if (val.length >= 2) {
+                                            productsApi.searchCodes(val).then(res => {
+                                                if (res.success && res.data) {
+                                                    setSuggestions(res.data);
+                                                    setShowSuggestions(true);
+                                                }
+                                            });
+                                        } else {
+                                            setSuggestions([]);
+                                            setShowSuggestions(false);
+                                        }
+                                    }}
+                                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                                    onFocus={() => {
+                                        if (form.product_code && form.product_code.length >= 2 && suggestions.length > 0) setShowSuggestions(true);
+                                    }}
+                                    placeholder="e.g. SUMMER-TEE-001"
+                                    className="w-72 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">If blank, this product won't be grouped.</p>
+
+                                {/* Suggestions Dropdown */}
+                                {showSuggestions && suggestions.length > 0 && (
+                                    <div className="absolute z-10 w-72 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                                        {suggestions.map((item) => (
+                                            <div
+                                                key={item.id}
+                                                className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm"
+                                                onClick={() => {
+                                                    updateField("product_code", item.code);
+                                                    setShowSuggestions(false);
+                                                }}
+                                            >
+                                                <div className="font-medium text-gray-900">{item.code}</div>
+                                                <div className="text-xs text-gray-500">{item.name}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
