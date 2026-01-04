@@ -6,7 +6,9 @@ import {
     Image as ImageIcon,
     Edit3,
     ChevronDown,
-    Loader2
+    Loader2,
+    Plus,
+    Minus
 } from "lucide-react";
 import { BrowserMultiFormatReader, type IScannerControls } from "@zxing/browser";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -55,6 +57,8 @@ const BarcodeScannerPage: React.FC = () => {
     const [selectedRoomId, setSelectedRoomId] = useState<number | "">("");
     const [selectedShelfId, setSelectedShelfId] = useState<number | "">("");
     const [sellingMode, setSellingMode] = useState<"Online" | "Offline">("Online");
+    const [quantity, setQuantity] = useState<number>(1); // 🆕 Quantity State
+
 
     const [isSelling, setIsSelling] = useState(false);
 
@@ -76,7 +80,9 @@ const BarcodeScannerPage: React.FC = () => {
                 if (prod.product_id) {
                     const detailRes = await productsApi.getDetails(prod.product_id);
                     if (detailRes.success && detailRes.data && detailRes.data.stock_details) {
-                        setStockDetails(detailRes.data.stock_details as any);
+                        // Filter only AVAILABLE items because removeStock API only works on available items
+                        const availableStock = detailRes.data.stock_details.filter((s: any) => s.status === 'available');
+                        setStockDetails(availableStock as any);
                     }
                 }
             } else {
@@ -100,9 +106,9 @@ const BarcodeScannerPage: React.FC = () => {
             const res = await itemsApi.removeStock({
                 product_id: product.product_id,
                 shelf_id: Number(selectedShelfId),
-                quantity: 1,
+                quantity: quantity,
                 status: 'sold',
-                mode: sellingMode // 🆕 Pass selected mode
+                mode: sellingMode
             });
 
             if (res.success) {
@@ -435,6 +441,40 @@ const BarcodeScannerPage: React.FC = () => {
                                                                 </label>
                                                             </div>
                                                         </div>
+
+
+                                                        {/* Quantity & Return Toggle */}
+                                                        <div className="flex gap-4">
+                                                            <div className="flex-1 max-w-[100px]">
+                                                                <label className="text-[11px] text-gray-500 mb-1 block">
+                                                                    Quantity <span className="text-red-500">*</span>
+                                                                </label>
+                                                                <div className="flex items-center border border-gray-300 rounded-md bg-white">
+                                                                    <button
+                                                                        onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                                                                        className="px-2 py-1.5 hover:bg-gray-100 text-gray-600 border-r transition"
+                                                                        type="button"
+                                                                    >
+                                                                        <Minus size={14} />
+                                                                    </button>
+                                                                    <input
+                                                                        type="number"
+                                                                        min="1"
+                                                                        value={quantity}
+                                                                        onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
+                                                                        className="w-full text-center text-xs focus:outline-none py-1.5 font-medium appearance-none"
+                                                                    />
+                                                                    <button
+                                                                        onClick={() => setQuantity(q => q + 1)}
+                                                                        className="px-2 py-1.5 hover:bg-gray-100 text-gray-600 border-l transition"
+                                                                        type="button"
+                                                                    >
+                                                                        <Plus size={14} />
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -443,7 +483,7 @@ const BarcodeScannerPage: React.FC = () => {
                                             <div className="flex justify-end mt-3">
                                                 <button
                                                     onClick={handleSell}
-                                                    disabled={!selectedShelfId || isSelling}
+                                                    disabled={!selectedShelfId || isSelling || quantity < 1}
                                                     className={`px-5 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 shadow-sm
                                                         ${!selectedShelfId || isSelling ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                                                 >
@@ -477,6 +517,12 @@ const BarcodeScannerPage: React.FC = () => {
                                             className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                                         >
                                             Scan Another Product
+                                        </button>
+                                        <button
+                                            onClick={() => navigate('/dashboard')}
+                                            className="mt-3 text-sm text-gray-500 hover:text-gray-700"
+                                        >
+                                            Back to Dashboard
                                         </button>
                                     </div>
                                 )}
