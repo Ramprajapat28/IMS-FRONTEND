@@ -27,8 +27,8 @@ const AddProduct = () => {
   });
 
   // Multiple Image States
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<{ url: string; uploading: boolean; error?: boolean }[]>([]);
+  const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,73 +58,87 @@ const AddProduct = () => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleImageUpload = (files: FileList | null) => {
-    if (!files) return;
+  const uploadSingleFile = async (file: File): Promise<string | null> => {
+    try {
+      // 1. Get Presigned URL
+      const presigned = await productsApi.getPresignedUrl(file.name, "product", "images");
 
-    const newFiles: File[] = [];
-    const newPreviews: string[] = [];
+      // 2. Upload to S3
+      const uploadRes = await fetch(presigned.presignedUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+          // Use exact content type if provided, otherwise fallback to file.type, but respecting user's recent changes
+          "Content-Type": presigned.contentType || file.type
+        },
+      });
 
-    Array.from(files).forEach((file) => {
-      // Basic validation (optional)
-      if (file.size > 5 * 1024 * 1024) {
-        alert(`File ${file.name} exceeds 5MB limit`);
-        return;
+      if (!uploadRes.ok) {
+        throw new Error(`Failed to upload to S3: ${uploadRes.status}`);
       }
 
-      newFiles.push(file);
-      newPreviews.push(URL.createObjectURL(file));
-    });
+      return presigned.cdnUrl;
+    } catch (err) {
+      console.error(`Failed to upload ${file.name}`, err);
+      return null;
+    }
+  };
 
-    setSelectedFiles((prev) => [...prev, ...newFiles]);
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files) return;
+
+    // Create temporary placeholders
+    const newPreviews = Array.from(files).map((file) => ({
+      url: URL.createObjectURL(file), // Local preview
+      uploading: true
+    }));
+
     setImagePreviews((prev) => [...prev, ...newPreviews]);
+
+    // Process uploads
+    const newUploadedUrls: string[] = [];
+    const fileArray = Array.from(files);
+
+    /* 
+       We need to track index relative to the TOTAL list to update loading state correctly.
+       However, simplified approach: append new ones, upload them, then update their status.
+    */
+
+    // We know the starting index of new items
+    const startIndex = imagePreviews.length;
+
+    for (let i = 0; i < fileArray.length; i++) {
+      const file = fileArray[i];
+      const globalIndex = startIndex + i;
+
+      // Upload
+      const url = await uploadSingleFile(file);
+
+      if (url) {
+        newUploadedUrls.push(url);
+        // Mark validation success
+        setImagePreviews(prev => prev.map((item, idx) =>
+          idx === globalIndex ? { ...item, uploading: false } : item
+        ));
+      } else {
+        // Mark error
+        setImagePreviews(prev => prev.map((item, idx) =>
+          idx === globalIndex ? { ...item, uploading: false, error: true } : item
+        ));
+      }
+    }
+
+    setUploadedUrls((prev) => [...prev, ...newUploadedUrls]);
   };
 
   const removeImage = (index: number) => {
-    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
     setImagePreviews((prev) => {
-      // Revoke old URL to avoid memory leak
-      URL.revokeObjectURL(prev[index]);
+      URL.revokeObjectURL(prev[index].url);
       return prev.filter((_, i) => i !== index);
     });
+    setUploadedUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const uploadImagesToS3 = async () => {
-    if (selectedFiles.length === 0) return [];
-
-    const uploadPromises = selectedFiles.map(async (file) => {
-      try {
-        // 1. Get Presigned URL
-        const presigned = await productsApi.getPresignedUrl(file.name, "product", "images");
-
-        // 2. Upload to S3
-        console.log(`Uploading ${file.name} to ${presigned.presignedUrl} with type ${presigned.contentType}`);
-
-        const uploadRes = await fetch(presigned.presignedUrl, {
-          method: "PUT",
-          body: file,
-          headers: {
-            "Content-Type": presigned.contentType, // Must match signature exactly
-          },
-        });
-
-        if (!uploadRes.ok) {
-          const errorText = await uploadRes.text();
-          console.error(`S3 Upload Failed: ${uploadRes.status} ${uploadRes.statusText}`, errorText);
-          throw new Error(`Failed to upload to S3: ${uploadRes.status}`);
-        }
-
-        return {
-          file_path: presigned.cdnUrl,
-          view: "front" // default view
-        };
-      } catch (err) {
-        console.error(`Failed to upload ${file.name}`, err);
-        throw err;
-      }
-    });
-
-    return Promise.all(uploadPromises);
-  };
 
   const handleSubmit = async () => {
     // Validation
@@ -133,24 +147,33 @@ const AddProduct = () => {
       return;
     }
 
+    // Check if uploads are still pending
+    if (imagePreviews.some(img => img.uploading)) {
+      alert("Please wait for images to finish uploading");
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
     try {
-      // 1. Upload Images First
-      const uploadedImages = await uploadImagesToS3();
+      // Create Product Payload (JSON)
+      // Map stored URLs to the format backend expects
+      const productImages = uploadedUrls.map(url => ({
+        file_path: url,
+        view: "front"
+      }));
 
-      // 2. Create Product Payload (JSON)
       const payload = {
         name: form.name,
         sku: form.sku,
         category: form.category,
         description: form.description,
         size: form.size,
-        product_image: uploadedImages // Array of { file_path, view }
+        product_image: productImages
       };
 
-      const productRes = await productsApi.create(payload as any); // Type assertion if needed
+      const productRes = await productsApi.create(payload as any);
 
       if (!productRes.success || !productRes.data) {
         throw new Error(productRes.message || "Failed to create product");
@@ -305,12 +328,19 @@ const AddProduct = () => {
           <h2 className="text-lg font-semibold text-blue-600 mb-4">Product Images ({imagePreviews.length}/15)</h2>
 
           <div className="grid grid-cols-2 gap-2 mb-4">
-            {imagePreviews.map((src, index) => (
-              <div key={index} className="relative group border rounded-lg p-1 h-24 w-full flex items-center justify-center">
-                <img src={src} alt="preview" className="h-full w-full object-contain" />
+            {imagePreviews.map((img, index) => (
+              <div key={index} className={`relative group border rounded-lg p-1 h-24 w-full flex items-center justify-center ${img.error ? 'border-red-400 bg-red-50' : ''}`}>
+                {img.uploading ? (
+                  <Loader2 className="animate-spin text-blue-600" size={24} />
+                ) : img.error ? (
+                  <span className="text-xs text-red-500 font-medium">Upload Failed</span>
+                ) : (
+                  <img src={img.url} alt="preview" className="h-full w-full object-contain" />
+                )}
+
                 <button
                   onClick={() => removeImage(index)}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition shadow-sm z-10"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
