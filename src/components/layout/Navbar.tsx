@@ -86,13 +86,13 @@ const Navbar: React.FC = () => {
 
       {/* RIGHT */}
       <div className="flex items-center gap-3 ml-auto">
-        <button
+        {/* <button
           onClick={() => navigate("/notifications")}
           className="relative p-2 rounded-full hover:bg-gray-100"
         >
           <Bell size={20} />
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-        </button>
+        </button> */}
 
         <img
           onClick={() => navigate("/profile")}
