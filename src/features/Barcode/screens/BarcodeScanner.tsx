@@ -8,7 +8,8 @@ import {
     ChevronDown,
     Loader2,
     Plus,
-    Minus
+    Minus,
+    Package
 } from "lucide-react";
 import { BrowserMultiFormatReader, type IScannerControls } from "@zxing/browser";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -257,39 +258,58 @@ const BarcodeScannerPage: React.FC = () => {
                                                         {/* Product Image */}
                                                         <div className="flex-shrink-0">
                                                             <div className="w-24 h-28 rounded-lg border-2 border-gray-300 overflow-hidden bg-white">
-                                                                <img
-                                                                    src={(() => {
-                                                                        const imgs = product.product_image;
-                                                                        let url = "";
-                                                                        if (Array.isArray(imgs) && imgs.length > 0) {
-                                                                            // Helper to resolve single item
-                                                                            const item = imgs[0];
-                                                                            if (typeof item === 'object') {
-                                                                                url = item.file_path || item.cdnUrl || item.url || "";
-                                                                            } else {
-                                                                                url = String(item);
-                                                                            }
-                                                                        } else if (typeof imgs === 'string') {
-                                                                            // Try parsing if json string
-                                                                            if (imgs.startsWith('[') || imgs.startsWith('{')) {
-                                                                                try {
-                                                                                    const parsed = JSON.parse(imgs);
-                                                                                    if (Array.isArray(parsed) && parsed.length > 0) {
-                                                                                        const first = parsed[0];
-                                                                                        url = typeof first === 'object' ? (first.file_path || "") : String(first);
-                                                                                    } else if (typeof parsed === 'object') {
-                                                                                        url = parsed.file_path || "";
-                                                                                    }
-                                                                                } catch { url = imgs; }
-                                                                            } else {
-                                                                                url = imgs;
-                                                                            }
+
+                                                                {(() => {
+                                                                    const imgs = product.product_image;
+                                                                    let url = "";
+                                                                    if (Array.isArray(imgs) && imgs.length > 0) {
+                                                                        const item = imgs[0];
+                                                                        if (typeof item === 'object') {
+                                                                            url = item.file_path || item.cdnUrl || item.url || "";
+                                                                        } else {
+                                                                            url = String(item);
                                                                         }
-                                                                        return url || "https://via.placeholder.com/140x170?text=No+Image";
-                                                                    })()}
-                                                                    alt="Product"
-                                                                    className="w-full h-full object-cover"
-                                                                />
+                                                                    } else if (typeof imgs === 'string') {
+                                                                        if (imgs.startsWith('[') || imgs.startsWith('{')) {
+                                                                            try {
+                                                                                const parsed = JSON.parse(imgs);
+                                                                                if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                                    const first = parsed[0];
+                                                                                    url = typeof first === 'object' ? (first.file_path || "") : String(first);
+                                                                                } else if (typeof parsed === 'object') {
+                                                                                    url = parsed.file_path || "";
+                                                                                }
+                                                                            } catch { url = imgs; }
+                                                                        } else {
+                                                                            url = imgs;
+                                                                        }
+                                                                    }
+
+                                                                    if (url) {
+                                                                        return (
+                                                                            <img
+                                                                                src={url}
+                                                                                alt="Product"
+                                                                                className="w-full h-full object-cover"
+                                                                                onError={(e) => {
+                                                                                    e.currentTarget.style.display = 'none';
+                                                                                    const parent = e.currentTarget.parentElement;
+                                                                                    if (parent) {
+                                                                                        parent.classList.add('flex', 'items-center', 'justify-center', 'bg-gray-50');
+                                                                                        parent.innerHTML = '<div class="text-gray-400 text-center"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-1"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22v-9.5"></path></svg><p class="text-[10px]">No image</p></div>';
+                                                                                    }
+                                                                                }}
+                                                                            />
+                                                                        );
+                                                                    } else {
+                                                                        return (
+                                                                            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-gray-400">
+                                                                                <Package size={24} className="mb-1" />
+                                                                                <p className="text-[10px]">No image</p>
+                                                                            </div>
+                                                                        );
+                                                                    }
+                                                                })()}
                                                             </div>
                                                         </div>
 
