@@ -46,6 +46,7 @@ const Profile = () => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isImageUploading, setIsImageUploading] = useState(false);
 
   /* -------- FETCH PROFILE DATA -------- */
   useEffect(() => {
@@ -108,17 +109,47 @@ const Profile = () => {
 
   /* -------- IMAGE PREVIEW -------- */
 
-  const handleImageUpload = (file: File | null) => {
+  const handleImageUpload = async (file: File | null) => {
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
+    try {
+      setIsImageUploading(true);
+      const functionality = "user";
+      const subFunctionality = "profile_image";
+
+      const presignedRes = await profileApi.getPresignedUrl(file.name, functionality, subFunctionality);
+
+      if (!presignedRes || !presignedRes.presignedUrl) {
+        throw new Error("Failed to get presigned URL");
+      }
+
+      const uploadRes = await fetch(presignedRes.presignedUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type
+        }
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error("Failed to upload image");
+      }
+
+      const uploadedUrl = presignedRes.cdnUrl;
+
       setFormProfile((prev) => ({
         ...prev,
-        avatar: reader.result as string,
+        avatar: uploadedUrl
       }));
-    };
-    reader.readAsDataURL(file);
+
+      toast.success("Image uploaded successfully");
+
+    } catch (err) {
+      console.error("Image upload failed:", err);
+      toast.error("Failed to upload image");
+    } finally {
+      setIsImageUploading(false);
+    }
   };
 
   /* -------- ACTIONS -------- */
@@ -182,7 +213,9 @@ const Profile = () => {
       await profileApi.updateProfile(userId, payload);
 
       // Update local state
-      setSavedProfile(formProfile);
+      // Dispatch event to update Navbar
+      window.dispatchEvent(new Event('user_updated'));
+
       toast.success("Profile updated successfully");
     } catch (err) {
       console.error("Failed to update profile", err);
@@ -227,11 +260,17 @@ const Profile = () => {
           {/* LEFT PROFILE CARD */}
           <div className="bg-white border rounded-xl p-6 flex flex-col items-center">
             <div className="relative">
-              <img
-                src={formProfile.avatar}
-                alt="profile"
-                className="w-40 h-40 rounded-full object-cover border"
-              />
+              {isImageUploading ? (
+                <div className="w-40 h-40 rounded-full border flex items-center justify-center bg-gray-50">
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                </div>
+              ) : (
+                <img
+                  src={formProfile.avatar}
+                  alt="profile"
+                  className="w-40 h-40 rounded-full object-cover border"
+                />
+              )}
 
               <label className="absolute bottom-2 right-2 w-9 h-9 rounded-full bg-white border shadow flex items-center justify-center cursor-pointer hover:bg-gray-100">
                 <Plus size={16} />
