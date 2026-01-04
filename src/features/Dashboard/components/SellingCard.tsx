@@ -46,7 +46,7 @@ const SellingCard = ({ title, type, products }: { title: string; type: CardType;
       {/* LIST */}
       <div className="divide-y">
         {products && Array.isArray(products) && products.length > 0 ? (
-          products.map((product) => (
+          products.slice(0, 5).map((product) => (
             <ProductRow key={product.product_id} product={product} />
           ))
         ) : (
