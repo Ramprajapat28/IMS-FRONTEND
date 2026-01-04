@@ -36,6 +36,46 @@ const getVisiblePages = (page: number, totalPages: number) => {
   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 };
 
+const resolveUrl = (image: any): string => {
+  if (!image) return "";
+
+  // 1. Handle Array (extract first item)
+  if (Array.isArray(image)) {
+    if (image.length === 0) return "";
+    const first = image[0];
+    return typeof first === 'object' ? (first.file_path || first.cdnUrl || first.url || "") : String(first);
+  }
+
+  // 2. Handle Object (single image object)
+  if (typeof image === 'object') {
+    return image.file_path || image.cdnUrl || image.url || "";
+  }
+
+  // 3. Handle String (potential JSON)
+  if (typeof image === 'string') {
+    if (image.startsWith('{') || image.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(image);
+        // Recursively call for parsed result
+        if (Array.isArray(parsed) || typeof parsed === 'object') {
+          // We can reuse the same logic by recursively calling resolveUrl, 
+          // or just inline it to avoid recursion depth issues (though unlikely here)
+          if (Array.isArray(parsed)) {
+            if (parsed.length === 0) return "";
+            const first = parsed[0];
+            return typeof first === 'object' ? (first.file_path || first.cdnUrl || first.url || "") : String(first);
+          }
+          return parsed.file_path || parsed.cdnUrl || parsed.url || "";
+        }
+      } catch {
+        return image;
+      }
+    }
+    return image;
+  }
+  return "";
+};
+
 /* ---------------- COMPONENT ---------------- */
 
 const OrdersPage = () => {
@@ -61,7 +101,8 @@ const OrdersPage = () => {
         const response = await ordersApi.getAll(1, 100);
 
         if (response.success && response.data) {
-          const mappedOrders: Order[] = response.data.map((o: ApiOrder) => ({
+          console.log("DEBUG: Orders API Response", response.data);
+          const mappedOrders: Order[] = response.data.map((o: ApiOrder & { product_image?: any }) => ({
             id: o.order_id,
             product: o.product_name || `Product #${o.product_id}`,
             product_id: o.product_id,
@@ -72,7 +113,7 @@ const OrdersPage = () => {
             datetime: o.created_at ? new Date(o.created_at).toLocaleString() : "N/A",
             status: o.status || "Processing",
             mode: o.mode,
-            image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200",
+            image: resolveUrl(o.product_image) || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200",
           }));
           setOrders(mappedOrders);
         }

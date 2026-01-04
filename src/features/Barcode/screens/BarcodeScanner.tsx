@@ -252,7 +252,35 @@ const BarcodeScannerPage: React.FC = () => {
                                                         <div className="flex-shrink-0">
                                                             <div className="w-24 h-28 rounded-lg border-2 border-gray-300 overflow-hidden bg-white">
                                                                 <img
-                                                                    src={product.product_image || "https://via.placeholder.com/140x170?text=No+Image"}
+                                                                    src={(() => {
+                                                                        const imgs = product.product_image;
+                                                                        let url = "";
+                                                                        if (Array.isArray(imgs) && imgs.length > 0) {
+                                                                            // Helper to resolve single item
+                                                                            const item = imgs[0];
+                                                                            if (typeof item === 'object') {
+                                                                                url = item.file_path || item.cdnUrl || item.url || "";
+                                                                            } else {
+                                                                                url = String(item);
+                                                                            }
+                                                                        } else if (typeof imgs === 'string') {
+                                                                            // Try parsing if json string
+                                                                            if (imgs.startsWith('[') || imgs.startsWith('{')) {
+                                                                                try {
+                                                                                    const parsed = JSON.parse(imgs);
+                                                                                    if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                                        const first = parsed[0];
+                                                                                        url = typeof first === 'object' ? (first.file_path || "") : String(first);
+                                                                                    } else if (typeof parsed === 'object') {
+                                                                                        url = parsed.file_path || "";
+                                                                                    }
+                                                                                } catch { url = imgs; }
+                                                                            } else {
+                                                                                url = imgs;
+                                                                            }
+                                                                        }
+                                                                        return url || "https://via.placeholder.com/140x170?text=No+Image";
+                                                                    })()}
                                                                     alt="Product"
                                                                     className="w-full h-full object-cover"
                                                                 />
