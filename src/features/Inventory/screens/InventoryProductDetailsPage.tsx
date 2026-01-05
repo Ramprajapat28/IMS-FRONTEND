@@ -36,15 +36,21 @@ const InventoryProductDetailsPage = () => {
     }, [id]);
 
     // Helper to extract URL from various formats
-    const getBarcodeUrl = (image: any): string => {
+    const resolveUrl = (image: any): string => {
         if (!image) return "";
+        if (Array.isArray(image)) {
+            return image.length > 0 ? resolveUrl(image[0]) : "";
+        }
         if (typeof image === 'object') {
             return image.file_path || image.cdnUrl || image.url || "";
         }
         if (typeof image === 'string') {
-            if (image.startsWith('{') || image.startsWith('"')) {
+            if (image.startsWith('{') || image.startsWith('"') || image.startsWith('[')) {
                 try {
                     const parsed = JSON.parse(image);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        return resolveUrl(parsed[0]);
+                    }
                     return typeof parsed === 'object' ? (parsed.file_path || parsed.cdnUrl || parsed.url || "") : parsed;
                 } catch {
                     return image;
@@ -55,8 +61,11 @@ const InventoryProductDetailsPage = () => {
         return "";
     };
 
+    // Alias for compatibility if needed, using the robust resolver
+  
+
     const handleDownloadBarcode = async () => {
-        const imageUrl = getBarcodeUrl(product?.barcode_image);
+        const imageUrl = resolveUrl(product?.barcode_image);
         if (!imageUrl) return;
 
         try {
@@ -143,7 +152,7 @@ const InventoryProductDetailsPage = () => {
                     <div className="bg-gray-100 rounded-xl p-4 flex items-center justify-center h-56">
                         {product.product_image ? (
                             <img
-                                src={product.product_image}
+                                src={resolveUrl(product.product_image)}
                                 alt={product.name}
                                 className="w-full h-full object-contain"
                             />
@@ -168,7 +177,7 @@ const InventoryProductDetailsPage = () => {
                         <div className="flex justify-center mb-1">
                             {product.barcode_image && (
                                 <img
-                                    src={getBarcodeUrl(product.barcode_image)}
+                                    src={resolveUrl(product.barcode_image)}
                                     alt="Barcode"
                                     className="w-full h-auto max-h-52 object-contain"
                                     style={{ imageRendering: "pixelated" }}
