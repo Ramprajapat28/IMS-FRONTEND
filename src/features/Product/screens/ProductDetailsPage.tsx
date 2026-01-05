@@ -361,7 +361,7 @@ const ProductDetailsPage = () => {
                         </div> */}
 
                         {/* Refundable Item */}
-                        <div className="flex items-start gap-2.5 pt-3 border-t">
+                        {/* <div className="flex items-start gap-2.5 pt-3 border-t">
                             <input
                                 type="checkbox"
                                 checked={true}
@@ -372,7 +372,7 @@ const ProductDetailsPage = () => {
                                 <p className="font-medium text-xs text-gray-900">Refundable Item</p>
                                 <p className="text-xs text-gray-500">( This item can be returned and restocked )</p>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>

@@ -783,7 +783,7 @@ const EditProduct = () => {
                         </div>
 
                         {/* Refundable */}
-                        <label className="flex items-start gap-3 cursor-pointer">
+                        {/* <label className="flex items-start gap-3 cursor-pointer">
                             <input
                                 type="checkbox"
                                 checked={form.refundable}
@@ -796,7 +796,7 @@ const EditProduct = () => {
                                     This item can be returned and restocked
                                 </p>
                             </div>
-                        </label>
+                        </label> */}
 
                         {/* Footer Buttons */}
                         <div className="flex justify-between items-center pt-6 border-t">
