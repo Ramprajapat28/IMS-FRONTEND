@@ -17,6 +17,7 @@ import Header from "../Components/Header";
 import ProductSoldSuccess from "./ProductSoldSuccess";
 import { productsApi } from "@/features/Product/api/product.api";
 import { itemsApi } from "@/features/Inventory/api/item.api";
+import { warehousesApi, roomsApi, shelvesApi } from "@/features/Inventory/api/location.api";
 import type { Product } from "@/features/Product/types";
 
 /* ---------------- Types ---------------- */
@@ -58,10 +59,21 @@ const BarcodeScannerPage: React.FC = () => {
     const [selectedRoomId, setSelectedRoomId] = useState<number | "">("");
     const [selectedShelfId, setSelectedShelfId] = useState<number | "">("");
     const [sellingMode, setSellingMode] = useState<"Online" | "Offline">("Online");
-    const [quantity, setQuantity] = useState<number>(1); // 🆕 Quantity State
+    const [quantity, setQuantity] = useState<number>(1);
+    const [isReturnMode, setIsReturnMode] = useState(false); // Return mode toggle
 
+    // Return Mode: Destination location state
+    const [returnWarehouseId, setReturnWarehouseId] = useState<number | "">("")
+    const [returnRoomId, setReturnRoomId] = useState<number | "">("")
+    const [returnShelfId, setReturnShelfId] = useState<number | "">("")
+
+    // All locations for Return mode
+    const [allWarehouses, setAllWarehouses] = useState<any[]>([]);
+    const [allRooms, setAllRooms] = useState<any[]>([]);
+    const [allShelves, setAllShelves] = useState<any[]>([]);
 
     const [isSelling, setIsSelling] = useState(false);
+    const [isReturning, setIsReturning] = useState(false);
 
 
     /* ---------------- API CALLS ---------------- */
@@ -124,6 +136,36 @@ const BarcodeScannerPage: React.FC = () => {
         }
     };
 
+    const handleReturn = async () => {
+        if (!product || !returnShelfId) return;
+
+        setIsReturning(true);
+        try {
+            const res = await itemsApi.returnStock({
+                product_id: product.product_id,
+                shelf_id: Number(returnShelfId),
+                quantity: quantity
+            });
+
+            if (res.success && res.data) {
+                alert(`Successfully returned ${res.data.affected} item(s)`);
+                setProduct(null);
+                setStockDetails([]);
+                setReturnWarehouseId("");
+                setReturnRoomId("");
+                setReturnShelfId("");
+                setQuantity(1);
+            } else {
+                alert("Failed to return item: " + (res as any).message);
+            }
+        } catch (err: any) {
+            alert("Error processing return: " + err.message);
+        } finally {
+            setIsReturning(false);
+        }
+    };
+
+
     /* ---------------- CAMERA SCAN ---------------- */
     useEffect(() => {
         if (mode !== "camera" || !videoRef.current || product || isLoading) return;
@@ -149,6 +191,27 @@ const BarcodeScannerPage: React.FC = () => {
             controlsRef.current?.stop();
         };
     }, [mode, product, isLoading]);
+
+    /* ---------------- FETCH ALL LOCATIONS FOR RETURN MODE ---------------- */
+    useEffect(() => {
+        const fetchAllLocations = async () => {
+            try {
+                const [wRes, rRes, sRes] = await Promise.all([
+                    warehousesApi.getAll(1, 100),
+                    roomsApi.getAll(1, 100),
+                    shelvesApi.getAll(1, 100)
+                ]);
+
+                if (wRes.success && wRes.data) setAllWarehouses(wRes.data);
+                if (rRes.success && rRes.rooms) setAllRooms(rRes.rooms);
+                if (sRes.success && sRes.data) setAllShelves(sRes.data);
+            } catch (err) {
+                console.error("Failed to fetch locations:", err);
+            }
+        };
+        fetchAllLocations();
+    }, []);
+
 
     /* ---------------- IMAGE UPLOAD ---------------- */
     // Simulating scan from image (not implementing OCR for now unless library supports it easily, 
@@ -205,6 +268,16 @@ const BarcodeScannerPage: React.FC = () => {
             .map(id => stockDetails.find(s => s.shelf_id === id))
             .filter(x => x !== undefined)
         : [];
+
+    // Return Mode: Filtered locations  
+    const returnRoomsFiltered = returnWarehouseId
+        ? allRooms.filter((r: any) => r.warehouse_id === Number(returnWarehouseId))
+        : [];
+
+    const returnShelvesFiltered = returnRoomId
+        ? allShelves.filter((s: any) => s.room_id === Number(returnRoomId))
+        : [];
+
 
 
     /* ---------------- UI ---------------- */
@@ -354,116 +427,143 @@ const BarcodeScannerPage: React.FC = () => {
                                                 {/* RIGHT BOX - Location & Selling */}
                                                 <div className="border rounded-lg p-2.5 bg-white">
                                                     <div className="space-y-2.5">
-                                                        {/* Location Selection */}
-                                                        <div>
-                                                            <p className="text-sm font-semibold mb-2 text-gray-900">1. Select Location :</p>
-
-                                                            <div className="space-y-1.5">
-                                                                {/* WAREHOUSE */}
-                                                                <div>
-                                                                    <label className="text-[11px] text-gray-500 mb-1 block">
-                                                                        Warehouse <span className="text-red-500">*</span>
-                                                                    </label>
-                                                                    <div className="relative">
-                                                                        <select
-                                                                            className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                                                                            value={selectedWarehouseId}
-                                                                            onChange={(e) => {
-                                                                                setSelectedWarehouseId(Number(e.target.value));
-                                                                                setSelectedRoomId("");
-                                                                                setSelectedShelfId("");
-                                                                            }}
-                                                                        >
-                                                                            <option value="">Select Warehouse</option>
-                                                                            {uniqueWarehouses.map((w) => (
-                                                                                <option key={w?.warehouse_id} value={w?.warehouse_id}>{w?.warehouse_name}</option>
-                                                                            ))}
-                                                                        </select>
-                                                                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                                                                    </div>
-                                                                </div>
-
-
-                                                                {/* ROOM */}
-                                                                <div>
-                                                                    <label className="text-[11px] text-gray-500 mb-1 block">
-                                                                        Room <span className="text-red-500">*</span>
-                                                                    </label>
-                                                                    <div className="relative">
-                                                                        <select
-                                                                            className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                                                                            value={selectedRoomId}
-                                                                            onChange={(e) => {
-                                                                                setSelectedRoomId(Number(e.target.value));
-                                                                                setSelectedShelfId("");
-                                                                            }}
-                                                                            disabled={!selectedWarehouseId}
-                                                                        >
-                                                                            <option value="">Select Room</option>
-                                                                            {uniqueRooms.map((r) => (
-                                                                                <option key={r?.room_id} value={r?.room_id}>{r?.room_name}</option>
-                                                                            ))}
-                                                                        </select>
-                                                                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                                                                    </div>
-                                                                </div>
-
-
-
-                                                                {/* SHELF */}
-                                                                <div>
-                                                                    <label className="text-[11px] text-gray-500 mb-1 block">
-                                                                        Shelf <span className="text-red-500">*</span>
-                                                                    </label>
-                                                                    <div className="relative">
-                                                                        <select
-                                                                            className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                                                                            value={selectedShelfId}
-                                                                            onChange={(e) => setSelectedShelfId(Number(e.target.value))}
-                                                                            disabled={!selectedRoomId}
-                                                                        >
-                                                                            <option value="">Select Shelf</option>
-                                                                            {uniqueShelves.map((s) => (
-                                                                                <option key={s?.shelf_id} value={s?.shelf_id}>
-                                                                                    {s?.shelf_name} ({s?.item_count} available)
-                                                                                </option>
-                                                                            ))}
-                                                                        </select>
-                                                                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Selling Mode */}
-                                                        <div>
-                                                            <p className="text-sm font-semibold mb-2 text-gray-900">2. Select mode of selling :</p>
-                                                            <div className="flex gap-6">
-                                                                <label className="flex items-center gap-1.5 cursor-pointer">
-                                                                    <input
-                                                                        type="radio"
-                                                                        name="selling-mode"
-                                                                        checked={sellingMode === "Online"}
-                                                                        onChange={() => setSellingMode("Online")}
-                                                                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
-                                                                    />
-                                                                    <span className="text-sm text-gray-900">Online</span>
-                                                                </label>
-                                                                <label className="flex items-center gap-1.5 cursor-pointer">
-                                                                    <input
-                                                                        type="radio"
-                                                                        name="selling-mode"
-                                                                        checked={sellingMode === "Offline"}
-                                                                        onChange={() => setSellingMode("Offline")}
-                                                                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
-                                                                    />
-                                                                    <span className="text-sm text-gray-900">Offline</span>
-                                                                </label>
-                                                            </div>
+                                                        {/* Mode Toggle: Sell / Return */}
+                                                        <div className="flex gap-2 border-b pb-2">
+                                                            <button
+                                                                onClick={() => setIsReturnMode(false)}
+                                                                className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition ${!isReturnMode
+                                                                    ? 'bg-blue-600 text-white'
+                                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                                    }`}
+                                                            >
+                                                                Sell
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setIsReturnMode(true)}
+                                                                className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition ${isReturnMode
+                                                                    ? 'bg-green-600 text-white'
+                                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                                    }`}
+                                                            >
+                                                                Return
+                                                            </button>
                                                         </div>
 
 
-                                                        {/* Quantity & Return Toggle */}
+                                                        {/* Location Selection - SELL MODE ONLY */}
+                                                        {!isReturnMode && (
+                                                            <div>
+                                                                <p className="text-sm font-semibold mb-2 text-gray-900">1. Select Location :</p>
+
+                                                                <div className="space-y-1.5">
+                                                                    {/* WAREHOUSE */}
+                                                                    <div>
+                                                                        <label className="text-[11px] text-gray-500 mb-1 block">
+                                                                            Warehouse <span className="text-red-500">*</span>
+                                                                        </label>
+                                                                        <div className="relative">
+                                                                            <select
+                                                                                className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                                                value={selectedWarehouseId}
+                                                                                onChange={(e) => {
+                                                                                    setSelectedWarehouseId(Number(e.target.value));
+                                                                                    setSelectedRoomId("");
+                                                                                    setSelectedShelfId("");
+                                                                                }}
+                                                                            >
+                                                                                <option value="">Select Warehouse</option>
+                                                                                {uniqueWarehouses.map((w) => (
+                                                                                    <option key={w?.warehouse_id} value={w?.warehouse_id}>{w?.warehouse_name}</option>
+                                                                                ))}
+                                                                            </select>
+                                                                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                        </div>
+                                                                    </div>
+
+
+                                                                    {/* ROOM */}
+                                                                    <div>
+                                                                        <label className="text-[11px] text-gray-500 mb-1 block">
+                                                                            Room <span className="text-red-500">*</span>
+                                                                        </label>
+                                                                        <div className="relative">
+                                                                            <select
+                                                                                className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                                                value={selectedRoomId}
+                                                                                onChange={(e) => {
+                                                                                    setSelectedRoomId(Number(e.target.value));
+                                                                                    setSelectedShelfId("");
+                                                                                }}
+                                                                                disabled={!selectedWarehouseId}
+                                                                            >
+                                                                                <option value="">Select Room</option>
+                                                                                {uniqueRooms.map((r) => (
+                                                                                    <option key={r?.room_id} value={r?.room_id}>{r?.room_name}</option>
+                                                                                ))}
+                                                                            </select>
+                                                                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                        </div>
+                                                                    </div>
+
+
+
+                                                                    {/* SHELF */}
+                                                                    <div>
+                                                                        <label className="text-[11px] text-gray-500 mb-1 block">
+                                                                            Shelf <span className="text-red-500">*</span>
+                                                                        </label>
+                                                                        <div className="relative">
+                                                                            <select
+                                                                                className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                                                value={selectedShelfId}
+                                                                                onChange={(e) => setSelectedShelfId(Number(e.target.value))}
+                                                                                disabled={!selectedRoomId}
+                                                                            >
+                                                                                <option value="">Select Shelf</option>
+                                                                                {uniqueShelves.map((s) => (
+                                                                                    <option key={s?.shelf_id} value={s?.shelf_id}>
+                                                                                        {s?.shelf_name} ({s?.item_count} available)
+                                                                                    </option>
+                                                                                ))}
+                                                                            </select>
+                                                                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Selling Mode - SELL MODE ONLY */}
+                                                        {!isReturnMode && (
+                                                            <div>
+                                                                <p className="text-sm font-semibold mb-2 text-gray-900">2. Select mode of selling :</p>
+                                                                <div className="flex gap-6">
+                                                                    <label className="flex items-center gap-1.5 cursor-pointer">
+                                                                        <input
+                                                                            type="radio"
+                                                                            name="selling-mode"
+                                                                            checked={sellingMode === "Online"}
+                                                                            onChange={() => setSellingMode("Online")}
+                                                                            className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                                                                        />
+                                                                        <span className="text-sm text-gray-900">Online</span>
+                                                                    </label>
+                                                                    <label className="flex items-center gap-1.5 cursor-pointer">
+                                                                        <input
+                                                                            type="radio"
+                                                                            name="selling-mode"
+                                                                            checked={sellingMode === "Offline"}
+                                                                            onChange={() => setSellingMode("Offline")}
+                                                                            className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                                                                        />
+                                                                        <span className="text-sm text-gray-900">Offline</span>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+
+                                                        {/* Quantity */}
                                                         <div className="flex gap-4">
                                                             <div className="flex-1 max-w-[100px]">
                                                                 <label className="text-[11px] text-gray-500 mb-1 block">
@@ -493,31 +593,91 @@ const BarcodeScannerPage: React.FC = () => {
                                                                     </button>
                                                                 </div>
                                                             </div>
-
+                                                            {/* RETURN MODE - Location Selection */}
+                                                            {isReturnMode && (
+                                                                <div className="mt-3">
+                                                                    <p className="text-sm font-semibold mb-2 text-gray-900">Select Return Destination:</p>
+                                                                    <div className="space-y-1.5">
+                                                                        <div>
+                                                                            <label className="text-[11px] text-gray-500 mb-1 block">Warehouse <span className="text-red-500">*</span></label>
+                                                                            <div className="relative">
+                                                                                <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-green-500" value={returnWarehouseId} onChange={(e) => { setReturnWarehouseId(Number(e.target.value)); setReturnRoomId(""); setReturnShelfId(""); }}>
+                                                                                    <option value="">Select Warehouse</option>
+                                                                                    {allWarehouses.map((w: any) => (<option key={w.warehouse_id} value={w.warehouse_id}>{w.name}</option>))}
+                                                                                </select>
+                                                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                            </div>
+                                                                        </div>
+                                                                        <div>
+                                                                            <label className="text-[11px] text-gray-500 mb-1 block">Room <span className="text-red-500">*</span></label>
+                                                                            <div className="relative">
+                                                                                <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-green-500" value={returnRoomId} onChange={(e) => { setReturnRoomId(Number(e.target.value)); setReturnShelfId(""); }} disabled={!returnWarehouseId}>
+                                                                                    <option value="">Select Room</option>
+                                                                                    {returnRoomsFiltered.map((r: any) => (<option key={r.room_id} value={r.room_id}>{r.name || r.room_name}</option>))}
+                                                                                </select>
+                                                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                            </div>
+                                                                        </div>
+                                                                        <div>
+                                                                            <label className="text-[11px] text-gray-500 mb-1 block">Shelf <span className="text-red-500">*</span></label>
+                                                                            <div className="relative">
+                                                                                <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-green-500" value={returnShelfId} onChange={(e) => setReturnShelfId(Number(e.target.value))} disabled={!returnRoomId}>
+                                                                                    <option value="">Select Shelf</option>
+                                                                                    {returnShelvesFiltered.map((s: any) => (<option key={s.shelf_id} value={s.shelf_id}>{s.name || s.shelf_name}</option>))}
+                                                                                </select>
+                                                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             {/* Sell Button - Below boxes, inside container */}
-                                            <div className="flex justify-end mt-3">
-                                                <button
-                                                    onClick={handleSell}
-                                                    disabled={!selectedShelfId || isSelling || quantity < 1}
-                                                    className={`px-5 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 shadow-sm
+                                            {!isReturnMode && (
+                                                <div className="flex justify-end mt-3">
+                                                    <button
+                                                        onClick={handleSell}
+                                                        disabled={!selectedShelfId || isSelling || quantity < 1}
+                                                        className={`px-5 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 shadow-sm
                                                         ${!selectedShelfId || isSelling ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
-                                                >
-                                                    {isSelling ? (
-                                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                                    ) : (
-                                                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                                                            <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                                                        </svg>
-                                                    )}
-                                                    Sell
-                                                </button>
-                                            </div>
+                                                    >
+                                                        {isSelling ? (
+                                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                        ) : (
+                                                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                                                <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                                                            </svg>
+                                                        )}
+                                                        Sell
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* Return Button */}
+                                            {isReturnMode && (
+                                                <div className="flex justify-end mt-3">
+                                                    <button
+                                                        onClick={handleReturn}
+                                                        disabled={!returnShelfId || isReturning || quantity < 1}
+                                                        className={`px-5 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 shadow-sm ${!returnShelfId || isReturning ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                                                    >
+                                                        {isReturning ? (
+                                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                        ) : (
+                                                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                                            </svg>
+                                                        )}
+                                                        Return
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}

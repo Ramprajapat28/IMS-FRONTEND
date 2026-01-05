@@ -65,4 +65,11 @@ export const itemsApi = {
             body: JSON.stringify(data),
         });
     },
+
+    returnStock: async (data: { product_id: number; quantity: number; shelf_id: number }) => {
+        return apiRequest<ApiResponse<{ affected: number }>>('/api/items/return-stock', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
 };
