@@ -14,10 +14,10 @@ import { AddProduct, GroupItem } from "@/features/Product";
 import { Reports } from "@/features/Report";
 import { Profile } from "@/features/Profile";
 import { Order } from "@/features/Order";
-import { InventoryPage, InventoryCategoriesPage, InventoryProductDetailsPage } from "@/features/Inventory";
+import { InventoryPage, InventoryCategoriesPage, InventoryProductDetailsPage, InventoryVariantsPage } from "@/features/Inventory";
 import CategoryProducts from "@/features/Product/screens/CategoryProducts";
 import EditProduct from "@/features/Product/screens/EditProduct";
-import ProductVariantsPage from "@/features/Product/screens/ProductVariantsPage";
+// import ProductVariantsPage from "@/features/Product/screens/ProductVariantsPage";
 import ProductDetailsPage from "@/features/Product/screens/ProductDetailsPage";
 
 export const AppRoutes = () => {
@@ -37,7 +37,7 @@ export const AppRoutes = () => {
         <Route path="/inventory" element={<InventoryCategoriesPage />} />
         <Route path="/inventory/category/:categoryId" element={<InventoryPage />} />
         <Route path="/inventory/details/:id" element={<InventoryProductDetailsPage />} />
-        {/* <Route path="/inventory/variants/:productId" element={<InventoryVariantsPage />} /> */}
+        <Route path="/inventory/variants/:id" element={<InventoryVariantsPage />} />
 
         <Route path="/orders" element={<Order />} />
         <Route path="/barcode/generate" element={<BarcodeGenerate />} />
@@ -48,7 +48,7 @@ export const AppRoutes = () => {
         <Route path="/products" element={<GroupItem />} />
         <Route path="/products/add" element={<AddProduct />} />
         <Route path="/products/category/:name" element={<CategoryProducts />} />
-        <Route path="/products/variants/:id" element={<ProductVariantsPage />} />
+        {/* <Route path="/products/variants/:id" element={<ProductVariantsPage />} /> */}
         <Route path="/products/edit/:id" element={<EditProduct />} />
         <Route path="/products/details/:id" element={<ProductDetailsPage />} />
 

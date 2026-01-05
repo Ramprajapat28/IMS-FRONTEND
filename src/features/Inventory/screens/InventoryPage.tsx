@@ -115,7 +115,7 @@ const InventoryPage = () => {
         if ((item as any).type === 'group') {
             // Navigate to variants page using the code (sku field holds the code for groups)
             // Use realSku because item.sku is masked as "-----"
-            navigate(`/products/variants/${item.realSku}`);
+            navigate(`/inventory/variants/${item.realSku}`);
         } else {
             navigate(`/inventory/details/${item.id}`);
         }
@@ -130,7 +130,7 @@ const InventoryPage = () => {
                     breadcrumbs={categoryId ? [
                         { label: "Dashboard", path: "/dashboard" },
                         { label: "Inventory", path: "/inventory" },
-                        { label: `${categoryName} (Live)` },
+                        { label: `${categoryName}` },
                     ] : [
                         { label: "Dashboard", path: "/dashboard" },
                         { label: "Inventory" },
