@@ -47,7 +47,17 @@ const apiRequest = async <T>(
 
     if (!response.ok) {
         const error = await response.json().catch(() => ({ message: 'Request failed' }));
-        throw new Error(error.message || `HTTP error! status: ${response.status}`);
+
+        // Extract specific validation message if available
+        let errorMessage = error.message;
+        if (error.errors && Array.isArray(error.errors) && error.errors.length > 0) {
+            const firstErrorGroup = error.errors[0];
+            if (firstErrorGroup.body_error && Array.isArray(firstErrorGroup.body_error) && firstErrorGroup.body_error.length > 0) {
+                errorMessage = firstErrorGroup.body_error[0].message;
+            }
+        }
+
+        throw new Error(errorMessage || `HTTP error! status: ${response.status}`);
     }
 
     // Handle image/binary responses
