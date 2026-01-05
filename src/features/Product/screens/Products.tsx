@@ -620,6 +620,12 @@ const ProductsPage = () => {
           { label: "Dashboard", path: "/dashboard" },
           { label: "Products" },
         ]}
+        // @ts-ignore
+        onRefresh={() => {
+          // Re-fetch products
+          // We can just reload the page for simplicity or trigger the useEffect again
+          window.location.reload();
+        }}
       />
 
       {/* SEARCH & SORT */}

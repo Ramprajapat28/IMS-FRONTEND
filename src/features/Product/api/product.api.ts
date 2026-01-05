@@ -70,4 +70,11 @@ export const productsApi = {
     searchCodes: async (query: string) => {
         return apiRequest<ApiResponse<{ id: number, code: string, name: string }[]>>(`/api/products/codes/search?query=${query}`);
     },
+
+    importBulk: async (filePath: string) => {
+        return apiRequest<ApiResponse<{ summary: { success: number, failed: number }, errors: any[] }>>('/api/products/import', {
+            method: 'POST',
+            body: JSON.stringify({ file_path: filePath }),
+        });
+    },
 };

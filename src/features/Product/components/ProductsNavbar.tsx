@@ -6,11 +6,71 @@ type Breadcrumb = {
   path?: string;
 };
 
-const ProductsNavbar = ({ breadcrumbs }: { breadcrumbs: Breadcrumb[] }) => {
+type ProductsNavbarProps = {
+  breadcrumbs: Breadcrumb[];
+  onRefresh?: () => void;
+};
+
+const ProductsNavbar = ({ breadcrumbs, onRefresh }: ProductsNavbarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const isProductsRoot = location.pathname === "/products";
+
+  // File Import Logic
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      // 1. Get Presigned URL
+      // Use 'product' and 'bulk_import' as configured in backend
+      const presigned = await import("@/features/Product/api/product.api").then(m => m.productsApi.getPresignedUrl(file.name, "product", "bulk_import"));
+
+      // 2. Upload to S3
+      const uploadRes = await fetch(presigned.presignedUrl, {
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": presigned.contentType || file.type }
+      });
+
+      if (!uploadRes.ok) throw new Error("Failed to upload file");
+
+      // 3. Trigger Backend Import
+      const { productsApi } = await import("@/features/Product/api/product.api");
+      const importRes = await productsApi.importBulk(presigned.cdnUrl);
+
+
+      if (importRes.success && importRes.data) {
+        const { summary, errors } = importRes.data;
+
+        let msg = importRes.message || "Import completed";
+
+        if (summary.failed > 0 && errors.length > 0) {
+          msg += "\n\nFailures:";
+          // Show first 3 errors to avoid huge alert
+          errors.slice(0, 3).forEach((err: any) => {
+            msg += `\n- SKU ${err.sku}: ${err.error}`;
+          });
+          if (errors.length > 3) msg += `\n...and ${errors.length - 3} more.`;
+        }
+
+        alert(msg);
+
+        if (onRefresh) onRefresh();
+        else window.location.reload();
+      } else {
+        alert("Import failed: " + importRes.message);
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Import process failed. See console for details.");
+    } finally {
+      // Reset input
+      e.target.value = "";
+    }
+  };
 
   return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -49,16 +109,20 @@ const ProductsNavbar = ({ breadcrumbs }: { breadcrumbs: Breadcrumb[] }) => {
             <Plus size={16} /> Add Product
           </button>
 
-          <button
-            onClick={() => alert("PDF Export hooked here")}
-            className="bg-gray-200 px-4 py-2 rounded-lg text-sm flex gap-1"
-          >
+          <label className="bg-gray-200 px-4 py-2 rounded-lg text-sm flex gap-1 cursor-pointer hover:bg-gray-300 transition">
             <Download size={16} /> Import Product
-          </button>
+            <input
+              type="file"
+              accept=".csv,.xls,.xlsx"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </label>
         </div>
       )}
     </div>
   );
 };
+
 
 export default ProductsNavbar;
