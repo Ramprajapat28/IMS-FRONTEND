@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Search, Trash2 } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
+import InventoryFooter from "../components/InventoryFooter";
 
 type Variant = {
     id: number;
@@ -20,6 +21,8 @@ const InventoryVariantsPage = () => {
     const [variants, setVariants] = useState<Variant[]>([]);
     const [productName, setProductName] = useState("");
     const [search, setSearch] = useState("");
+    const [page, setPage] = useState(1);
+    const [rows, setRows] = useState(10);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -63,6 +66,9 @@ const InventoryVariantsPage = () => {
         v.size.toLowerCase().includes(search.toLowerCase()) ||
         v.sku.toLowerCase().includes(search.toLowerCase())
     );
+
+    const paginatedVariants = filteredVariants.slice((page - 1) * rows, page * rows);
+    const totalPages = Math.ceil(filteredVariants.length / rows);
 
     const handleRowClick = (variantId: number) => {
         // Navigate to inventory details for this specific variant
@@ -141,7 +147,7 @@ const InventoryVariantsPage = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredVariants.map((variant, index) => (
+                            {paginatedVariants.map((variant, index) => (
                                 <tr
                                     key={variant.id}
                                     className="border-b hover:bg-gray-50 cursor-pointer"
@@ -177,6 +183,18 @@ const InventoryVariantsPage = () => {
                     </div>
                 )}
             </div>
+
+            <InventoryFooter
+                page={page}
+                totalPages={totalPages}
+                rowsPerPage={rows}
+                totalEntries={filteredVariants.length}
+                onPageChange={setPage}
+                onRowsChange={(n) => {
+                    setRows(n);
+                    setPage(1);
+                }}
+            />
         </div>
     );
 };

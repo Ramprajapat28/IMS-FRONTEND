@@ -11,6 +11,8 @@ const InventoryProductDetailsPage = () => {
     const [product, setProduct] = useState<Product | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    
+    const [selectedImage, setSelectedImage] = useState<string>("");
 
 
     useEffect(() => {
@@ -35,22 +37,25 @@ const InventoryProductDetailsPage = () => {
         fetchProduct();
     }, [id]);
 
-    // Helper to extract URL from various formats
+    useEffect(() => {
+        if (product?.product_image) {
+            const initialImage = Array.isArray(product.product_image) && product.product_image.length > 0
+                ? resolveUrl(product.product_image[0])
+                : resolveUrl(product.product_image);
+            setSelectedImage(initialImage);
+        }
+    }, [product]);
+
+    // Helper to extract URL from a SINGLE image object/string
     const resolveUrl = (image: any): string => {
         if (!image) return "";
-        if (Array.isArray(image)) {
-            return image.length > 0 ? resolveUrl(image[0]) : "";
-        }
         if (typeof image === 'object') {
             return image.file_path || image.cdnUrl || image.url || "";
         }
         if (typeof image === 'string') {
-            if (image.startsWith('{') || image.startsWith('"') || image.startsWith('[')) {
+            if (image.startsWith('{') || image.startsWith('"')) {
                 try {
                     const parsed = JSON.parse(image);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        return resolveUrl(parsed[0]);
-                    }
                     return typeof parsed === 'object' ? (parsed.file_path || parsed.cdnUrl || parsed.url || "") : parsed;
                 } catch {
                     return image;
@@ -61,8 +66,35 @@ const InventoryProductDetailsPage = () => {
         return "";
     };
 
+    // Helper to get ALL valid image URLs
+    const getAllImages = (): string[] => {
+        if (!product?.product_image) return [];
+
+        if (Array.isArray(product.product_image)) {
+            // If it's already an array of images
+            return product.product_image.map(resolveUrl).filter(Boolean);
+        }
+
+        // Handle if it's a string that might be a JSON array
+        if (typeof product.product_image === 'string') {
+            try {
+                if (product.product_image.trim().startsWith('[')) {
+                    const parsed = JSON.parse(product.product_image);
+                    if (Array.isArray(parsed)) {
+                        return parsed.map(resolveUrl).filter(Boolean);
+                    }
+                }
+            } catch (e) {
+                // heuristic to treat as single image
+            }
+        }
+
+        const single = resolveUrl(product.product_image);
+        return single ? [single] : [];
+    };
+
     // Alias for compatibility if needed, using the robust resolver
-  
+
 
     const handleDownloadBarcode = async () => {
         const imageUrl = resolveUrl(product?.barcode_image);
@@ -114,6 +146,7 @@ const InventoryProductDetailsPage = () => {
 
 
     const isInStock = (product.stock_quantity || 0) > 0;
+    const allImages = getAllImages();
 
     return (
         <div className="max-w-7xl mx-auto space-y-2">
@@ -149,17 +182,38 @@ const InventoryProductDetailsPage = () => {
                 {/* LEFT - Product Image & Barcode */}
                 <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border p-4 space-y-4">
                     {/* Product Image */}
-                    <div className="bg-gray-100 rounded-xl p-4 flex items-center justify-center h-56">
-                        {product.product_image ? (
-                            <img
-                                src={resolveUrl(product.product_image)}
-                                alt={product.name}
-                                className="w-full h-full object-contain"
-                            />
-                        ) : (
-                            <div className="text-gray-400 text-center">
-                                <Package size={48} className="mx-auto mb-2" />
-                                <p className="text-sm">No image available</p>
+                    {/* Product Image */}
+                    {/* Product Image Gallery */}
+                    <div className="space-y-3">
+                        {/* Main Image */}
+                        <div className="bg-gray-100 rounded-xl p-4 flex items-center justify-center h-64 border">
+                            {selectedImage ? (
+                                <img
+                                    src={selectedImage}
+                                    alt={product.name}
+                                    className="w-full h-full object-contain"
+                                />
+                            ) : (
+                                <div className="text-gray-400 text-center">
+                                    <Package size={48} className="mx-auto mb-2" />
+                                    <p className="text-sm">No image available</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Thumbnails */}
+                        {allImages.length > 1 && (
+                            <div className="flex gap-2 w-full overflow-x-auto pb-2 scrollbar-hide">
+                                {allImages.map((img, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setSelectedImage(img)}
+                                        className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden ${selectedImage === img ? 'border-blue-600' : 'border-transparent hover:border-gray-300'
+                                            }`}
+                                    >
+                                        <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                                    </button>
+                                ))}
                             </div>
                         )}
                     </div>

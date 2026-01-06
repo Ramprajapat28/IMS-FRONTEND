@@ -84,6 +84,7 @@ const OrdersPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [statusFilter, setStatusFilter] = useState({
     category: "",
@@ -98,7 +99,10 @@ const OrdersPage = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await ordersApi.getAll(1, 100);
+        // Pass status filter if valid, otherwise undefined
+        const filters = statusFilter.status ? { status: statusFilter.status } : undefined;
+
+        const response = await ordersApi.getAll(page, rowsPerPage, filters);
 
         if (response.success && response.data) {
           console.log("DEBUG: Orders API Response", response.data);
@@ -116,6 +120,10 @@ const OrdersPage = () => {
             image: resolveUrl(o.product_image) || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200",
           }));
           setOrders(mappedOrders);
+
+          if (response.pagination) {
+            setTotalPages(response.pagination.totalPages);
+          }
         }
       } catch (err) {
         console.error("Failed to fetch orders:", err);
@@ -126,7 +134,7 @@ const OrdersPage = () => {
     };
 
     fetchOrders();
-  }, []);
+  }, [page, rowsPerPage, statusFilter.status]);
 
   // Compute unique filter options from orders data
   const filterOptions = useMemo(() => {
@@ -159,14 +167,11 @@ const OrdersPage = () => {
   }, [orders, statusFilter]);
 
   /* ----------------------------- PAGINATION -------------------------------- */
-  const totalPages = Math.ceil(filteredOrders.length / rowsPerPage);
+  // const totalPages = Math.ceil(filteredOrders.length / rowsPerPage);
 
   const visiblePages = getVisiblePages(page, totalPages);
 
-  const paginatedOrders = filteredOrders.slice(
-    (page - 1) * rowsPerPage,
-    page * rowsPerPage
-  );
+  const paginatedOrders = filteredOrders; // .slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
   /* --------------------------- SAFETY CLAMP -------------------------------- */
   useEffect(() => {
@@ -184,6 +189,25 @@ const OrdersPage = () => {
 
 
   /* -------------------------------- RENDER -------------------------------- */
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-xl border p-6 flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl border p-6">
+        <div className="text-center text-red-600 py-8">
+          <p className="text-lg font-medium">Failed to load orders</p>
+          <p className="text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white rounded-xl border p-4 md:p-6 space-y-4">
       {/* HEADER */}

@@ -528,14 +528,16 @@ const ProductsPage = () => {
     useState<"none" | "name" | "category">("none");
   const [page, setPage] = useState(1);
   const [rows, setRows] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
 
+  // Fetch products from API
   // Fetch products from API
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await productsApi.getAll(1, 100);
+        const response = await productsApi.getAll(page, rows);
         if (response.success && response.data) {
           const products: DisplayProduct[] = response.data.map((p: Product) => {
             return {
@@ -550,6 +552,10 @@ const ProductsPage = () => {
             };
           });
           setData(products);
+
+          if (response.pagination) {
+            setTotalPages(response.pagination.totalPages);
+          }
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch products");
@@ -559,7 +565,7 @@ const ProductsPage = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [page, rows]);
 
   // Handle delete
   const handleDelete = async (id: number) => {
@@ -591,8 +597,9 @@ const ProductsPage = () => {
     return d;
   }, [data, search, sortBy]);
 
-  const totalPages = Math.ceil(filtered.length / rows);
-  const visible = filtered.slice((page - 1) * rows, page * rows);
+  // const totalPages = Math.ceil(filtered.length / rows);
+  // Client-side slicing removed as we are using server-side pagination
+  const visible = filtered; // .slice((page - 1) * rows, page * rows);
 
   if (isLoading) {
     return (
