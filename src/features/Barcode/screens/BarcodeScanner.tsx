@@ -171,13 +171,14 @@ const BarcodeScannerPage: React.FC = () => {
         if (mode !== "camera" || !videoRef.current || product || isLoading) return;
 
         const reader = new BrowserMultiFormatReader();
+        let activeControls: IScannerControls | null = null;
+        let isMounted = true;
 
         reader.decodeFromVideoDevice(
             undefined,
             videoRef.current,
             (result, _err, controls) => {
                 if (result) {
-                    controlsRef.current = controls;
                     const text = result.getText();
                     if (text) {
                         controls.stop();
@@ -185,9 +186,22 @@ const BarcodeScannerPage: React.FC = () => {
                     }
                 }
             }
-        );
+        ).then((controls) => {
+            if (!isMounted) {
+                controls.stop();
+                return;
+            }
+            activeControls = controls;
+            controlsRef.current = controls;
+        }).catch((err) => {
+            console.error("Failed to start camera:", err);
+        });
 
         return () => {
+            isMounted = false;
+            if (activeControls) {
+                activeControls.stop();
+            }
             controlsRef.current?.stop();
         };
     }, [mode, product, isLoading]);
