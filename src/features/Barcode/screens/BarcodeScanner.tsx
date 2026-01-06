@@ -12,6 +12,9 @@ import {
     Package
 } from "lucide-react";
 import { BrowserMultiFormatReader, type IScannerControls } from "@zxing/browser";
+import { DecodeHintType, BarcodeFormat } from "@zxing/library";
+
+
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import ProductSoldSuccess from "./ProductSoldSuccess";
@@ -52,6 +55,7 @@ const BarcodeScannerPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [sold, setSold] = useState(false);
+    const [cameraError, setCameraError] = useState<string | null>(null);
     const [dragActive, setDragActive] = useState(false);
 
     // Selection State
@@ -170,12 +174,42 @@ const BarcodeScannerPage: React.FC = () => {
     useEffect(() => {
         if (mode !== "camera" || !videoRef.current || product || isLoading) return;
 
-        const reader = new BrowserMultiFormatReader();
+        // Check if camera API is supported
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            setCameraError("Camera access IS BLOCKED. Browsers require HTTPS (Secure) for camera access on mobile/network. Please use localhost or enable SSL.");
+            return;
+        }
+
+        // Configuration Hints
+        const hints = new Map();
+        const formats = [
+            BarcodeFormat.EAN_13,
+            BarcodeFormat.EAN_8,
+            BarcodeFormat.CODE_128,
+            BarcodeFormat.CODE_39,
+            BarcodeFormat.UPC_A,
+            BarcodeFormat.UPC_E,
+            BarcodeFormat.ITF
+        ];
+        hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
+        hints.set(DecodeHintType.TRY_HARDER, true);
+
+        const reader = new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 200 }); // 300ms delay between scans
         let activeControls: IScannerControls | null = null;
         let isMounted = true;
 
-        reader.decodeFromVideoDevice(
-            undefined,
+        const constraints = {
+            video: {
+                facingMode: 'environment',
+                width: { min: 640, ideal: 1280, max: 1920 },
+                height: { min: 480, ideal: 720, max: 1080 },
+                // @ts-ignore - focusMode is not in standard types but supported by some browsers
+                focusMode: 'continuous'
+            }
+        };
+
+        reader.decodeFromConstraints(
+            constraints,
             videoRef.current,
             (result, _err, controls) => {
                 if (result) {
@@ -195,6 +229,7 @@ const BarcodeScannerPage: React.FC = () => {
             controlsRef.current = controls;
         }).catch((err) => {
             console.error("Failed to start camera:", err);
+            setCameraError(err.message || "Failed to start camera. Please ensure camera permissions are granted and you are using HTTPS.");
         });
 
         return () => {
@@ -305,7 +340,7 @@ const BarcodeScannerPage: React.FC = () => {
                     <div className="h-full grid grid-cols-1 lg:grid-cols-12 gap-3">
 
                         {/* PRODUCT INFO / SUCCESS */}
-                        <div className={`order-2 lg:order-1 ${sold ? "lg:col-span-12" : "lg:col-span-8"} h-full overflow-hidden`}>
+                        <div className={`order-2 lg:order-1 ${sold || product ? "lg:col-span-12" : "lg:col-span-8"} h-full overflow-hidden`}>
                             <div className="h-full rounded-lg border overflow-hidden flex flex-col">
 
                                 {!sold && (
@@ -340,8 +375,20 @@ const BarcodeScannerPage: React.FC = () => {
                                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
 
                                                 {/* LEFT BOX - Product Details */}
-                                                <div className="border rounded-lg p-2.5 bg-white">
+                                                <div className="border rounded-lg p-2.5 bg-white relative">
+
+                                                    {/* Cancel / Rescan Button */}
+                                                    <button
+                                                        onClick={() => { setProduct(null); setStockDetails([]); }}
+                                                        className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition z-10"
+                                                        title="Scan another product"
+                                                    >
+                                                        <X size={20} />
+                                                    </button>
+
                                                     <div className="flex gap-2.5">
+
+
                                                         {/* Product Image */}
                                                         <div className="flex-shrink-0">
                                                             <div className="w-24 h-28 rounded-lg border-2 border-gray-300 overflow-hidden bg-white">
@@ -726,7 +773,7 @@ const BarcodeScannerPage: React.FC = () => {
 
                         {/* RIGHT PANEL - Camera/Upload */}
                         <div
-                            className={`order-1 lg:order-2 lg:col-span-4 transition-all duration-300 h-full ${sold ? "hidden" : ""
+                            className={`order-1 lg:order-2 lg:col-span-4 transition-all duration-300 h-full ${sold || product ? "hidden" : ""
                                 }`}
                         >
                             <div className="h-full rounded-lg border relative overflow-hidden bg-white">
@@ -744,19 +791,55 @@ const BarcodeScannerPage: React.FC = () => {
                                             <X className="w-3.5 h-3.5" />
                                         </button>
 
-                                        <video
-                                            ref={videoRef}
-                                            className="w-full h-full object-cover"
-                                        />
+                                        {cameraError ? (
+                                            <div className="h-full flex flex-col items-center justify-center p-6 text-center text-white bg-gray-900">
+                                                <p className="text-red-400 font-semibold mb-2">Camera Error</p>
+                                                <p className="text-sm text-gray-300 mb-4">{cameraError}</p>
+                                                <button
+                                                    onClick={() => window.location.reload()}
+                                                    className="px-4 py-2 bg-white text-black text-xs font-semibold rounded hover:bg-gray-200 transition"
+                                                >
+                                                    Reload Page
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <video
+                                                    ref={videoRef}
+                                                    className="w-full h-full object-cover"
+                                                />
 
-                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white pointer-events-none">
-                                            <p className="font-semibold text-base mb-1">SCAN THE BARCODE</p>
-                                            <p className="text-[10px] text-gray-200 mb-4">
-                                                Line up the barcode inside the red corners.
-                                            </p>
-                                            <div className="border-2 border-red-500 w-48 h-20 rounded" />
-                                            <p className="text-[10px] mt-3 opacity-80">Scanning…</p>
-                                        </div>
+                                                <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-between p-4">
+                                                    <div className="w-full text-center bg-black/20 backdrop-blur-sm rounded-full py-2 px-4 mt-8">
+                                                        <p className="text-white font-semibold text-sm shadow-sm">Scanning entire screen...</p>
+                                                    </div>
+
+                                                    {/* Full screen scan frame corners */}
+                                                    <div className="absolute inset-8 border-2 border-white/50 rounded-xl">
+                                                        <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-green-500 -mt-1 -ml-1 rounded-tl-xl"></div>
+                                                        <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-green-500 -mt-1 -mr-1 rounded-tr-xl"></div>
+                                                        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-green-500 -mb-1 -ml-1 rounded-bl-xl"></div>
+                                                        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-green-500 -mb-1 -mr-1 rounded-br-xl"></div>
+
+                                                        {/* Animated scan line */}
+                                                        <div className="w-full h-[2px] bg-green-500/80 shadow-[0_0_15px_rgba(34,197,94,0.8)] animate-[scan_2s_ease-in-out_infinite] mt-4"></div>
+                                                    </div>
+
+                                                    <p className="text-[10px] text-gray-200 mb-4 bg-black/20 px-3 py-1 rounded-full">
+                                                        Position barcode anywhere within the frame
+                                                    </p>
+                                                </div>
+
+                                                <style>{`
+                                                    @keyframes scan {
+                                                        0% { transform: translateY(0); opacity: 0; }
+                                                        10% { opacity: 1; }
+                                                        90% { opacity: 1; }
+                                                        100% { transform: translateY(60vh); opacity: 0; }
+                                                    }
+                                                `}</style>
+                                            </>
+                                        )}
                                     </div>
                                 )}
 
@@ -814,7 +897,7 @@ const BarcodeScannerPage: React.FC = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
