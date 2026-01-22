@@ -172,7 +172,7 @@ const InventoryPage = () => {
                 ) : (
                     <InventoryTable
                         data={filtered}
-                        onDelete={(id) => setData((prev) => prev.filter((p) => p.id !== id))}
+                        // onDelete={(id) => setData((prev) => prev.filter((p) => p.id !== id))}
                         onRowClick={handleRowClick}
                     />
                 )}

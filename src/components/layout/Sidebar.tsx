@@ -89,7 +89,7 @@ const Sidebar = () => {
 
           <NavLink to="/orders" className={linkClass} onClick={close}>
             <ShoppingCart size={20} />
-            Orders
+           Outward
           </NavLink>
 
           <NavLink to="/profile" className={linkClass} onClick={close}>

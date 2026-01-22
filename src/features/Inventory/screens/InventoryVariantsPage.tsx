@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Search, Trash2 } from "lucide-react";
+import { ArrowLeft, Search } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
 import InventoryFooter from "../components/InventoryFooter";
 
@@ -75,13 +75,13 @@ const InventoryVariantsPage = () => {
         navigate(`/inventory/details/${variantId}`);
     };
 
-    const handleDelete = (variantId: number, e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (confirm("Are you sure you want to delete this variant?")) {
-            // Note: This only deletes from local state. Actual API call would be needed for persistence.
-            setVariants(prev => prev.filter(v => v.id !== variantId));
-        }
-    };
+    // const handleDelete = (variantId: number, e: React.MouseEvent) => {
+    //     e.stopPropagation();
+    //     if (confirm("Are you sure you want to delete this variant?")) {
+    //         // Note: This only deletes from local state. Actual API call would be needed for persistence.
+    //         setVariants(prev => prev.filter(v => v.id !== variantId));
+    //     }
+    // };
 
     if (isLoading) {
         return (
@@ -143,7 +143,6 @@ const InventoryVariantsPage = () => {
                                 <th className="p-3">SKU #</th>
                                 <th className="p-3">Location</th>
                                 <th className="p-3">Qty</th>
-                                <th className="p-3"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -159,18 +158,7 @@ const InventoryVariantsPage = () => {
                                     <td className="p-3 text-gray-600">{variant.sku}</td>
                                     <td className="p-3 text-gray-600">{variant.location}</td>
                                     <td className="p-3 text-gray-600">{variant.qty}</td>
-                                    <td className="p-3">
-                                        <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-                                            {/* Delete button (functionality needs api connection if required) */}
-                                            <button
-                                                onClick={(e) => handleDelete(variant.id, e)}
-                                                className="border p-1.5 rounded-lg hover:bg-gray-100 text-red-500"
-                                                title="Delete"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
+                                    
                                 </tr>
                             ))}
                         </tbody>

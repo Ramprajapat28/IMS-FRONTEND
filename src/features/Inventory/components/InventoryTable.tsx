@@ -1,14 +1,12 @@
-import { Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { InventoryProduct } from "../types/inventory.types";
 
 type InventoryTableProps = {
     data: InventoryProduct[];
-    onDelete: (id: number) => void;
     onRowClick?: (item: InventoryProduct) => void;
 };
 
-const InventoryTable = ({ data, onDelete, onRowClick }: InventoryTableProps) => {
+const InventoryTable = ({ data, onRowClick }: InventoryTableProps) => {
     const navigate = useNavigate();
 
     const handleRowClick = (item: InventoryProduct) => {
@@ -31,7 +29,7 @@ const InventoryTable = ({ data, onDelete, onRowClick }: InventoryTableProps) => 
                         <th className="p-3">SKU #</th>
                         <th className="p-3">Location</th>
                         <th className="p-3">Qty</th>
-                        <th className="p-3"></th>
+                        {/* <th className="p-3"></th> */}
                     </tr>
                 </thead>
 
@@ -61,7 +59,7 @@ const InventoryTable = ({ data, onDelete, onRowClick }: InventoryTableProps) => 
 
                                 <td className="p-3 text-gray-600">{item.location}</td>
                                 <td className="p-3">{item.quantity}</td>
-
+{/* 
                                 <td className="p-3" onClick={(e) => e.stopPropagation()}>
                                     <div className="flex gap-2">
                                         <button
@@ -72,7 +70,7 @@ const InventoryTable = ({ data, onDelete, onRowClick }: InventoryTableProps) => 
                                             <Trash2 size={16} />
                                         </button>
                                     </div>
-                                </td>
+                                </td> */}
                             </tr>
                         );
                     })}
