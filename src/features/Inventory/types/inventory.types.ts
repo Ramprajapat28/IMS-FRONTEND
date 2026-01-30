@@ -7,4 +7,6 @@ export interface InventoryProduct {
     location: string;
     quantity: number;
     type?: string;
+    mrp?: number;
+    discounted_price?: number;
 }

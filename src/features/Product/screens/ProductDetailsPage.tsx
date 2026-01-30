@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, Tag, Hash, Package, Download, FileText, Printer } from "lucide-react";
+import { ArrowLeft, Loader2, Tag, Hash, Package, Download, FileText, Printer, IndianRupee, Percent } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
+import { formatCurrency } from "@/utils";
 import type { Product } from "@/features/Product/types";
 
 const ProductDetailsPage = () => {
@@ -293,11 +294,20 @@ const ProductDetailsPage = () => {
                         </div>
 
                         {/* Category */}
-                        <div className="flex gap-2.5">
-                            <Tag size={18} className="text-gray-400 mt-0.5 flex-shrink-0" />
-                            <div>
-                                <p className="text-xs text-gray-500 mb-0.5">CATEGORY</p>
-                                <p className="font-medium text-gray-900 text-sm">{product.category_name || "T-shirts"}</p>
+                        <div className="flex gap-4">
+                            <div className="flex gap-2.5">
+                                <Tag size={18} className="text-gray-400 mt-0.5 flex-shrink-0" />
+                                <div>
+                                    <p className="text-xs text-gray-500 mb-0.5 uppercase">Global Category</p>
+                                    <p className="font-medium text-gray-900 text-sm">{product.global_category_name || "-"}</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-2.5 ml-4 border-l pl-4">
+                                <Tag size={18} className="text-gray-400 mt-0.5 flex-shrink-0" />
+                                <div>
+                                    <p className="text-xs text-gray-500 mb-0.5 uppercase">Category</p>
+                                    <p className="font-medium text-gray-900 text-sm">{product.category_name || "-"}</p>
+                                </div>
                             </div>
                         </div>
 
@@ -316,6 +326,34 @@ const ProductDetailsPage = () => {
                             <div>
                                 <p className="text-xs text-gray-500 mb-0.5">SKU</p>
                                 <p className="font-medium text-gray-900 text-sm">{product.sku}</p>
+                            </div>
+                        </div>
+
+                        {/* Pricing Info */}
+                        <div className="grid grid-cols-2 gap-4 py-3 border-y border-gray-100">
+                            <div>
+                                <p className="text-xs text-gray-500 mb-0.5 flex items-center gap-1">
+                                    <IndianRupee size={12} /> MRP
+                                </p>
+                                <p className="font-bold text-gray-900">{product.mrp ? formatCurrency(product.mrp) : "-"}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-blue-600 mb-0.5 flex items-center gap-1">
+                                    <IndianRupee size={12} /> DISCOUNTED PRICE
+                                </p>
+                                <p className="font-bold text-blue-600">{product.discounted_price ? formatCurrency(product.discounted_price) : "-"}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-500 mb-0.5 flex items-center gap-1">
+                                    <Percent size={12} /> GST %
+                                </p>
+                                <p className="font-medium text-gray-900">{product.gst_percentage ? `${product.gst_percentage}%` : "-"}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-500 mb-0.5 flex items-center gap-1">
+                                    <IndianRupee size={12} /> CTC
+                                </p>
+                                <p className="font-medium text-gray-900">{product.cost_to_consumer ? formatCurrency(product.cost_to_consumer) : "-"}</p>
                             </div>
                         </div>
 

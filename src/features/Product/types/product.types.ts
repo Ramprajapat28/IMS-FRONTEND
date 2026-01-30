@@ -5,9 +5,15 @@ export interface Product {
     category_name?: string;
     category?: string; // For compatibility
     category_id?: number;
+    global_category_id?: number;
+    global_category_name?: string;
     description?: string;
     reorder_level?: number;
     stock_quantity?: number;
+    mrp?: number;
+    discounted_price?: number;
+    gst_percentage?: number;
+    cost_to_consumer?: number;
     location?: string;
     size?: string;
     product_code?: string;
@@ -30,9 +36,14 @@ export interface CreateProductData {
     sku: string;
     product_code?: string;
     category?: string;
+    global_category_id?: number;
     description?: string;
     reorder_level?: number;
     size?: string;
+    mrp?: number;
+    discounted_price?: number;
+    gst_percentage?: number;
+    cost_to_consumer?: number;
     product_image?: {
         file_path: string;
         view: string;

@@ -17,13 +17,53 @@ export const formatDate = (date: Date | string, locale = "en-US"): string => {
  */
 export const formatCurrency = (
   amount: number,
-  currency = "USD",
-  locale = "en-US"
+  currency = "INR",
+  locale = "en-IN"
 ): string => {
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
   }).format(amount);
+};
+
+/**
+ * Resolves a product image URL from various formats (string, object, array, JSON)
+ */
+export const resolveUrl = (image: any): string => {
+  if (!image) return "";
+
+  // 1. Handle Array (extract first item)
+  if (Array.isArray(image)) {
+    if (image.length === 0) return "";
+    const first = image[0];
+    return typeof first === 'object' ? (first.file_path || first.cdnUrl || first.url || "") : String(first);
+  }
+
+  // 2. Handle Object (single image object)
+  if (typeof image === 'object') {
+    return image.file_path || image.cdnUrl || image.url || "";
+  }
+
+  // 3. Handle String (potential JSON)
+  if (typeof image === 'string') {
+    if (image.startsWith('{') || image.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(image);
+        if (Array.isArray(parsed) || typeof parsed === 'object') {
+          if (Array.isArray(parsed)) {
+            if (parsed.length === 0) return "";
+            const first = parsed[0];
+            return typeof first === 'object' ? (first.file_path || first.cdnUrl || first.url || "") : String(first);
+          }
+          return parsed.file_path || parsed.cdnUrl || parsed.url || "";
+        }
+      } catch {
+        return image;
+      }
+    }
+    return image;
+  }
+  return "";
 };
 
 /**

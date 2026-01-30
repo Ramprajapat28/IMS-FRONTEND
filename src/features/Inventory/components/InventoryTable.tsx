@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import type { InventoryProduct } from "../types/inventory.types";
+import { formatCurrency } from "@/utils";
 
 type InventoryTableProps = {
     data: InventoryProduct[];
@@ -27,6 +28,8 @@ const InventoryTable = ({ data, onRowClick }: InventoryTableProps) => {
                         <th className="p-3">Product Name</th>
                         <th className="p-3">Category</th>
                         <th className="p-3">SKU #</th>
+                        <th className="p-3 text-right">MRP</th>
+                        <th className="p-3 text-right">Discounted Price</th>
                         <th className="p-3">Location</th>
                         <th className="p-3">Qty</th>
                         {/* <th className="p-3"></th> */}
@@ -56,10 +59,16 @@ const InventoryTable = ({ data, onRowClick }: InventoryTableProps) => {
                                 <td className="p-3 text-gray-500">
                                     {item.sku}
                                 </td>
+                                <td className="p-3 text-right font-medium text-gray-700">
+                                    {formatCurrency(item.mrp || 0)}
+                                </td>
+                                <td className="p-3 text-right font-medium text-blue-600">
+                                    {formatCurrency(item.discounted_price || 0)}
+                                </td>
 
                                 <td className="p-3 text-gray-600">{item.location}</td>
                                 <td className="p-3">{item.quantity}</td>
-{/* 
+                                {/* 
                                 <td className="p-3" onClick={(e) => e.stopPropagation()}>
                                     <div className="flex gap-2">
                                         <button

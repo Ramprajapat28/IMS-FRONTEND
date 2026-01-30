@@ -2,3 +2,8 @@ export { default as InventoryPage } from './screens/InventoryPage';
 export { default as InventoryVariantsPage } from './screens/InventoryVariantsPage';
 export { default as InventoryCategoriesPage } from './screens/InventoryCategoriesPage';
 export { default as InventoryProductDetailsPage } from './screens/InventoryProductDetailsPage';
+export { default as GlobalCategoryPage } from './screens/GlobalCategoryPage';
+export { default as AddGlobalCategoryPage } from './screens/AddGlobalCategoryPage';
+export { default as AddCategoryPage } from './screens/AddCategoryPage';
+export { default as EditGlobalCategoryPage } from './screens/EditGlobalCategoryPage';
+export { default as EditCategoryPage } from './screens/EditCategoryPage';

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, Search, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSidebar } from "@/app/providers";
 import { profileApi } from "@/features/Profile/api/profile.api";
@@ -66,7 +66,7 @@ const Navbar: React.FC = () => {
       </div>
 
       {/* CENTER (SEARCH) */}
-      <div className="flex-1 hidden md:flex justify-start">
+      {/* <div className="flex-1 hidden md:flex justify-start">
         <div className="relative w-full max-w-md">
           <Search
             size={18}
@@ -82,7 +82,7 @@ const Navbar: React.FC = () => {
             "
           />
         </div>
-      </div>
+      </div> */}
 
       {/* RIGHT */}
       <div className="flex items-center gap-3 ml-auto">

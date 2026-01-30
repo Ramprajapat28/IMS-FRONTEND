@@ -505,6 +505,7 @@ import { useNavigate } from "react-router-dom";
 import ProductsNavbar from "../components/ProductsNavbar";
 import ProductsFooter from "../components/ProductsFooter";
 import { productsApi } from "@/features/Product/api/product.api";
+import { formatCurrency } from "@/utils";
 import type { Product } from "@/features/Product/types";
 
 // Map API product to display format
@@ -515,6 +516,8 @@ interface DisplayProduct {
   category_id: number;
   sku: string;
   image: string;
+  mrp: number;
+  discounted_price: number;
 }
 
 const ProductsPage = () => {
@@ -549,6 +552,8 @@ const ProductsPage = () => {
               image: Array.isArray(p.product_image) && p.product_image.length > 0
                 ? p.product_image[0].file_path
                 : "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200",
+              mrp: p.mrp || 0,
+              discounted_price: p.discounted_price || 0,
             };
           });
           setData(products);
@@ -672,6 +677,8 @@ const ProductsPage = () => {
               <th className="p-3">Product Name</th>
               <th className="p-3">Category</th>
               <th className="p-3">SKU #</th>
+              <th className="p-3 text-right">MRP</th>
+              <th className="p-3 text-right">Discounted Price</th>
               <th className="p-3"></th>
             </tr>
           </thead>
@@ -700,6 +707,8 @@ const ProductsPage = () => {
                   </td>
                   <td className="p-3 text-gray-600">{p.category_name}</td>
                   <td className="p-3 text-gray-600">{p.sku}</td>
+                  <td className="p-3 text-right font-medium text-gray-700">{formatCurrency(p.mrp)}</td>
+                  <td className="p-3 text-right font-medium text-blue-600">{formatCurrency(p.discounted_price)}</td>
                   <td className="p-3">
                     <div className="flex gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
                       <button

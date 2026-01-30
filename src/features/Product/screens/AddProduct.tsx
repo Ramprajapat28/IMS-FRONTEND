@@ -8,10 +8,16 @@ import { categoriesApi, type Category } from "@/features/Inventory/api/category.
 type ProductForm = {
   name: string;
   description: string;
+  global_category_id: string;
+  category_id: string;
   category: string;
   size: string;
   sku: string;
   product_code: string;
+  mrp: number | string;
+  discounted_price: number | string;
+  cost_to_consumer: number | string;
+  gst_percentage: number | string;
 };
 
 /* ----------------------------- COMPONENT ----------------------------- */
@@ -22,10 +28,16 @@ const AddProduct = () => {
   const [form, setForm] = useState<ProductForm>({
     name: "",
     description: "",
+    global_category_id: "",
+    category_id: "",
     category: "",
     size: "",
     sku: "",
     product_code: "",
+    mrp: "",
+    discounted_price: "",
+    cost_to_consumer: "",
+    gst_percentage: "",
   });
 
   // Multiple Image States
@@ -35,25 +47,33 @@ const AddProduct = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [globalCategories, setGlobalCategories] = useState<any[]>([]);
 
   // Autocomplete State
   const [suggestions, setSuggestions] = useState<{ id: number, code: string, name: string }[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Load categories
+  // Load categories and global categories
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchData = async () => {
       try {
-        const response = await categoriesApi.getAll();
-        if (response.success && response.data) {
-          setCategories(response.data);
+        const [catRes, globalRes] = await Promise.all([
+          categoriesApi.getAll(),
+          categoriesApi.getAllGlobal()
+        ]);
+
+        if (catRes.success && catRes.data) {
+          setCategories(catRes.data);
+        }
+        if (globalRes.success && globalRes.data) {
+          setGlobalCategories(globalRes.data);
         }
       } catch (err) {
         console.error("Failed to load categories:", err);
       }
     };
 
-    fetchCategories();
+    fetchData();
   }, []);
 
   /* ----------------------------- HANDLERS ----------------------------- */
@@ -177,6 +197,12 @@ const AddProduct = () => {
         category: form.category,
         description: form.description,
         size: form.size,
+        cost_to_consumer: Number(form.cost_to_consumer) || 0,
+        mrp: Number(form.mrp) || 0,
+        discounted_price: Number(form.discounted_price) || 0,
+        gst_percentage: Number(form.gst_percentage) || 0,
+        category_id: Number(form.category_id),
+        global_category_id: Number(form.global_category_id),
         product_image: productImages
       };
 
@@ -253,26 +279,106 @@ const AddProduct = () => {
               />
             </div>
 
-            {/* Category */}
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Select Product Category: <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={form.category}
-                onChange={(e) => updateField("category", e.target.value)}
-                className="w-72 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-              >
-                <option value="" className="text-gray-400">Select Category</option>
-                {categories.map((c) => (
-                  <option key={c.category_id} value={c.category_name}>
-                    {c.category_name}
-                  </option>
-                ))}
-                {categories.length === 0 && (
-                  <option value="" disabled>Loading...</option>
-                )}
-              </select>
+            {/* Pricing Details */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">MRP:</label>
+                <input
+                  type="number"
+                  value={form.mrp}
+                  onChange={(e) => updateField("mrp", e.target.value)}
+                  placeholder="0.00"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Discounted Price:</label>
+                <input
+                  type="number"
+                  value={form.discounted_price}
+                  onChange={(e) => updateField("discounted_price", e.target.value)}
+                  placeholder="0.00"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Cost to Consumer:</label>
+                <input
+                  type="number"
+                  value={form.cost_to_consumer}
+                  onChange={(e) => updateField("cost_to_consumer", e.target.value)}
+                  placeholder="0.00"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">GST %:</label>
+                <input
+                  type="number"
+                  value={form.gst_percentage}
+                  onChange={(e) => updateField("gst_percentage", e.target.value)}
+                  placeholder="0"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Global & Sub Category */}
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Global Category */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Select Global Category: <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={form.global_category_id}
+                  onChange={(e) => {
+                    updateField("global_category_id", e.target.value);
+                    updateField("category_id", "");
+                    updateField("category", "");
+                  }}
+                  className="w-72 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                >
+                  <option value="" className="text-gray-400">Select Global Category</option>
+                  {globalCategories.map((gc) => (
+                    <option key={gc.global_category_id} value={gc.global_category_id}>
+                      {gc.category_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sub Category */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Select Category: <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={form.category_id}
+                  disabled={!form.global_category_id}
+                  onChange={(e) => {
+                    const selectedId = e.target.value;
+                    const selectedCat = categories.find(c => c.category_id === Number(selectedId));
+                    if (selectedCat) {
+                      setForm(prev => ({
+                        ...prev,
+                        category_id: selectedId,
+                        category: selectedCat.category_name
+                      }));
+                    }
+                  }}
+                  className="w-72 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
+                >
+                  <option value="" className="text-gray-400">Select Category</option>
+                  {categories
+                    .filter(c => c.global_category_id === Number(form.global_category_id))
+                    .map((c) => (
+                      <option key={c.category_id} value={c.category_id}>
+                        {c.category_name}
+                      </option>
+                    ))}
+                </select>
+              </div>
             </div>
 
             {/* Size */}

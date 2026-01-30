@@ -11,6 +11,8 @@ type Variant = {
     size: string;
     sku: string;
     location: string;
+    mrp?: number;
+    discounted_price?: number;
     qty: number;
 };
 
@@ -44,6 +46,8 @@ const InventoryVariantsPage = () => {
                         size: p.size || "-",
                         sku: p.sku,
                         location: p.location || "-",
+                        mrp: p.mrp,
+                        discounted_price: p.discounted_price,
                         qty: p.stock_quantity || 0
                     }));
                     setVariants(mappedVariants as any);
@@ -158,7 +162,7 @@ const InventoryVariantsPage = () => {
                                     <td className="p-3 text-gray-600">{variant.sku}</td>
                                     <td className="p-3 text-gray-600">{variant.location}</td>
                                     <td className="p-3 text-gray-600">{variant.qty}</td>
-                                    
+
                                 </tr>
                             ))}
                         </tbody>

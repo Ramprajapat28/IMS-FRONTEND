@@ -14,7 +14,7 @@ import { AddProduct, GroupItem } from "@/features/Product";
 import { Reports } from "@/features/Report";
 import { Profile } from "@/features/Profile";
 import { Order } from "@/features/Order";
-import { InventoryPage, InventoryCategoriesPage, InventoryProductDetailsPage, InventoryVariantsPage } from "@/features/Inventory";
+import { InventoryPage, InventoryCategoriesPage, InventoryProductDetailsPage, InventoryVariantsPage, GlobalCategoryPage, AddGlobalCategoryPage, AddCategoryPage, EditGlobalCategoryPage, EditCategoryPage } from "@/features/Inventory";
 import CategoryProducts from "@/features/Product/screens/CategoryProducts";
 import EditProduct from "@/features/Product/screens/EditProduct";
 // import ProductVariantsPage from "@/features/Product/screens/ProductVariantsPage";
@@ -33,8 +33,13 @@ export const AppRoutes = () => {
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
 
-        {/* Inventory Routes - WITH categories */}
-        <Route path="/inventory" element={<InventoryCategoriesPage />} />
+        {/* Inventory Routes - Hierarchy */}
+        <Route path="/inventory" element={<GlobalCategoryPage />} />
+        <Route path="/inventory/add-global" element={<AddGlobalCategoryPage />} />
+        <Route path="/inventory/global-category/:globalId/categories" element={<InventoryCategoriesPage />} />
+        <Route path="/inventory/add-category" element={<AddCategoryPage />} />
+        <Route path="/inventory/edit-global/:id" element={<EditGlobalCategoryPage />} />
+        <Route path="/inventory/edit-category/:id" element={<EditCategoryPage />} />
         <Route path="/inventory/category/:categoryId" element={<InventoryPage />} />
         <Route path="/inventory/details/:id" element={<InventoryProductDetailsPage />} />
         <Route path="/inventory/variants/:id" element={<InventoryVariantsPage />} />

@@ -2,15 +2,17 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Package, Shirt, Droplet, Briefcase, Coffee, Smartphone, ArrowRight,
-    Box, Loader2
+    Box, Loader2, Plus, ArrowLeft, Edit2, Trash2
 } from "lucide-react";
+import { useParams, useLocation } from "react-router-dom";
 import { categoriesApi } from "@/features/Inventory/api/category.api";
+import { resolveUrl } from "@/utils";
 
 interface CategoryUI {
-    id: string; // Keep as string for URL/routing
+    id: string; // Numeric ID as string
     name: string;
-    icon: React.ReactNode;
     count: number;
+    icon: React.ReactNode;
     color: string;
 }
 
@@ -26,6 +28,10 @@ const UI_CONFIGS = [
 
 const InventoryCategoriesPage = () => {
     const navigate = useNavigate();
+    const { globalId } = useParams<{ globalId: string }>();
+    const location = useLocation();
+    const globalCategoryName = location.state?.globalCategoryName || "Categories";
+
     const [categories, setCategories] = useState<CategoryUI[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -35,14 +41,23 @@ const InventoryCategoriesPage = () => {
             try {
                 const response = await categoriesApi.getListWithCounts();
                 if (response.success && response.data) {
-                    const mapped = response.data.map((cat, index) => {
+                    let filteredData = response.data;
+
+                    if (globalId) {
+                        filteredData = response.data.filter(cat => Number((cat as any).global_category_id) === Number(globalId));
+                    }
+
+                    const mapped = filteredData.map((cat, index) => {
                         const config = UI_CONFIGS[index % UI_CONFIGS.length];
+                        const categoryLogo = resolveUrl(cat.logo_url);
                         return {
-                            id: cat.category_name, // Use name as ID for URL friendly approach if needed, or stick to ID
+                            id: String(cat.category_id),
                             name: cat.category_name,
                             count: cat.total_products || 0,
-                            icon: config.icon,
-                            color: config.color
+                            icon: categoryLogo ? (
+                                <img src={categoryLogo} alt={cat.category_name} className="w-full h-full object-cover rounded-lg" />
+                            ) : config.icon,
+                            color: categoryLogo ? "" : config.color
                         };
                     });
                     setCategories(mapped);
@@ -55,15 +70,26 @@ const InventoryCategoriesPage = () => {
         };
 
         fetchCategories();
-    }, []);
+    }, [globalId]);
 
-    const handleCategoryClick = (categoryName: string) => {
-        // Navigate using category name as per user request to use "mine" (InventoryCategoryProductsPage uses name?)
-        // The router expects /inventory/category/:categoryId
-        // We will pass the name as the ID param for simpler lookups if the backend supports it, 
-        // OR pass the ID if the products page expects ID. 
-        // The plan said "getByCategory(categoryName)", so we pass name.
-        navigate(`/inventory/category/${encodeURIComponent(categoryName)}`, { state: { categoryName } });
+    const handleCategoryClick = (category: CategoryUI) => {
+        navigate(`/inventory/category/${category.id}`, { state: { categoryName: category.name } });
+    };
+
+    const handleDeleteCategory = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        if (!window.confirm("Are you sure you want to delete this category?")) return;
+
+        try {
+            const res = await categoriesApi.deleteCategory(Number(id));
+            if (res.success) {
+                setCategories(prev => prev.filter(c => c.id !== id));
+            } else {
+                alert(res.message || "Failed to delete");
+            }
+        } catch (err) {
+            alert("Failed to delete category");
+        }
     };
 
     if (isLoading) {
@@ -79,26 +105,58 @@ const InventoryCategoriesPage = () => {
     }
 
     return (
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto p-4 space-y-6">
             {/* Header */}
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-blue-600">Inventory Categories</h1>
-                <p className="text-sm text-gray-600 mt-1">Select a category to view inventory items</p>
+            <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                    <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg">
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div>
+                        <h1 className="text-2xl font-bold text-blue-600 capitalize">{globalCategoryName}</h1>
+                        <p className="text-sm text-gray-600 mt-1">Select a category to view inventory items</p>
+                    </div>
+                </div>
+                <button
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-sm"
+                    onClick={() => navigate("/inventory/add-category", { state: { global_category_id: globalId, global_category_name: globalCategoryName } })}
+                >
+                    <Plus size={18} /> Add Category
+                </button>
             </div>
 
             {/* Categories Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {categories.map((category) => (
                     <button
-                        key={category.name}
-                        onClick={() => handleCategoryClick(category.name)}
+                        key={category.id}
+                        onClick={() => handleCategoryClick(category)}
                         className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 hover:border-blue-300 group text-left"
                     >
                         <div className="flex items-start justify-between mb-4">
-                            <div className={`w-12 h-12 rounded-lg ${category.color} flex items-center justify-center`}>
+                            <div className={`w-12 h-12 rounded-lg ${category.color} flex items-center justify-center overflow-hidden`}>
                                 {category.icon}
                             </div>
-                            <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/inventory/edit-category/${category.id}`);
+                                    }}
+                                    className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-blue-600 transition-colors"
+                                    title="Edit"
+                                >
+                                    <Edit2 size={16} />
+                                </button>
+                                <button
+                                    onClick={(e) => handleDeleteCategory(e, category.id)}
+                                    className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
+                                    title="Delete"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                            </div>
                         </div>
 
                         <h3 className="text-lg font-semibold text-gray-900 mb-1">{category.name}</h3>
@@ -106,7 +164,7 @@ const InventoryCategoriesPage = () => {
                     </button>
                 ))}
             </div>
-        </div>
+        </div >
     );
 };
 

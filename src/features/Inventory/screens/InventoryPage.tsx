@@ -50,6 +50,8 @@ const InventoryPage = () => {
                             realSku: p.sku || "-----",
                             location: p.type === 'group' ? `Mixed (${p.variant_count} variants)` : (p.location || "See Details"),
                             quantity: p.stock_quantity || 0,
+                            mrp: p.mrp,
+                            discounted_price: p.discounted_price,
                             type: p.type // "group" or "product"
                         };
                     });

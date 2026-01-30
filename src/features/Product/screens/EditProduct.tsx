@@ -9,17 +9,21 @@ import { shelvesApi, roomsApi, warehousesApi, type Shelf, type Room, type Wareho
 type ProductForm = {
     name: string;
     description: string;
+    global_category_id: string;
     category: string;
     category_id?: number;
     size: string;
     sku: string;
     product_code: string;
     quantity: string;
-    reorderLevel: string;
     warehouse_id: string;
     room_id: string;
     shelf_id: string;
     refundable: boolean;
+    mrp: number | string;
+    discounted_price: number | string;
+    cost_to_consumer: number | string;
+    gst_percentage: number | string;
 };
 
 const EditProduct = () => {
@@ -30,16 +34,20 @@ const EditProduct = () => {
     const [form, setForm] = useState<ProductForm>({
         name: "",
         description: "",
+        global_category_id: "",
         category: "",
         size: "",
         sku: "",
         product_code: "",
         quantity: "",
-        reorderLevel: "",
         warehouse_id: "",
         room_id: "",
         shelf_id: "",
         refundable: false,
+        mrp: "",
+        discounted_price: "",
+        cost_to_consumer: "",
+        gst_percentage: "",
     });
 
     // Multiple Image States
@@ -57,6 +65,7 @@ const EditProduct = () => {
 
     // Dropdown data
     const [categories, setCategories] = useState<Category[]>([]);
+    const [globalCategories, setGlobalCategories] = useState<any[]>([]);
     const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [shelves, setShelves] = useState<Shelf[]>([]);
@@ -73,20 +82,28 @@ const EditProduct = () => {
                 const response = await productsApi.getById(Number(id));
                 if (response.success && response.data) {
                     const product = response.data;
+
+                    // Find matching category to resolve global_category_id
+                    const matchingCat = categories.find(c => c.category_id === product.category_id);
+
                     setForm({
                         name: product.name,
                         description: product.description || "",
                         category: product.category_name || "",
                         category_id: product.category_id,
+                        global_category_id: String(product.global_category_id || matchingCat?.global_category_id || ""),
                         size: product.size || "",
                         sku: product.sku,
                         product_code: product.product_code || "",
                         quantity: "", // Reset quantity for "Add Stock", don't prefill with total stock
-                        reorderLevel: String(product.reorder_level || 0),
                         warehouse_id: "",
                         room_id: "",
                         shelf_id: "",
                         refundable: false,
+                        mrp: Number(product.mrp) || "",
+                        discounted_price: Number(product.discounted_price) || "",
+                        cost_to_consumer: Number(product.cost_to_consumer) || "",
+                        gst_percentage: Number(product.gst_percentage) || "",
                     });
 
                     // Handle Images
@@ -120,14 +137,16 @@ const EditProduct = () => {
     useEffect(() => {
         const fetchDropdownData = async () => {
             try {
-                const [categoriesRes, warehousesRes, roomsRes, shelvesRes] = await Promise.all([
+                const [categoriesRes, globalRes, warehousesRes, roomsRes, shelvesRes] = await Promise.all([
                     categoriesApi.getAll(),
+                    categoriesApi.getAllGlobal(),
                     warehousesApi.getAll(1, 100),
                     roomsApi.getAll(1, 100),
                     shelvesApi.getAll(1, 100),
                 ]);
 
                 if (categoriesRes.success && categoriesRes.data) setCategories(categoriesRes.data);
+                if (globalRes.success && globalRes.data) setGlobalCategories(globalRes.data);
                 if (warehousesRes.data) setWarehouses(warehousesRes.data);
 
                 if (roomsRes.rooms) {
@@ -318,10 +337,14 @@ const EditProduct = () => {
                 sku: form.sku,
                 product_code: form.product_code,
                 category_name: form.category,
-                category_id: form.category_id,
                 description: form.description,
                 size: form.size,
-                reorder_level: form.reorderLevel,
+                cost_to_consumer: Number(form.cost_to_consumer) || 0,
+                mrp: Number(form.mrp) || 0,
+                discounted_price: Number(form.discounted_price) || 0,
+                gst_percentage: Number(form.gst_percentage) || 0,
+                category_id: Number(form.category_id),
+                global_category_id: Number(form.global_category_id),
                 product_images: allImages, // Send all images
             };
 
@@ -410,28 +433,97 @@ const EditProduct = () => {
                                 />
                             </div>
 
-                            {/* Category */}
-                            <div>
-                                <label className="text-sm font-medium text-gray-700 mb-2 block">
-                                    Product Category:
-                                </label>
-                                <select
-                                    value={form.category_id || ""}
-                                    onChange={handleCategoryChange}
-                                    className="w-48 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-                                >
-                                    {/* Current Selection (hidden in list) */}
-                                    <option value="" disabled>Select Category</option>
-                                    {categories.map((c) => (
-                                        <option key={c.category_id} value={c.category_id}>
-                                            {c.category_name}
-                                        </option>
-                                    ))}
+                            {/* Pricing Details */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg">
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 mb-2 block">MRP:</label>
+                                    <input
+                                        type="number"
+                                        value={form.mrp}
+                                        onChange={(e) => updateField("mrp", e.target.value)}
+                                        placeholder="0.00"
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 mb-2 block">Discounted Price:</label>
+                                    <input
+                                        type="number"
+                                        value={form.discounted_price}
+                                        onChange={(e) => updateField("discounted_price", e.target.value)}
+                                        placeholder="0.00"
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 mb-2 block">Cost to Consumer:</label>
+                                    <input
+                                        type="number"
+                                        value={form.cost_to_consumer}
+                                        onChange={(e) => updateField("cost_to_consumer", e.target.value)}
+                                        placeholder="0.00"
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 mb-2 block">GST %:</label>
+                                    <input
+                                        type="number"
+                                        value={form.gst_percentage}
+                                        onChange={(e) => updateField("gst_percentage", e.target.value)}
+                                        placeholder="0"
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                            </div>
 
-                                    {categories.length === 0 && (
-                                        <option value="" disabled>Loading...</option>
-                                    )}
-                                </select>
+                            {/* Global & Sub Category */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg">
+                                {/* Global Category */}
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 mb-2 block">
+                                        Select Global Category: <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        value={form.global_category_id}
+                                        onChange={(e) => setForm(prev => ({
+                                            ...prev,
+                                            global_category_id: e.target.value,
+                                            category_id: undefined,
+                                            category: ""
+                                        }))}
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                                    >
+                                        <option value="" className="text-gray-400">Select Global Category</option>
+                                        {globalCategories.map((gc) => (
+                                            <option key={gc.global_category_id} value={gc.global_category_id}>
+                                                {gc.category_name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Sub Category */}
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 mb-2 block">
+                                        Select Category: <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        value={form.category_id || ""}
+                                        disabled={!form.global_category_id}
+                                        onChange={handleCategoryChange}
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
+                                    >
+                                        <option value="" className="text-gray-400">Select Category</option>
+                                        {categories
+                                            .filter(c => c.global_category_id === Number(form.global_category_id))
+                                            .map((c) => (
+                                                <option key={c.category_id} value={c.category_id}>
+                                                    {c.category_name}
+                                                </option>
+                                            ))}
+                                    </select>
+                                </div>
                             </div>
 
                             {/* Size */}
@@ -611,24 +703,6 @@ const EditProduct = () => {
                                 onChange={(e) => {
                                     const value = Math.max(0, parseInt(e.target.value) || 0);
                                     updateField("quantity", String(value));
-                                }}
-                                placeholder=""
-                                className="w-52 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                        </div>
-
-                        {/* Re-order Level */}
-                        <div>
-                            <label className="text-sm font-medium text-gray-700 mb-2 block">
-                                Re-Order Level <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="number"
-                                min="0"
-                                value={form.reorderLevel}
-                                onChange={(e) => {
-                                    const value = Math.max(0, parseInt(e.target.value) || 0);
-                                    updateField("reorderLevel", String(value));
                                 }}
                                 placeholder=""
                                 className="w-52 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
