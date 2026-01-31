@@ -4,7 +4,7 @@ import { ArrowLeft, Loader2, ChevronLeft, Save } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
 import { categoriesApi, type Category } from "@/features/Inventory/api/category.api";
 import { itemsApi } from "@/features/Inventory/api/item.api";
-import { shelvesApi, roomsApi, warehousesApi, type Shelf, type Room, type Warehouse } from "@/features/Inventory/api/location.api";
+import { shelvesApi, roomsApi, warehousesApi, racksApi, type Shelf, type Room, type Warehouse, type Rack } from "@/features/Inventory/api/location.api";
 
 type ProductForm = {
     name: string;
@@ -19,6 +19,7 @@ type ProductForm = {
     warehouse_id: string;
     room_id: string;
     shelf_id: string;
+    rack_id: string;
     refundable: boolean;
     mrp: number | string;
     discounted_price: number | string;
@@ -43,6 +44,7 @@ const EditProduct = () => {
         warehouse_id: "",
         room_id: "",
         shelf_id: "",
+        rack_id: "",
         refundable: false,
         mrp: "",
         discounted_price: "",
@@ -69,8 +71,11 @@ const EditProduct = () => {
     const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [shelves, setShelves] = useState<Shelf[]>([]);
+    const [racks, setRacks] = useState<Rack[]>([]);
     const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
     const [filteredShelves, setFilteredShelves] = useState<Shelf[]>([]);
+    const [filteredRacks, setFilteredRacks] = useState<Rack[]>([]);
+    const [selectionType, setSelectionType] = useState<'shelf' | 'rack'>('shelf');
 
     // Load product data
     useEffect(() => {
@@ -83,15 +88,12 @@ const EditProduct = () => {
                 if (response.success && response.data) {
                     const product = response.data;
 
-                    // Find matching category to resolve global_category_id
-                    const matchingCat = categories.find(c => c.category_id === product.category_id);
-
                     setForm({
                         name: product.name,
                         description: product.description || "",
                         category: product.category_name || "",
                         category_id: product.category_id,
-                        global_category_id: String(product.global_category_id || matchingCat?.global_category_id || ""),
+                        global_category_id: String(product.global_category_id || ""),
                         size: product.size || "",
                         sku: product.sku,
                         product_code: product.product_code || "",
@@ -99,6 +101,7 @@ const EditProduct = () => {
                         warehouse_id: "",
                         room_id: "",
                         shelf_id: "",
+                        rack_id: "",
                         refundable: false,
                         mrp: Number(product.mrp) || "",
                         discounted_price: Number(product.discounted_price) || "",
@@ -133,16 +136,30 @@ const EditProduct = () => {
         fetchProduct();
     }, [id]);
 
+    // Update global_category_id when categories load
+    useEffect(() => {
+        if (categories.length > 0 && form.category_id && !form.global_category_id) {
+            const matchingCat = categories.find(c => c.category_id === form.category_id);
+            if (matchingCat?.global_category_id) {
+                setForm(prev => ({
+                    ...prev,
+                    global_category_id: String(matchingCat.global_category_id)
+                }));
+            }
+        }
+    }, [categories, form.category_id, form.global_category_id]);
+
     // Load dropdown data
     useEffect(() => {
         const fetchDropdownData = async () => {
             try {
-                const [categoriesRes, globalRes, warehousesRes, roomsRes, shelvesRes] = await Promise.all([
+                const [categoriesRes, globalRes, warehousesRes, roomsRes, shelvesRes, racksRes] = await Promise.all([
                     categoriesApi.getAll(),
                     categoriesApi.getAllGlobal(),
                     warehousesApi.getAll(1, 100),
                     roomsApi.getAll(1, 100),
                     shelvesApi.getAll(1, 100),
+                    racksApi.getAll(undefined, 1, 100),
                 ]);
 
                 if (categoriesRes.success && categoriesRes.data) setCategories(categoriesRes.data);
@@ -164,6 +181,14 @@ const EditProduct = () => {
                     }));
                     setShelves(mappedShelves);
                 }
+
+                if (racksRes.data) {
+                    const mappedRacks = racksRes.data.map((r: any) => ({
+                        ...r,
+                        name: r.rack_name || r.name
+                    }));
+                    setRacks(mappedRacks);
+                }
             } catch (err) {
                 console.error("Failed to load dropdown data:", err);
             }
@@ -182,15 +207,19 @@ const EditProduct = () => {
         }
     }, [form.warehouse_id, rooms]);
 
-    // Filter shelves based on room
+    // Filter shelves and racks based on room
     useEffect(() => {
         if (form.room_id) {
-            const filtered = shelves.filter(s => s.room_id === Number(form.room_id));
-            setFilteredShelves(filtered);
+            const filteredS = shelves.filter(s => s.room_id === Number(form.room_id));
+            setFilteredShelves(filteredS);
+
+            const filteredR = racks.filter(r => r.room_id === Number(form.room_id));
+            setFilteredRacks(filteredR);
         } else {
             setFilteredShelves([]);
+            setFilteredRacks([]);
         }
-    }, [form.room_id, shelves]);
+    }, [form.room_id, shelves, racks]);
 
     const updateField = <K extends keyof ProductForm>(
         key: K,
@@ -310,8 +339,8 @@ const EditProduct = () => {
         const stockQuantity = parseInt(form.quantity) || 0;
 
         if (stockQuantity > 0) {
-            if (!form.warehouse_id || !form.room_id || !form.shelf_id) {
-                alert("Please select a location to add stock.");
+            if (!form.warehouse_id || !form.room_id || (!form.shelf_id && !form.rack_id)) {
+                alert("Please select a shelf or rack to add stock.");
                 return;
             }
         }
@@ -355,7 +384,8 @@ const EditProduct = () => {
             if (stockQuantity > 0) {
                 await itemsApi.addStock({
                     product_id: Number(id),
-                    shelf_id: Number(form.shelf_id),
+                    shelf_id: form.shelf_id ? Number(form.shelf_id) : undefined,
+                    rack_id: form.rack_id ? Number(form.rack_id) : undefined,
                     quantity: stockQuantity
                 });
             }
@@ -496,7 +526,7 @@ const EditProduct = () => {
                                     >
                                         <option value="" className="text-gray-400">Select Global Category</option>
                                         {globalCategories.map((gc) => (
-                                            <option key={gc.global_category_id} value={gc.global_category_id}>
+                                            <option key={gc.global_category_id} value={String(gc.global_category_id)}>
                                                 {gc.category_name}
                                             </option>
                                         ))}
@@ -770,25 +800,77 @@ const EditProduct = () => {
                                     </svg>
                                 </div>
 
-                                {/* Shelf */}
+                                {/* Toggle and Selection */}
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-sm text-gray-700 mb-1 block">
+                                        Select Storage Type
+                                    </label>
+                                    <div className="flex p-1 bg-gray-100 rounded-lg w-fit">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setSelectionType('shelf');
+                                                setForm(prev => ({ ...prev, rack_id: "" }));
+                                            }}
+                                            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${selectionType === 'shelf'
+                                                    ? 'bg-white text-blue-600 shadow-sm'
+                                                    : 'text-gray-500 hover:text-gray-700'
+                                                }`}
+                                        >
+                                            Shelf
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setSelectionType('rack');
+                                                setForm(prev => ({ ...prev, shelf_id: "" }));
+                                            }}
+                                            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${selectionType === 'rack'
+                                                    ? 'bg-white text-blue-600 shadow-sm'
+                                                    : 'text-gray-500 hover:text-gray-700'
+                                                }`}
+                                        >
+                                            Rack
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Arrow */}
+                                <div className="pt-10">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
+                                        <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
+                                </div>
+
+                                {/* Selection Dropdown */}
                                 <div>
                                     <label className="text-sm text-gray-700 mb-2 block">
-                                        Shelf <span className="text-red-500">*</span>
+                                        {selectionType === 'shelf' ? 'Shelf' : 'Rack'} <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={form.shelf_id}
-                                        onChange={(e) => updateField("shelf_id", e.target.value)}
-                                        disabled={!form.room_id}
-                                        className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                    >
-                                        {/* Current Selection */}
-                                        <option value="">Select Shelf</option>
-                                        {filteredShelves.map(s => (
-                                            <option key={s.shelf_id} value={s.shelf_id}>{s.name}</option>
-                                        ))}
-                                    </select>
-                                    {!form.room_id && form.warehouse_id && (
-                                        <p className="text-xs text-gray-500 mt-1">Select a room first</p>
+                                    {selectionType === 'shelf' ? (
+                                        <select
+                                            value={form.shelf_id}
+                                            onChange={(e) => setForm(prev => ({ ...prev, shelf_id: e.target.value, rack_id: "" }))}
+                                            disabled={!form.room_id}
+                                            className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                        >
+                                            <option value="">Select Shelf</option>
+                                            {filteredShelves.map(s => (
+                                                <option key={s.shelf_id} value={s.shelf_id}>{s.name}</option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <select
+                                            value={form.rack_id}
+                                            onChange={(e) => setForm(prev => ({ ...prev, rack_id: e.target.value, shelf_id: "" }))}
+                                            disabled={!form.room_id}
+                                            className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                        >
+                                            <option value="">Select Rack</option>
+                                            {filteredRacks.map(r => (
+                                                <option key={r.rack_id} value={r.rack_id}>{r.name}</option>
+                                            ))}
+                                        </select>
                                     )}
                                 </div>
                             </div>
@@ -833,24 +915,70 @@ const EditProduct = () => {
                                     )}
                                 </div>
 
-                                {/* Shelf */}
+                                {/* Toggle and Selection */}
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-sm text-gray-700 block">
+                                        Select Storage Type
+                                    </label>
+                                    <div className="flex p-1 bg-gray-100 rounded-lg w-full">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setSelectionType('shelf');
+                                                setForm(prev => ({ ...prev, rack_id: "" }));
+                                            }}
+                                            className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${selectionType === 'shelf'
+                                                    ? 'bg-white text-blue-600 shadow-sm'
+                                                    : 'text-gray-500 hover:text-gray-700'
+                                                }`}
+                                        >
+                                            Shelf
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setSelectionType('rack');
+                                                setForm(prev => ({ ...prev, shelf_id: "" }));
+                                            }}
+                                            className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${selectionType === 'rack'
+                                                    ? 'bg-white text-blue-600 shadow-sm'
+                                                    : 'text-gray-500 hover:text-gray-700'
+                                                }`}
+                                        >
+                                            Rack
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Selection Dropdown */}
                                 <div>
                                     <label className="text-sm text-gray-700 mb-2 block">
-                                        Shelf <span className="text-red-500">*</span>
+                                        {selectionType === 'shelf' ? 'Shelf' : 'Rack'} <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={form.shelf_id}
-                                        onChange={(e) => updateField("shelf_id", e.target.value)}
-                                        disabled={!form.room_id}
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                    >
-                                        <option value="">Select Shelf</option>
-                                        {filteredShelves.map(s => (
-                                            <option key={s.shelf_id} value={s.shelf_id}>{s.name}</option>
-                                        ))}
-                                    </select>
-                                    {!form.room_id && form.warehouse_id && (
-                                        <p className="text-xs text-gray-500 mt-1">Select a room first</p>
+                                    {selectionType === 'shelf' ? (
+                                        <select
+                                            value={form.shelf_id}
+                                            onChange={(e) => setForm(prev => ({ ...prev, shelf_id: e.target.value, rack_id: "" }))}
+                                            disabled={!form.room_id}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                        >
+                                            <option value="">Select Shelf</option>
+                                            {filteredShelves.map(s => (
+                                                <option key={s.shelf_id} value={s.shelf_id}>{s.name}</option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <select
+                                            value={form.rack_id}
+                                            onChange={(e) => setForm(prev => ({ ...prev, rack_id: e.target.value, shelf_id: "" }))}
+                                            disabled={!form.room_id}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                        >
+                                            <option value="">Select Rack</option>
+                                            {filteredRacks.map(r => (
+                                                <option key={r.rack_id} value={r.rack_id}>{r.name}</option>
+                                            ))}
+                                        </select>
                                     )}
                                 </div>
                             </div>

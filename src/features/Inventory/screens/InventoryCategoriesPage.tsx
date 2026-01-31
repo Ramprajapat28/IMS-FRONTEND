@@ -92,17 +92,7 @@ const InventoryCategoriesPage = () => {
         }
     };
 
-    if (isLoading) {
-        return (
-            <div className="flex justify-center items-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-            </div>
-        );
-    }
-
-    if (error) {
-        return <div className="text-center text-red-600 py-10">{error}</div>;
-    }
+    // Handle loading/error states in the grid area below
 
     return (
         <div className="max-w-7xl mx-auto p-4 space-y-6">
@@ -127,42 +117,58 @@ const InventoryCategoriesPage = () => {
 
             {/* Categories Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {categories.map((category) => (
-                    <button
-                        key={category.id}
-                        onClick={() => handleCategoryClick(category)}
-                        className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 hover:border-blue-300 group text-left"
-                    >
-                        <div className="flex items-start justify-between mb-4">
-                            <div className={`w-12 h-12 rounded-lg ${category.color} flex items-center justify-center overflow-hidden`}>
-                                {category.icon}
+                {isLoading ? (
+                    <div className="col-span-full flex justify-center items-center py-20">
+                        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                    </div>
+                ) : error ? (
+                    <div className="col-span-full py-20 text-center bg-gray-50 rounded-xl border border-gray-200">
+                        <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                        <p className="text-gray-600">No categories available</p>
+                    </div>
+                ) : categories.length > 0 ? (
+                    categories.map((category) => (
+                        <button
+                            key={category.id}
+                            onClick={() => handleCategoryClick(category)}
+                            className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 hover:border-blue-300 group text-left"
+                        >
+                            <div className="flex items-start justify-between mb-4">
+                                <div className={`w-12 h-12 rounded-lg ${category.color} flex items-center justify-center overflow-hidden`}>
+                                    {category.icon}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/inventory/edit-category/${category.id}`);
+                                        }}
+                                        className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-blue-600 transition-colors"
+                                        title="Edit"
+                                    >
+                                        <Edit2 size={16} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => handleDeleteCategory(e, category.id)}
+                                        className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
+                                        title="Delete"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigate(`/inventory/edit-category/${category.id}`);
-                                    }}
-                                    className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-blue-600 transition-colors"
-                                    title="Edit"
-                                >
-                                    <Edit2 size={16} />
-                                </button>
-                                <button
-                                    onClick={(e) => handleDeleteCategory(e, category.id)}
-                                    className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
-                                    title="Delete"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
-                                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
-                            </div>
-                        </div>
 
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">{category.name}</h3>
-                        <p className="text-sm text-gray-500">{category.count} items in stock</p>
-                    </button>
-                ))}
+                            <h3 className="text-lg font-semibold text-gray-900 mb-1">{category.name}</h3>
+                            <p className="text-sm text-gray-500">{category.count} items in stock</p>
+                        </button>
+                    ))
+                ) : (
+                    <div className="col-span-full py-20 text-center bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                        <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                        <p className="text-gray-500">No categories found. Add one to get started.</p>
+                    </div>
+                )}
             </div>
         </div >
     );

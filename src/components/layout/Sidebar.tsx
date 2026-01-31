@@ -9,6 +9,7 @@ import {
   User,
   LogOut,
   X,
+  Warehouse,
 } from "lucide-react";
 import { useSidebar } from "@/app/providers";
 import { LogoutModal } from "@/features/Auth";
@@ -82,6 +83,11 @@ const Sidebar = () => {
             Products
           </NavLink>
 
+          <NavLink to="/warehouse" className={linkClass} onClick={close}>
+            <Warehouse size={20} />
+            Warehouse
+          </NavLink>
+
           <NavLink to="/barcode/generate" className={linkClass} onClick={close}>
             <ScanBarcode size={20} />
             BarCode Scanner
@@ -89,7 +95,7 @@ const Sidebar = () => {
 
           <NavLink to="/orders" className={linkClass} onClick={close}>
             <ShoppingCart size={20} />
-           Outward
+            Outward
           </NavLink>
 
           <NavLink to="/profile" className={linkClass} onClick={close}>

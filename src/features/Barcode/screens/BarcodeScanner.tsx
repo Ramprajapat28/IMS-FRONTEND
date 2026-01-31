@@ -20,7 +20,7 @@ import Header from "../Components/Header";
 import ProductSoldSuccess from "./ProductSoldSuccess";
 import { productsApi } from "@/features/Product/api/product.api";
 import { itemsApi } from "@/features/Inventory/api/item.api";
-import { warehousesApi, roomsApi, shelvesApi } from "@/features/Inventory/api/location.api";
+import { warehousesApi, roomsApi, shelvesApi, racksApi } from "@/features/Inventory/api/location.api";
 import type { Product } from "@/features/Product/types";
 
 /* ---------------- Types ---------------- */
@@ -62,6 +62,7 @@ const BarcodeScannerPage: React.FC = () => {
     const [selectedWarehouseId, setSelectedWarehouseId] = useState<number | "">("");
     const [selectedRoomId, setSelectedRoomId] = useState<number | "">("");
     const [selectedShelfId, setSelectedShelfId] = useState<number | "">("");
+    const [selectedRackId, setSelectedRackId] = useState<number | "">("");
     const [sellingMode, setSellingMode] = useState<"Online" | "Offline">("Online");
     const [quantity, setQuantity] = useState<number>(1);
     const [isReturnMode, setIsReturnMode] = useState(false); // Return mode toggle
@@ -70,11 +71,13 @@ const BarcodeScannerPage: React.FC = () => {
     const [returnWarehouseId, setReturnWarehouseId] = useState<number | "">("")
     const [returnRoomId, setReturnRoomId] = useState<number | "">("")
     const [returnShelfId, setReturnShelfId] = useState<number | "">("")
+    const [returnRackId, setReturnRackId] = useState<number | "">("")
 
     // All locations for Return mode
     const [allWarehouses, setAllWarehouses] = useState<any[]>([]);
     const [allRooms, setAllRooms] = useState<any[]>([]);
     const [allShelves, setAllShelves] = useState<any[]>([]);
+    const [allRacks, setAllRacks] = useState<any[]>([]);
 
     const [isSelling, setIsSelling] = useState(false);
     const [isReturning, setIsReturning] = useState(false);
@@ -116,13 +119,19 @@ const BarcodeScannerPage: React.FC = () => {
     };
 
     const handleSell = async () => {
-        if (!product || !selectedShelfId) return;
+        if (!product) return;
+
+        if (!selectedShelfId && !selectedRackId) {
+            alert("Please select a location (shelf or rack)");
+            return;
+        }
 
         setIsSelling(true);
         try {
             const res = await itemsApi.removeStock({
                 product_id: product.product_id,
-                shelf_id: Number(selectedShelfId),
+                shelf_id: selectedShelfId ? Number(selectedShelfId) : undefined,
+                rack_id: selectedRackId ? Number(selectedRackId) : undefined,
                 quantity: quantity,
                 status: 'sold',
                 mode: sellingMode
@@ -141,13 +150,19 @@ const BarcodeScannerPage: React.FC = () => {
     };
 
     const handleReturn = async () => {
-        if (!product || !returnShelfId) return;
+        if (!product) return;
+
+        if (!returnShelfId && !returnRackId) {
+            alert("Please select a return location (shelf or rack)");
+            return;
+        }
 
         setIsReturning(true);
         try {
             const res = await itemsApi.returnStock({
                 product_id: product.product_id,
-                shelf_id: Number(returnShelfId),
+                shelf_id: returnShelfId ? Number(returnShelfId) : undefined,
+                rack_id: returnRackId ? Number(returnRackId) : undefined,
                 quantity: quantity
             });
 
@@ -158,6 +173,7 @@ const BarcodeScannerPage: React.FC = () => {
                 setReturnWarehouseId("");
                 setReturnRoomId("");
                 setReturnShelfId("");
+                setReturnRackId("");
                 setQuantity(1);
             } else {
                 alert("Failed to return item: " + (res as any).message);
@@ -245,15 +261,17 @@ const BarcodeScannerPage: React.FC = () => {
     useEffect(() => {
         const fetchAllLocations = async () => {
             try {
-                const [wRes, rRes, sRes] = await Promise.all([
+                const [wRes, rRes, sRes, rackRes] = await Promise.all([
                     warehousesApi.getAll(1, 100),
                     roomsApi.getAll(1, 100),
-                    shelvesApi.getAll(1, 100)
+                    shelvesApi.getAll(1, 100),
+                    racksApi.getAll(undefined, 1, 100)
                 ]);
 
                 if (wRes.success && wRes.data) setAllWarehouses(wRes.data);
                 if (rRes.success && rRes.rooms) setAllRooms(rRes.rooms);
                 if (sRes.success && sRes.data) setAllShelves(sRes.data);
+                if (rackRes.success && rackRes.data) setAllRacks(rackRes.data);
             } catch (err) {
                 console.error("Failed to fetch locations:", err);
             }
@@ -325,6 +343,10 @@ const BarcodeScannerPage: React.FC = () => {
 
     const returnShelvesFiltered = returnRoomId
         ? allShelves.filter((s: any) => s.room_id === Number(returnRoomId))
+        : [];
+
+    const returnRacksFiltered = returnRoomId
+        ? allRacks.filter((r: any) => r.room_id === Number(returnRoomId))
         : [];
 
 
@@ -662,7 +684,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                         <div>
                                                                             <label className="text-[11px] text-gray-500 mb-1 block">Warehouse <span className="text-red-500">*</span></label>
                                                                             <div className="relative">
-                                                                                <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-green-500" value={returnWarehouseId} onChange={(e) => { setReturnWarehouseId(Number(e.target.value)); setReturnRoomId(""); setReturnShelfId(""); }}>
+                                                                                <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-green-500" value={returnWarehouseId} onChange={(e) => { setReturnWarehouseId(Number(e.target.value)); setReturnRoomId(""); setReturnShelfId(""); setReturnRackId(""); }}>
                                                                                     <option value="">Select Warehouse</option>
                                                                                     {allWarehouses.map((w: any) => (<option key={w.warehouse_id} value={w.warehouse_id}>{w.name}</option>))}
                                                                                 </select>
@@ -672,7 +694,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                         <div>
                                                                             <label className="text-[11px] text-gray-500 mb-1 block">Room <span className="text-red-500">*</span></label>
                                                                             <div className="relative">
-                                                                                <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-green-500" value={returnRoomId} onChange={(e) => { setReturnRoomId(Number(e.target.value)); setReturnShelfId(""); }} disabled={!returnWarehouseId}>
+                                                                                <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-green-500" value={returnRoomId} onChange={(e) => { setReturnRoomId(Number(e.target.value)); setReturnShelfId(""); setReturnRackId(""); }} disabled={!returnWarehouseId}>
                                                                                     <option value="">Select Room</option>
                                                                                     {returnRoomsFiltered.map((r: any) => (<option key={r.room_id} value={r.room_id}>{r.name || r.room_name}</option>))}
                                                                                 </select>
@@ -680,15 +702,26 @@ const BarcodeScannerPage: React.FC = () => {
                                                                             </div>
                                                                         </div>
                                                                         <div>
-                                                                            <label className="text-[11px] text-gray-500 mb-1 block">Shelf <span className="text-red-500">*</span></label>
+                                                                            <label className="text-[11px] text-gray-500 mb-1 block">Shelf</label>
                                                                             <div className="relative">
-                                                                                <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-green-500" value={returnShelfId} onChange={(e) => setReturnShelfId(Number(e.target.value))} disabled={!returnRoomId}>
+                                                                                <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-green-500" value={returnShelfId} onChange={(e) => { setReturnShelfId(Number(e.target.value)); if (e.target.value) setReturnRackId(""); }} disabled={!returnRoomId}>
                                                                                     <option value="">Select Shelf</option>
                                                                                     {returnShelvesFiltered.map((s: any) => (<option key={s.shelf_id} value={s.shelf_id}>{s.name || s.shelf_name}</option>))}
                                                                                 </select>
                                                                                 <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                                                                             </div>
                                                                         </div>
+                                                                        <div>
+                                                                            <label className="text-[11px] text-gray-500 mb-1 block">Rack</label>
+                                                                            <div className="relative">
+                                                                                <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-green-500" value={returnRackId} onChange={(e) => { setReturnRackId(Number(e.target.value)); if (e.target.value) setReturnShelfId(""); }} disabled={!returnRoomId}>
+                                                                                    <option value="">Select Rack</option>
+                                                                                    {returnRacksFiltered.map((r: any) => (<option key={r.rack_id} value={r.rack_id}>{r.rack_name}</option>))}
+                                                                                </select>
+                                                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                            </div>
+                                                                        </div>
+                                                                        <p className="text-xs text-gray-500">* Select either Shelf or Rack, not both</p>
                                                                     </div>
                                                                 </div>
                                                             )}

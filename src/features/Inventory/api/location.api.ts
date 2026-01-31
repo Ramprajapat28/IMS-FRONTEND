@@ -29,6 +29,26 @@ export const warehousesApi = {
             body: JSON.stringify(ids),
         });
     },
+    getById: async (id: number) => {
+        return apiRequest<ApiResponse<Warehouse>>(`/api/warehouses/${id}`);
+    },
+    create: async (data: { name: string; location?: string }) => {
+        return apiRequest<ApiResponse<Warehouse>>('/api/warehouses/create', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
+    update: async (id: number, data: { name?: string; location?: string }) => {
+        return apiRequest<ApiResponse<Warehouse>>(`/api/warehouses/update/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+    },
+    delete: async (id: number) => {
+        return apiRequest<ApiResponse<any>>(`/api/warehouses/delete/${id}`, {
+            method: 'DELETE',
+        });
+    },
 };
 
 // ============================================
@@ -43,8 +63,8 @@ export interface Room {
 }
 
 export interface CreateRoomData {
-    name: string;
-    warehouse_id?: number;
+    room_name: string;
+    warehouse_id: number;
 }
 
 export const roomsApi = {
@@ -97,8 +117,10 @@ export interface Shelf {
 }
 
 export interface CreateShelfData {
-    name: string;
-    room_id?: number;
+    shelf_name: string;
+    room_id: number;
+    warehouse_id: number;
+    capacity?: number;
 }
 
 export const shelvesApi = {
@@ -141,3 +163,76 @@ export const shelvesApi = {
         );
     },
 };
+
+// ============================================
+// RACKS API
+// ============================================
+export interface Rack {
+    rack_id: number;
+    rack_name: string;
+    name?: string;
+    warehouse_id?: number;
+    room_id?: number;
+    capacity?: number;
+    warehouse_name?: string;
+    room_name?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface CreateRackData {
+    rack_name: string;
+    warehouse_id: number;
+    room_id: number;
+    capacity?: number;
+}
+
+export const racksApi = {
+    getAll: async (filters?: { warehouse_id?: number; room_id?: number; rack_name?: string }, page = 1, limit = 10) => {
+        const params = new URLSearchParams({
+            page: page.toString(),
+            limit: limit.toString(),
+            ...(filters?.warehouse_id && { warehouse_id: filters.warehouse_id.toString() }),
+            ...(filters?.room_id && { room_id: filters.room_id.toString() }),
+            ...(filters?.rack_name && { rack_name: filters.rack_name }),
+        });
+
+        return apiRequest<{ success: boolean; data: Rack[]; total: number; page: number; limit: number }>(
+            `/api/racks/list?${params.toString()}`
+        );
+    },
+
+    getById: async (id: number) => {
+        return apiRequest<{ success: boolean; data: Rack }>(`/api/racks/${id}`);
+    },
+
+    create: async (data: CreateRackData) => {
+        return apiRequest<{ success: boolean; data: Rack; message: string }>(
+            '/api/racks/create',
+            {
+                method: 'POST',
+                body: JSON.stringify(data),
+            }
+        );
+    },
+
+    update: async (id: number, data: Partial<CreateRackData>) => {
+        return apiRequest<{ success: boolean; data: Rack; message: string }>(
+            `/api/racks/${id}`,
+            {
+                method: 'PUT',
+                body: JSON.stringify(data),
+            }
+        );
+    },
+
+    delete: async (id: number) => {
+        return apiRequest<{ success: boolean; data: { rack_id: number; deleted: boolean; message: string } }>(
+            `/api/racks/${id}`,
+            {
+                method: 'DELETE',
+            }
+        );
+    },
+};
+

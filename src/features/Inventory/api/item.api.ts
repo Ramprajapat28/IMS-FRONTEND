@@ -14,13 +14,15 @@ export interface Item {
 
 export interface AddStockData {
     product_id: number;
-    shelf_id: number;
+    shelf_id?: number;
+    rack_id?: number;
     quantity: number;
 }
 
 export interface RemoveStockData {
     product_id: number;
-    shelf_id: number;
+    shelf_id?: number;
+    rack_id?: number;
     quantity: number;
     status?: string;
     mode?: string; // 🆕 Added mode
@@ -66,7 +68,7 @@ export const itemsApi = {
         });
     },
 
-    returnStock: async (data: { product_id: number; quantity: number; shelf_id: number }) => {
+    returnStock: async (data: { product_id: number; quantity: number; shelf_id?: number; rack_id?: number }) => {
         return apiRequest<ApiResponse<{ affected: number }>>('/api/items/return-stock', {
             method: 'POST',
             body: JSON.stringify(data),

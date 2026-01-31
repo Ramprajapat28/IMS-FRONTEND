@@ -19,6 +19,10 @@ import CategoryProducts from "@/features/Product/screens/CategoryProducts";
 import EditProduct from "@/features/Product/screens/EditProduct";
 // import ProductVariantsPage from "@/features/Product/screens/ProductVariantsPage";
 import ProductDetailsPage from "@/features/Product/screens/ProductDetailsPage";
+import WarehousePage from "@/features/Warehouse/screens/WarehousePage";
+import WarehouseListPage from "@/features/Warehouse/screens/WarehouseListPage";
+import WarehouseDetailsPage from "@/features/Warehouse/screens/WarehouseDetailsPage";
+import RoomDetailsPage from "@/features/Warehouse/screens/RoomDetailsPage";
 
 export const AppRoutes = () => {
   return (
@@ -43,6 +47,11 @@ export const AppRoutes = () => {
         <Route path="/inventory/category/:categoryId" element={<InventoryPage />} />
         <Route path="/inventory/details/:id" element={<InventoryProductDetailsPage />} />
         <Route path="/inventory/variants/:id" element={<InventoryVariantsPage />} />
+
+        {/* Warehouse Routes - Drill-down navigation */}
+        <Route path="/warehouse" element={<WarehouseListPage />} />
+        <Route path="/warehouse/:id" element={<WarehouseDetailsPage />} />
+        <Route path="/warehouse/:id/room/:roomId" element={<RoomDetailsPage />} />
 
         <Route path="/orders" element={<Order />} />
         <Route path="/barcode/generate" element={<BarcodeGenerate />} />
