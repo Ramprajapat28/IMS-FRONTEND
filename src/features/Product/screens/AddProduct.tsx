@@ -388,15 +388,17 @@ const AddProduct = () => {
               </label>
               <select
                 value={form.size}
+                disabled={!form.category_id}
                 onChange={(e) => updateField("size", e.target.value)}
-                className="w-72 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                className="w-72 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
               >
-                <option value="" className="text-gray-400">Select Size</option>
-                <option value="S">Small</option>
-                <option value="M">Medium</option>
-                <option value="L">Large</option>
-                <option value="XL">X-Large</option>
-                <option value="XXL">2X-Large</option>
+                <option value="" className="text-gray-400">
+                  {!form.category_id ? "Select Category First" : "Select Size"}
+                </option>
+                {/* Dynamically show sizes based on selected category */}
+                {form.category_id && categories.find(c => c.category_id === Number(form.category_id))?.sizes?.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
               </select>
             </div>
 

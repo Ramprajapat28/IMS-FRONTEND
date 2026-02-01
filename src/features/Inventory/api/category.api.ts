@@ -5,6 +5,7 @@ export interface Category {
     category_name: string;
     global_category_id?: number | null;
     logo_url?: string | null;
+    sizes?: string[] | null;
 }
 
 export interface GlobalCategory {
@@ -35,7 +36,7 @@ export const categoriesApi = {
         });
     },
 
-    createCategory: async (data: { category_name: string, global_category_id: number, logo_url?: string | null }) => {
+    createCategory: async (data: { category_name: string, global_category_id: number, logo_url?: string | null, sizes?: string[] | null }) => {
         return apiRequest<ApiResponse<Category>>('/api/category/create', {
             method: 'POST',
             body: JSON.stringify(data)
@@ -55,7 +56,7 @@ export const categoriesApi = {
         });
     },
 
-    updateCategory: async (id: number, data: { category_name: string, global_category_id: number, logo_url?: string | null }) => {
+    updateCategory: async (id: number, data: { category_name: string, global_category_id: number, logo_url?: string | null, sizes?: string[] | null }) => {
         return apiRequest<ApiResponse<Category>>(`/api/category/update/${id}`, {
             method: 'PUT',
             body: JSON.stringify(data)

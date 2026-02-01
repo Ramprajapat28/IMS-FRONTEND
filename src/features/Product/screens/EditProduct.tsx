@@ -563,18 +563,17 @@ const EditProduct = () => {
                                 </label>
                                 <select
                                     value={form.size}
+                                    disabled={!form.category_id}
                                     onChange={(e) => updateField("size", e.target.value)}
-                                    className="w-48 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                                    className="w-48 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
                                 >
-                                    <option value="">{form.size || "Select Size"}</option>
-                                    {form.size && !["S", "M", "L", "XL", "XXL"].includes(form.size) && (
-                                        <option value={form.size}>{form.size}</option>
-                                    )}
-                                    <option value="S">Small</option>
-                                    <option value="M">Medium</option>
-                                    <option value="L">Large</option>
-                                    <option value="XL">X-Large</option>
-                                    <option value="XXL">2X-Large</option>
+                                    <option value="">
+                                        {!form.category_id ? "Select Category" : (form.size || "Select Size")}
+                                    </option>
+                                    {/* Dynamically show sizes based on selected category */}
+                                    {form.category_id && categories.find(c => c.category_id === Number(form.category_id))?.sizes?.map(s => (
+                                        <option key={s} value={s}>{s}</option>
+                                    ))}
                                 </select>
                             </div>
 
@@ -813,8 +812,8 @@ const EditProduct = () => {
                                                 setForm(prev => ({ ...prev, rack_id: "" }));
                                             }}
                                             className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${selectionType === 'shelf'
-                                                    ? 'bg-white text-blue-600 shadow-sm'
-                                                    : 'text-gray-500 hover:text-gray-700'
+                                                ? 'bg-white text-blue-600 shadow-sm'
+                                                : 'text-gray-500 hover:text-gray-700'
                                                 }`}
                                         >
                                             Shelf
@@ -826,8 +825,8 @@ const EditProduct = () => {
                                                 setForm(prev => ({ ...prev, shelf_id: "" }));
                                             }}
                                             className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${selectionType === 'rack'
-                                                    ? 'bg-white text-blue-600 shadow-sm'
-                                                    : 'text-gray-500 hover:text-gray-700'
+                                                ? 'bg-white text-blue-600 shadow-sm'
+                                                : 'text-gray-500 hover:text-gray-700'
                                                 }`}
                                         >
                                             Rack
@@ -928,8 +927,8 @@ const EditProduct = () => {
                                                 setForm(prev => ({ ...prev, rack_id: "" }));
                                             }}
                                             className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${selectionType === 'shelf'
-                                                    ? 'bg-white text-blue-600 shadow-sm'
-                                                    : 'text-gray-500 hover:text-gray-700'
+                                                ? 'bg-white text-blue-600 shadow-sm'
+                                                : 'text-gray-500 hover:text-gray-700'
                                                 }`}
                                         >
                                             Shelf
@@ -941,8 +940,8 @@ const EditProduct = () => {
                                                 setForm(prev => ({ ...prev, shelf_id: "" }));
                                             }}
                                             className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${selectionType === 'rack'
-                                                    ? 'bg-white text-blue-600 shadow-sm'
-                                                    : 'text-gray-500 hover:text-gray-700'
+                                                ? 'bg-white text-blue-600 shadow-sm'
+                                                : 'text-gray-500 hover:text-gray-700'
                                                 }`}
                                         >
                                             Rack

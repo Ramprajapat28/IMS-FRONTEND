@@ -11,6 +11,7 @@ const AddCategoryPage = () => {
 
     const [name, setName] = useState("");
     const [logoUrl, setLogoUrl] = useState("");
+    const [sizes, setSizes] = useState("");
     const [globalId, setGlobalId] = useState<string>(location.state?.global_category_id || "");
 
     const [isLoading, setIsLoading] = useState(true);
@@ -62,10 +63,13 @@ const AddCategoryPage = () => {
         setIsSubmitting(true);
         setError(null);
         try {
+            const sizesArray = sizes.split(",").map(s => s.trim()).filter(s => s !== "");
+
             const res = await categoriesApi.createCategory({
                 category_name: name,
                 global_category_id: Number(globalId),
-                logo_url: logoUrl || null
+                logo_url: logoUrl || null,
+                sizes: sizesArray.length > 0 ? sizesArray : null
             });
             if (res.success) {
                 navigate(-1);
@@ -118,6 +122,18 @@ const AddCategoryPage = () => {
                         className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                         placeholder="e.g. T-shirts, Running Shoes"
                     />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Available Sizes (Comma separated)</label>
+                    <input
+                        type="text"
+                        value={sizes}
+                        onChange={(e) => setSizes(e.target.value)}
+                        className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder="e.g. S, M, L, XL or 7, 8, 9, 10"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Enter sizes separated by commas</p>
                 </div>
 
                 <div>
