@@ -25,6 +25,7 @@ type ProductForm = {
     discounted_price: number | string;
     cost_to_consumer: number | string;
     gst_percentage: number | string;
+    reorder_level: number | string;
 };
 
 const EditProduct = () => {
@@ -50,6 +51,7 @@ const EditProduct = () => {
         discounted_price: "",
         cost_to_consumer: "",
         gst_percentage: "",
+        reorder_level: "",
     });
 
     // Multiple Image States
@@ -107,6 +109,7 @@ const EditProduct = () => {
                         discounted_price: Number(product.discounted_price) || "",
                         cost_to_consumer: Number(product.cost_to_consumer) || "",
                         gst_percentage: Number(product.gst_percentage) || "",
+                        reorder_level: Number(product.reorder_level) || "",
                     });
 
                     // Handle Images
@@ -372,6 +375,7 @@ const EditProduct = () => {
                 mrp: Number(form.mrp) || 0,
                 discounted_price: Number(form.discounted_price) || 0,
                 gst_percentage: Number(form.gst_percentage) || 0,
+                reorder_level: Number(form.reorder_level) || 0,
                 category_id: Number(form.category_id),
                 global_category_id: Number(form.global_category_id),
                 product_images: allImages, // Send all images
@@ -502,6 +506,16 @@ const EditProduct = () => {
                                         value={form.gst_percentage}
                                         onChange={(e) => updateField("gst_percentage", e.target.value)}
                                         placeholder="0"
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 mb-2 block">Reorder Level (Low Stock Limit):</label>
+                                    <input
+                                        type="number"
+                                        value={form.reorder_level}
+                                        onChange={(e) => updateField("reorder_level", e.target.value)}
+                                        placeholder="10"
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
                                 </div>

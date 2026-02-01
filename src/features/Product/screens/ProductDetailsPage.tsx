@@ -134,7 +134,10 @@ const ProductDetailsPage = () => {
         );
     }
 
-    const isInStock = (product.stock_quantity || 0) > 0;
+    const stockQty = product.stock_quantity || 0;
+    const reorderLevel = product.reorder_level || 10;
+    const isInStock = stockQty > 0;
+    const isLowStock = isInStock && stockQty <= reorderLevel;
     const allImages = getAllImages();
 
     return (
@@ -364,8 +367,8 @@ const ProductDetailsPage = () => {
                                 <p className="text-xs text-gray-500 mb-0.5">AVAILABLE QUANTITY</p>
                                 <div className="flex items-center justify-between">
                                     <p className="font-medium text-gray-900 text-sm">{product.stock_quantity || 0}</p>
-                                    <span className={`px - 2.5 py - 0.5 rounded - full text - xs font - medium ${isInStock ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'} `}>
-                                        {isInStock ? 'In-Stock' : 'Out of Stock'}
+                                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${!isInStock ? 'bg-red-100 text-red-700' : isLowStock ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>
+                                        {!isInStock ? 'Out of Stock' : isLowStock ? 'Low Stock' : 'In-Stock'}
                                     </span>
                                 </div>
                             </div>
@@ -389,14 +392,16 @@ const ProductDetailsPage = () => {
                         </div>
 
 
-                        {/* Re-order Level
+                        {/* Re-order Level */}
                         <div className="flex gap-2.5">
-                            <RefreshCw size={18} className="text-gray-400 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-400 mt-0.5 flex-shrink-0">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                            </span>
                             <div>
-                                <p className="text-xs text-gray-500 mb-0.5">RE-ORDER LEVEL</p>
+                                <p className="text-xs text-gray-500 mb-0.5 uppercase">Low stock limit (Re-order level)</p>
                                 <p className="font-medium text-gray-900 text-sm">{product.reorder_level || 10}</p>
                             </div>
-                        </div> */}
+                        </div>
 
                         {/* Refundable Item */}
                         {/* <div className="flex items-start gap-2.5 pt-3 border-t">
