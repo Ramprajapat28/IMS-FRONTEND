@@ -32,8 +32,10 @@ interface StockLocation {
     warehouse_name: string;
     room_id: number;
     room_name: string;
-    shelf_id: number;
-    shelf_name: string;
+    shelf_id?: number;
+    shelf_name?: string;
+    rack_id?: number;
+    rack_name?: string;
     item_count: number;
 }
 
@@ -65,7 +67,8 @@ const BarcodeScannerPage: React.FC = () => {
     const [selectedRackId, setSelectedRackId] = useState<number | "">("");
     const [sellingMode, setSellingMode] = useState<"Online" | "Offline">("Online");
     const [quantity, setQuantity] = useState<number>(1);
-    const [isReturnMode, setIsReturnMode] = useState(false); // Return mode toggle
+    const [isReturnMode, setIsReturnMode] = useState(false);
+    const [storageType, setStorageType] = useState<"shelf" | "rack">("shelf");
 
     // Return Mode: Destination location state
     const [returnWarehouseId, setReturnWarehouseId] = useState<number | "">("")
@@ -330,9 +333,19 @@ const BarcodeScannerPage: React.FC = () => {
 
     // Unique Shelves for selected Room
     const uniqueShelves = selectedRoomId
-        ? Array.from(new Set(stockDetails.filter(s => s.room_id === Number(selectedRoomId)).map(s => s.shelf_id)))
-            .filter(id => id !== undefined && id !== null)
+        ? Array.from(new Set(stockDetails
+            .filter(s => s.room_id === Number(selectedRoomId) && s.shelf_id)
+            .map(s => s.shelf_id)))
             .map(id => stockDetails.find(s => s.shelf_id === id))
+            .filter(x => x !== undefined)
+        : [];
+
+    // Unique Racks for selected Room
+    const uniqueRacks = selectedRoomId
+        ? Array.from(new Set(stockDetails
+            .filter(s => s.room_id === Number(selectedRoomId) && s.rack_id)
+            .map(s => s.rack_id)))
+            .map(id => stockDetails.find(s => s.rack_id === id))
             .filter(x => x !== undefined)
         : [];
 
@@ -590,28 +603,87 @@ const BarcodeScannerPage: React.FC = () => {
 
 
 
-                                                                    {/* SHELF */}
-                                                                    <div>
-                                                                        <label className="text-[11px] text-gray-500 mb-1 block">
-                                                                            Shelf <span className="text-red-500">*</span>
+                                                                    {/* STORAGE TYPE TOGGLE */}
+                                                                    <div className="flex flex-col gap-1.5 mt-2">
+                                                                        <label className="text-[11px] text-gray-500 block">
+                                                                            Storage Type
                                                                         </label>
-                                                                        <div className="relative">
-                                                                            <select
-                                                                                className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                                                                                value={selectedShelfId}
-                                                                                onChange={(e) => setSelectedShelfId(Number(e.target.value))}
-                                                                                disabled={!selectedRoomId}
+                                                                        <div className="flex p-0.5 bg-gray-100 rounded-lg w-fit">
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => {
+                                                                                    setStorageType('shelf');
+                                                                                    setSelectedRackId("");
+                                                                                }}
+                                                                                className={`px-3 py-1 text-[10px] font-medium rounded-md transition-all ${storageType === 'shelf'
+                                                                                    ? 'bg-white text-blue-600 shadow-sm'
+                                                                                    : 'text-gray-500 hover:text-gray-700'
+                                                                                    }`}
                                                                             >
-                                                                                <option value="">Select Shelf</option>
-                                                                                {uniqueShelves.map((s) => (
-                                                                                    <option key={s?.shelf_id} value={s?.shelf_id}>
-                                                                                        {s?.shelf_name} ({s?.item_count} available)
-                                                                                    </option>
-                                                                                ))}
-                                                                            </select>
-                                                                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                                Shelf
+                                                                            </button>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => {
+                                                                                    setStorageType('rack');
+                                                                                    setSelectedShelfId("");
+                                                                                }}
+                                                                                className={`px-3 py-1 text-[10px] font-medium rounded-md transition-all ${storageType === 'rack'
+                                                                                    ? 'bg-white text-blue-600 shadow-sm'
+                                                                                    : 'text-gray-500 hover:text-gray-700'
+                                                                                    }`}
+                                                                            >
+                                                                                Rack
+                                                                            </button>
                                                                         </div>
                                                                     </div>
+
+                                                                    {/* SHELF / RACK Selection */}
+                                                                    {storageType === 'shelf' ? (
+                                                                        <div>
+                                                                            <label className="text-[11px] text-gray-500 mb-1 block">
+                                                                                Shelf <span className="text-red-500">*</span>
+                                                                            </label>
+                                                                            <div className="relative">
+                                                                                <select
+                                                                                    className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                                                    value={selectedShelfId}
+                                                                                    onChange={(e) => setSelectedShelfId(Number(e.target.value))}
+                                                                                    disabled={!selectedRoomId}
+                                                                                >
+                                                                                    <option value="">Select Shelf</option>
+                                                                                    {uniqueShelves.map((s) => (
+                                                                                        <option key={s?.shelf_id} value={s?.shelf_id}>
+                                                                                            {s?.shelf_name} ({s?.item_count} available)
+                                                                                        </option>
+                                                                                    ))}
+                                                                                </select>
+                                                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                            </div>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div>
+                                                                            <label className="text-[11px] text-gray-500 mb-1 block">
+                                                                                Rack <span className="text-red-500">*</span>
+                                                                            </label>
+                                                                            <div className="relative">
+                                                                                <select
+                                                                                    className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                                                    value={selectedRackId}
+                                                                                    onChange={(e) => setSelectedRackId(Number(e.target.value))}
+                                                                                    disabled={!selectedRoomId}
+                                                                                >
+                                                                                    <option value="">Select Rack</option>
+                                                                                    {uniqueRacks.map((r) => (
+                                                                                        <option key={r?.rack_id} value={r?.rack_id}>
+                                                                                            {r?.rack_name} ({r?.item_count} available)
+                                                                                        </option>
+                                                                                    ))}
+                                                                                </select>
+                                                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         )}
@@ -735,9 +807,9 @@ const BarcodeScannerPage: React.FC = () => {
                                                 <div className="flex justify-end mt-3">
                                                     <button
                                                         onClick={handleSell}
-                                                        disabled={!selectedShelfId || isSelling || quantity < 1}
+                                                        disabled={(!selectedShelfId && !selectedRackId) || isSelling || quantity < 1}
                                                         className={`px-5 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 shadow-sm
-                                                        ${!selectedShelfId || isSelling ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                                                        ${(!selectedShelfId && !selectedRackId) || isSelling ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                                                     >
                                                         {isSelling ? (
                                                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -757,8 +829,8 @@ const BarcodeScannerPage: React.FC = () => {
                                                 <div className="flex justify-end mt-3">
                                                     <button
                                                         onClick={handleReturn}
-                                                        disabled={!returnShelfId || isReturning || quantity < 1}
-                                                        className={`px-5 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 shadow-sm ${!returnShelfId || isReturning ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                                                        disabled={(!returnShelfId && !returnRackId) || isReturning || quantity < 1}
+                                                        className={`px-5 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 shadow-sm ${(!returnShelfId && !returnRackId) || isReturning ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
                                                     >
                                                         {isReturning ? (
                                                             <Loader2 className="w-3.5 h-3.5 animate-spin" />

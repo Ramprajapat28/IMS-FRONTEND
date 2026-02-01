@@ -113,10 +113,15 @@ const OrdersPage = () => {
             shelf_id: o.shelf_id,
             quantity: o.quantity,
             category: o.category_name || "General",
-            warehouse: o.warehouse_name || "Unknown Warehouse",
+            warehouse: o.warehouse_name || o.rack_warehouse_name || "Unknown",
             datetime: o.created_at ? new Date(o.created_at).toLocaleString() : "N/A",
             status: o.status || "Processing",
             mode: o.mode,
+            location_path: o.shelf_name
+              ? `${o.warehouse_name} > ${o.room_name} > ${o.shelf_name}`
+              : o.rack_name
+                ? `${o.rack_warehouse_name} > ${o.rack_room_name} > ${o.rack_name}`
+                : "Unknown Location",
             image: resolveUrl(o.product_image) || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200",
           }));
           setOrders(mappedOrders);
@@ -289,9 +294,9 @@ const OrdersPage = () => {
                 </td>
 
                 <td className="p-3">
-                  <div className="flex items-center gap-1 text-gray-500">
-                    <MapPin size={14} />
-                    {o.warehouse}
+                  <div className="flex items-center gap-1 text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]" title={(o as any).location_path}>
+                    <MapPin size={14} className="shrink-0" />
+                    {(o as any).location_path}
                   </div>
                 </td>
 
