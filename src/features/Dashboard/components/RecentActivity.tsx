@@ -76,7 +76,7 @@ const RecentActivity = () => {
             product_name: order.product_name || `Order #${order.order_id}`,
             category: order.category_name || "General",
             product_image: resolveUrl(order.product_image) || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100",
-            warehouse_name: order.warehouse_name || "Unknown Warehouse",
+            warehouse_name: order.warehouse_name || order.rack_warehouse_name || "Unknown Warehouse",
             status: order.status,
             created_at: order.created_at || new Date().toISOString(),
             quantity: order.quantity
