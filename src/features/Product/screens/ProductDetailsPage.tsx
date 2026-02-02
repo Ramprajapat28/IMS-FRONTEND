@@ -356,7 +356,7 @@ const ProductDetailsPage = () => {
                                 <p className="text-xs text-gray-500 mb-0.5 flex items-center gap-1">
                                     <IndianRupee size={12} /> CTC
                                 </p>
-                                <p className="font-medium text-gray-900">{product.cost_to_consumer ? formatCurrency(product.cost_to_consumer) : "-"}</p>
+                                <p className="font-medium text-gray-900">{product.cost_to_company ? formatCurrency(product.cost_to_company) : "-"}</p>
                             </div>
                         </div>
 

@@ -13,7 +13,7 @@ export interface Product {
     mrp?: number;
     discounted_price?: number;
     gst_percentage?: number;
-    cost_to_consumer?: number;
+    cost_to_company?: number;
     location?: string;
     size?: string;
     product_code?: string;
@@ -43,7 +43,7 @@ export interface CreateProductData {
     mrp?: number;
     discounted_price?: number;
     gst_percentage?: number;
-    cost_to_consumer?: number;
+    cost_to_company?: number;
     product_image?: {
         file_path: string;
         view: string;

@@ -16,7 +16,7 @@ type ProductForm = {
   product_code: string;
   mrp: number | string;
   discounted_price: number | string;
-  cost_to_consumer: number | string;
+  cost_to_company: number | string;
   gst_percentage: number | string;
   reorder_level: number | string;
 };
@@ -37,7 +37,7 @@ const AddProduct = () => {
     product_code: "",
     mrp: "",
     discounted_price: "",
-    cost_to_consumer: "",
+    cost_to_company: "",
     gst_percentage: "",
     reorder_level: "10",
   });
@@ -199,7 +199,7 @@ const AddProduct = () => {
         category: form.category,
         description: form.description,
         size: form.size,
-        cost_to_consumer: Number(form.cost_to_consumer) || 0,
+        cost_to_company: Number(form.cost_to_company) || 0,
         mrp: Number(form.mrp) || 0,
         discounted_price: Number(form.discounted_price) || 0,
         gst_percentage: Number(form.gst_percentage) || 0,
@@ -305,11 +305,11 @@ const AddProduct = () => {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Cost to Consumer:</label>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Cost to Company:</label>
                 <input
                   type="number"
-                  value={form.cost_to_consumer}
-                  onChange={(e) => updateField("cost_to_consumer", e.target.value)}
+                  value={form.cost_to_company}
+                  onChange={(e) => updateField("cost_to_company", e.target.value)}
                   placeholder="0.00"
                   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
