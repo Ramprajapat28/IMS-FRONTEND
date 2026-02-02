@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Search } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
 import InventoryFooter from "../components/InventoryFooter";
+import { formatCurrency } from "@/utils";
 
 type Variant = {
     id: number;
@@ -142,9 +143,11 @@ const InventoryVariantsPage = () => {
                         <thead className="bg-gray-100 text-left">
                             <tr>
                                 <th className="p-3">Sr.no</th>
-                                <th className="p-3">Product Name</th>
+                                <th className="p-3">Variant Name</th>
                                 <th className="p-3">Size</th>
                                 <th className="p-3">SKU #</th>
+                                <th className="p-3 text-right">MRP</th>
+                                <th className="p-3 text-right">Discounted Price</th>
                                 <th className="p-3">Location</th>
                                 <th className="p-3">Qty</th>
                             </tr>
@@ -156,13 +159,18 @@ const InventoryVariantsPage = () => {
                                     className="border-b hover:bg-gray-50 cursor-pointer"
                                     onClick={() => handleRowClick(variant.id)}
                                 >
-                                    <td className="p-3">{index + 1}</td>
+                                    <td className="p-3">{(page - 1) * rows + index + 1}</td>
                                     <td className="p-3 font-medium">{variant.productName}</td>
                                     <td className="p-3 text-gray-600">{variant.size}</td>
                                     <td className="p-3 text-gray-600">{variant.sku}</td>
+                                    <td className="p-3 text-right font-medium text-gray-700">
+                                        {formatCurrency(variant.mrp || 0)}
+                                    </td>
+                                    <td className="p-3 text-right font-medium text-blue-600">
+                                        {formatCurrency(variant.discounted_price || 0)}
+                                    </td>
                                     <td className="p-3 text-gray-600">{variant.location}</td>
-                                    <td className="p-3 text-gray-600">{variant.qty}</td>
-
+                                    <td className="p-3">{variant.qty}</td>
                                 </tr>
                             ))}
                         </tbody>
