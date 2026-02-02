@@ -316,7 +316,9 @@ const OrdersPage = () => {
                     )}
                   </div>
                 </td>
-                <td className="p-3 text-gray-500">{o.datetime}</td>
+                <td className="p-3 text-gray-500">
+                  {o.status.toLowerCase() === 'returned' ? '-' : o.datetime}
+                </td>
 
                 <td className="p-3">
                   <span

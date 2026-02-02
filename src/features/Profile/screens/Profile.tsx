@@ -160,16 +160,16 @@ const Profile = () => {
       toast.error('First name is required');
       return;
     }
-    if (!formProfile.lastName.trim()) {
-      toast.error('Last name is required');
-      return;
-    }
     if (!formProfile.email.trim()) {
       toast.error('Email is required');
       return;
     }
     if (!formProfile.phone.trim()) {
       toast.error('Phone number is required');
+      return;
+    }
+    if (!formProfile.address.trim()) {
+      toast.error('Address is required');
       return;
     }
     if (!formProfile.location.trim()) {
@@ -319,11 +319,11 @@ const Profile = () => {
             {/* FORM GRID */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input label="First Name" value={formProfile.firstName} onChange={(v) => handleChange("firstName", v)} required />
-              <Input label="Last Name" value={formProfile.lastName} onChange={(v) => handleChange("lastName", v)} required />
+              <Input label="Last Name" value={formProfile.lastName} onChange={(v) => handleChange("lastName", v)} />
               <Input label="E-mail" value={formProfile.email} onChange={(v) => handleChange("email", v)} type="email" full required />
               <Input label="Phone Number" value={formProfile.phone} onChange={(v) => handleChange("phone", v)} required />
               <Input label="Date of Birth" value={formProfile.dob} onChange={(v) => handleChange("dob", v)} type="date" placeholder="YYYY-MM-DD" required />
-              <Input label="Address" value={formProfile.address} onChange={(v) => handleChange("address", v)} full />
+              <Input label="Address" value={formProfile.address} onChange={(v) => handleChange("address", v)} full required />
               <Input label="Location" value={formProfile.location} onChange={(v) => handleChange("location", v)} required />
               <Input label="Postal Code" value={formProfile.postalCode} onChange={(v) => handleChange("postalCode", v)} required />
             </div>
