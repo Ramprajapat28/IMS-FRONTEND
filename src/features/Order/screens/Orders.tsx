@@ -279,9 +279,9 @@ const OrdersPage = () => {
             </tr>
           </thead>
           <tbody>
-            {paginatedOrders.map((o) => (
+            {paginatedOrders.map((o, index) => (
               <tr key={o.id} className="border-b last:border-none">
-                <td className="p-3">{o.id}</td>
+                <td className="p-3">{(page - 1) * rowsPerPage + index + 1}</td>
 
                 <td className="p-3 flex items-center gap-3 min-w-[220px]">
                   <img
