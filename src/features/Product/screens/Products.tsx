@@ -500,13 +500,14 @@
 
 // export default ProductsPage;
 import { useEffect, useMemo, useState } from "react";
-import { Search, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Search, Pencil, Trash2, Loader2, Printer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ProductsNavbar from "../components/ProductsNavbar";
 import ProductsFooter from "../components/ProductsFooter";
 import { productsApi } from "@/features/Product/api/product.api";
 import { formatCurrency } from "@/utils";
 import type { Product } from "@/features/Product/types";
+import BarcodePrintModal from "../components/BarcodePrintModal";
 
 // Map API product to display format
 interface DisplayProduct {
@@ -518,6 +519,7 @@ interface DisplayProduct {
   image: string;
   mrp: number;
   discounted_price: number;
+  barcode_image?: string;
 }
 
 const ProductsPage = () => {
@@ -532,6 +534,15 @@ const ProductsPage = () => {
   const [page, setPage] = useState(1);
   const [rows, setRows] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+
+  // Modal State
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<DisplayProduct | null>(null);
+
+  const handlePrintClick = (p: DisplayProduct) => {
+    setSelectedProduct(p);
+    setIsPrintModalOpen(true);
+  };
 
   // Fetch products from API
   // Fetch products from API
@@ -554,6 +565,7 @@ const ProductsPage = () => {
                 : "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200",
               mrp: p.mrp || 0,
               discounted_price: p.discounted_price || 0,
+              barcode_image: p.barcode_image,
             };
           });
           setData(products);
@@ -712,6 +724,13 @@ const ProductsPage = () => {
                   <td className="p-3">
                     <div className="flex gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
                       <button
+                        onClick={() => handlePrintClick(p)}
+                        className="border p-1.5 rounded-lg hover:bg-gray-100 text-blue-600 border-blue-100"
+                        title="Print Barcode"
+                      >
+                        <Printer size={16} />
+                      </button>
+                      <button
                         onClick={() => navigate(`/products/edit/${p.id}`)}
                         className="border p-1.5 rounded-lg hover:bg-gray-100"
                         title="Edit"
@@ -744,6 +763,20 @@ const ProductsPage = () => {
           setPage(1);
         }}
       />
+
+      {selectedProduct && (
+        <BarcodePrintModal
+          isOpen={isPrintModalOpen}
+          onClose={() => setIsPrintModalOpen(false)}
+          product={{
+            name: selectedProduct.name,
+            sku: selectedProduct.sku,
+            mrp: selectedProduct.mrp,
+            discounted_price: selectedProduct.discounted_price,
+            barcode_image: selectedProduct.barcode_image
+          }}
+        />
+      )}
     </div>
   );
 };

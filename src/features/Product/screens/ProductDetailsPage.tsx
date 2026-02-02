@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
-import { useReactToPrint } from "react-to-print";
+import { useState, useEffect } from "react";
+
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2, Tag, Hash, Package, Download, FileText, Printer, IndianRupee, Percent } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
 import { formatCurrency } from "@/utils";
 import type { Product } from "@/features/Product/types";
+import BarcodePrintModal from "../components/BarcodePrintModal";
 
 const ProductDetailsPage = () => {
     const navigate = useNavigate();
@@ -13,6 +14,7 @@ const ProductDetailsPage = () => {
     const [product, setProduct] = useState<Product | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
 
     useEffect(() => {
@@ -102,12 +104,9 @@ const ProductDetailsPage = () => {
         }
     };
 
-    const printRef = useRef<HTMLDivElement>(null);
 
-    const handlePrint = useReactToPrint({
-        contentRef: printRef,
-        documentTitle: `Barcode-${product?.sku || 'product'}`,
-    });
+
+
 
     if (isLoading) {
         return (
@@ -239,7 +238,7 @@ const ProductDetailsPage = () => {
 
                     {/* Print Barcode Button */}
                     <button
-                        onClick={() => handlePrint()}
+                        onClick={() => setIsPrintModalOpen(true)}
                         className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2 text-sm"
                     >
                         <Printer size={16} />
@@ -247,19 +246,13 @@ const ProductDetailsPage = () => {
                     </button>
 
                     {/* Hidden Printable Component */}
-                    <div style={{ display: "none" }}>
-                        <div ref={printRef} className="p-4 text-center" style={{ width: "300px", height: "200px", border: "1px solid #ccc", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
-                            <h2 style={{ fontSize: "16px", fontWeight: "bold", margin: "0 0 5px 0" }}>{product.name}</h2>
-                            <p style={{ fontSize: "12px", margin: "0 0 10px 0" }}>Size: {product.size} | SKU: {product.sku}</p>
-                            {product.barcode_image && (
-                                <img
-                                    src={resolveUrl(product.barcode_image)}
-                                    alt="Barcode"
-                                    style={{ width: "100%", height: "auto", maxHeight: "100px", imageRendering: "pixelated" }}
-                                />
-                            )}
-                        </div>
-                    </div>
+                    {product && (
+                        <BarcodePrintModal
+                            isOpen={isPrintModalOpen}
+                            onClose={() => setIsPrintModalOpen(false)}
+                            product={product}
+                        />
+                    )}
                 </div>
 
                 {/* RIGHT - Product Information */}
