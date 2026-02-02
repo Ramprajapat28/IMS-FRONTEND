@@ -29,6 +29,7 @@ export interface Product {
     barcode_image?: string;
     created_at?: string;
     updated_at?: string;
+    last_added_date?: string;
 }
 
 export interface CreateProductData {

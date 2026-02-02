@@ -61,6 +61,7 @@ const EditProduct = () => {
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [lastAddedDate, setLastAddedDate] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     // Autocomplete State
@@ -111,6 +112,7 @@ const EditProduct = () => {
                         gst_percentage: Number(product.gst_percentage) || "",
                         reorder_level: Number(product.reorder_level) || "",
                     });
+                    setLastAddedDate(product.last_added_date || null);
 
                     // Handle Images
                     if (product.product_image) {
@@ -423,9 +425,17 @@ const EditProduct = () => {
 
                 <div>
                     <h1 className="text-2xl font-bold text-blue-600">Edit Product Details</h1>
-                    {currentPage === 2 && (
-                        <p className="text-sm text-gray-600">Manage product information in the inventory</p>
-                    )}
+                    <div className="flex items-center gap-4">
+                        {currentPage === 2 && (
+                            <p className="text-sm text-gray-600">Manage product information in the inventory</p>
+                        )}
+                        {lastAddedDate && (
+                            <p className="text-xs font-semibold text-orange-600 bg-orange-50 px-2 py-1 rounded-full border border-orange-100 flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                                Last Added Item: {new Date(lastAddedDate).toLocaleDateString()} {new Date(lastAddedDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                        )}
+                    </div>
                 </div>
             </div>
 
