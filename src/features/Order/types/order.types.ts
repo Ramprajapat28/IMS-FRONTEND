@@ -17,6 +17,7 @@ export interface Order {
     updated_at?: string;
     category_name?: string;
     mode?: string;
+    inward_dates?: { date: string; count: number }[];
 }
 
 export interface OrderFilters {

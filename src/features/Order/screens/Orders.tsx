@@ -18,6 +18,7 @@ type Order = {
   status: OrderStatus;
   mode?: string;
   image: string;
+  inward_dates?: { date: string; count: number }[];
 };
 
 /* ----------------------------- PAGINATION LOGIC ------------------------------ */
@@ -123,6 +124,7 @@ const OrdersPage = () => {
                 ? `${o.rack_warehouse_name} > ${o.rack_room_name} > ${o.rack_name}`
                 : "Unknown Location",
             image: resolveUrl(o.product_image) || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200",
+            inward_dates: o.inward_dates as { date: string; count: number }[],
           }));
           setOrders(mappedOrders);
 
@@ -271,7 +273,8 @@ const OrdersPage = () => {
               <th className="p-3">#</th>
               <th className="p-3">Product</th>
               <th className="p-3">Warehouse</th>
-              <th className="p-3">Date</th>
+              <th className="p-3">Inward Date</th>
+              <th className="p-3">Outward Date</th>
               <th className="p-3">Status</th>
             </tr>
           </thead>
@@ -300,6 +303,19 @@ const OrdersPage = () => {
                   </div>
                 </td>
 
+                <td className="p-3 text-gray-500">
+                  <div className="flex flex-col gap-0.5 text-xs">
+                    {o.inward_dates && Array.isArray(o.inward_dates) && o.inward_dates.length > 0 ? (
+                      o.inward_dates.map((item: any, idx) => (
+                        <span key={idx} className="whitespace-nowrap">
+                          {new Date(item.date).toLocaleDateString()} ({item.count})
+                        </span>
+                      ))
+                    ) : (
+                      "-"
+                    )}
+                  </div>
+                </td>
                 <td className="p-3 text-gray-500">{o.datetime}</td>
 
                 <td className="p-3">
