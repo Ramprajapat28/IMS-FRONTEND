@@ -4,7 +4,7 @@ import {
     ArrowRight, Loader2, Plus, Package, Edit2, Trash2
 } from "lucide-react";
 import { categoriesApi, type GlobalCategory } from "../api/category.api";
-import { UI } from "@/constants";
+
 import { resolveUrl } from "@/utils";
 
 const GlobalCategoryPage = () => {
@@ -53,7 +53,7 @@ const GlobalCategoryPage = () => {
     // Remove the separate error/loading returns - we'll handle them in the grid
 
     return (
-        <div className="max-w-7xl mx-auto p-4 space-y-6">
+        <div className=" mx-auto p-4 space-y-6">
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
@@ -69,7 +69,7 @@ const GlobalCategoryPage = () => {
             </div>
 
             {/* Global Categories Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {isLoading ? (
                     <div className="col-span-full flex justify-center items-center py-20">
                         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
