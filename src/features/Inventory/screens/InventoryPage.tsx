@@ -30,7 +30,7 @@ const InventoryPage = () => {
         if (!categoryName) return;
         setIsLoading(true);
         try {
-            const response = await inventoryApi.getCategoryProducts(categoryName, page, rows);
+            const response = await inventoryApi.getCategoryProducts(categoryName, page, rows, search);
 
             if (response.success && response.data) {
                 // Handle both direct array and paginated object structure
@@ -50,8 +50,8 @@ const InventoryPage = () => {
                             realSku: p.sku || "-----",
                             location: p.type === 'group' ? `Mixed (${p.variant_count} variants)` : (p.location || "See Details"),
                             quantity: p.stock_quantity || 0,
-                            mrp: p.mrp,
-                            discounted_price: p.discounted_price,
+                            mrp: p.type === 'group' ? 0 : p.mrp, // Will be formatted as --- if 0 and type is group
+                            discounted_price: p.type === 'group' ? 0 : p.discounted_price,
                             type: p.type // "group" or "product"
                         };
                     });
@@ -81,24 +81,17 @@ const InventoryPage = () => {
     };
 
     useEffect(() => {
-        fetchProducts();
-    }, [categoryName, page, rows]);
+        const timer = setTimeout(() => {
+            fetchProducts();
+        }, 500); // 500ms debounce
+
+        return () => clearTimeout(timer);
+    }, [categoryName, page, rows, search]);
 
 
-    // Filter by client-side search (for now, since API search isn't fully integrated in this view yet)
-    // Note: Since we are paginating server-side, this client-side search only filters the CURRENT page.
-    // Ideally update API to accept search. For now, mimicking previous behavior but on current page data.
+    // Filter by client-side sort (Search is now server-side)
     const filtered = useMemo(() => {
         let d = data;
-
-        // Apply search filter
-        if (search) {
-            d = d.filter((p) =>
-                `${p.name} ${p.sku} ${p.category} ${p.location}`
-                    .toLowerCase()
-                    .includes(search.toLowerCase())
-            );
-        }
 
         if (sortBy !== "none") {
             d = [...d].sort((a, b) =>
@@ -109,7 +102,7 @@ const InventoryPage = () => {
         }
 
         return d;
-    }, [data, search, sortBy]);
+    }, [data, sortBy]);
 
 
     // Handle row click - navigate to inventory details page or variants page
@@ -149,7 +142,7 @@ const InventoryPage = () => {
                             value={search}
                             onChange={(e) => {
                                 setSearch(e.target.value);
-                                // For client-side filter on server page, we don't reset page
+                                setPage(1); // Reset page on search
                             }}
                         />
                     </div>

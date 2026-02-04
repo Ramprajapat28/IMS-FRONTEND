@@ -5,6 +5,8 @@ import { productsApi } from "@/features/Product/api/product.api";
 import { categoriesApi, type Category } from "@/features/Inventory/api/category.api";
 import { itemsApi } from "@/features/Inventory/api/item.api";
 import { shelvesApi, roomsApi, warehousesApi, racksApi, type Shelf, type Room, type Warehouse, type Rack } from "@/features/Inventory/api/location.api";
+import { UI } from "@/constants";
+import toast from "react-hot-toast";
 
 type ProductForm = {
     name: string;
@@ -248,20 +250,32 @@ const EditProduct = () => {
     const handleImageUpload = (files: FileList | null) => {
         if (!files) return;
 
+        const fileArray = Array.from(files);
         const newFiles: File[] = [];
         const newPreviews: string[] = [];
+        let limitReached = false;
 
-        Array.from(files).forEach((file) => {
+        for (const file of fileArray) {
+            if (imagePreviews.length + newFiles.length >= UI.MAX_PRODUCT_IMAGES) {
+                limitReached = true;
+                break;
+            }
             if (file.size > 5 * 1024 * 1024) {
-                alert(`File ${file.name} exceeds 5MB limit`);
-                return;
+                toast.error(`File ${file.name} exceeds 5MB limit`);
+                continue;
             }
             newFiles.push(file);
             newPreviews.push(URL.createObjectURL(file));
-        });
+        }
 
-        setSelectedFiles((prev) => [...prev, ...newFiles]);
-        setImagePreviews((prev) => [...prev, ...newPreviews]);
+        if (limitReached) {
+            toast.error(`You can upload a maximum of ${UI.MAX_PRODUCT_IMAGES} images.`);
+        }
+
+        if (newFiles.length > 0) {
+            setSelectedFiles((prev) => [...prev, ...newFiles]);
+            setImagePreviews((prev) => [...prev, ...newPreviews]);
+        }
     };
 
     const removeImage = (index: number) => {
@@ -269,10 +283,6 @@ const EditProduct = () => {
         // existingImages are at the start of visual list? 
         // Logic: display order is [...existingPreviews, ...newPreviews]
         // Actually, existingImages logic is complex if we mix them.
-        // Simplification: imagePreviews holds ALL display URLs.
-        // We need to know WHICH one to delete.
-
-        // This simple implementation might desync if we don't track indices strictly.
         // Better: store objects in state { type: 'existing'|'new', data: ... }
         // BUT for speed: 
         // Since we pushed existing to imagePreviews first, then new.
@@ -326,9 +336,16 @@ const EditProduct = () => {
         return Promise.all(uploadPromises);
     };
 
+    const validateForm = () => {
+        if (!form.name || !form.sku || !form.category || !form.global_category_id) {
+            toast.error("Please fill all required fields");
+            return false;
+        }
+        return true;
+    };
+
     const handleNext = () => {
-        if (!form.name || !form.category || !form.sku) {
-            alert("Please fill all required fields");
+        if (!validateForm()) {
             return;
         }
         setCurrentPage(2);
@@ -683,7 +700,7 @@ const EditProduct = () => {
 
                     {/* RIGHT IMAGE */}
                     <div className="bg-white rounded-xl shadow-sm border p-8 space-y-4">
-                        <h2 className="text-lg font-semibold text-blue-600 mb-4">Product Images ({imagePreviews.length}/15)</h2>
+                        <h2 className="text-lg font-semibold text-blue-600 mb-4">Product Images ({imagePreviews.length}/{UI.MAX_PRODUCT_IMAGES})</h2>
 
                         <div className="grid grid-cols-2 gap-2 mb-4">
                             {imagePreviews.map((src, index) => (
@@ -715,6 +732,7 @@ const EditProduct = () => {
                                 className="hidden"
                                 accept="image/*"
                                 multiple
+                                disabled={imagePreviews.length >= UI.MAX_PRODUCT_IMAGES}
                                 onChange={(e) =>
                                     handleImageUpload(e.target.files)
                                 }
@@ -730,7 +748,7 @@ const EditProduct = () => {
 
                         <div className="space-y-1 pt-4">
                             <p className="text-xs text-gray-600">
-                                You can upload up to 15 images, each should not exceed 5 MB.
+                                You can upload up to {UI.MAX_PRODUCT_IMAGES} images, each should not exceed 5 MB.
                             </p>
                             <p className="text-xs text-gray-700 font-medium mt-3">
                                 *Recommended: Square images, White background.

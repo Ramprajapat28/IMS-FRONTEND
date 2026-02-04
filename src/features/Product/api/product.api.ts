@@ -8,9 +8,9 @@ export type { Product, CreateProductData };
 // ============================================
 
 export const productsApi = {
-    getAll: async (page = 1, limit = 100) => {
+    getAll: async (page = 1, limit = 100, search = "") => {
         return apiRequest<ApiResponse<Product[]> & { pagination: PaginationInfo }>(
-            `/api/products/all?page=${page}&limit=${limit}`
+            `/api/products/all?page=${page}&limit=${limit}&search=${search}`
         );
     },
 
@@ -50,9 +50,9 @@ export const productsApi = {
         return apiRequest<Blob>(`/api/products/barcode/${barcode}`);
     },
 
-    getByCategoryWithStock: async (categoryName: string, page = 1, limit = 10) => {
+    getByCategoryWithStock: async (categoryName: string, page = 1, limit = 10, search = "") => {
         return apiRequest<ApiResponse<Product[]> & { pagination: PaginationInfo }>(
-            `/api/products/category/${categoryName}/with-stock?page=${page}&limit=${limit}`
+            `/api/products/category/${categoryName}/with-stock?page=${page}&limit=${limit}&search=${search}`
         );
     },
 

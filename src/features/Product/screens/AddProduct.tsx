@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { productsApi } from "@/features/Product/api/product.api";
 import { categoriesApi, type Category } from "@/features/Inventory/api/category.api";
+import { UI } from "@/constants";
+import toast from "react-hot-toast";
 
 /* ----------------------------- TYPES ----------------------------- */
 type ProductForm = {
@@ -115,28 +117,42 @@ const AddProduct = () => {
   const handleImageUpload = async (files: FileList | null) => {
     if (!files) return;
 
+    const fileArray = Array.from(files);
+    const validFiles: File[] = [];
+    let skippedDueToLimit = false;
+
+    for (const file of fileArray) {
+      if (imagePreviews.length + validFiles.length >= UI.MAX_PRODUCT_IMAGES) {
+        skippedDueToLimit = true;
+        break;
+      }
+      validFiles.push(file);
+    }
+
+    if (skippedDueToLimit) {
+      toast.error(`You can upload a maximum of ${UI.MAX_PRODUCT_IMAGES} images.`);
+    }
+
+    if (validFiles.length === 0) return;
+
     // Create temporary placeholders
-    const newPreviews = Array.from(files).map((file) => ({
+    const newPreviews = validFiles.map((file) => ({
       url: URL.createObjectURL(file), // Local preview
       uploading: true
     }));
 
+    const startIndex = imagePreviews.length;
     setImagePreviews((prev) => [...prev, ...newPreviews]);
 
     // Process uploads
     const newUploadedUrls: string[] = [];
-    const fileArray = Array.from(files);
 
     /* 
        We need to track index relative to the TOTAL list to update loading state correctly.
-       However, simplified approach: append new ones, upload them, then update their status.
     */
 
-    // We know the starting index of new items
-    const startIndex = imagePreviews.length;
-
-    for (let i = 0; i < fileArray.length; i++) {
-      const file = fileArray[i];
+    for (let i = 0; i < validFiles.length; i++) {
+      const file = validFiles[i];
       const globalIndex = startIndex + i;
 
       // Upload
@@ -171,7 +187,7 @@ const AddProduct = () => {
   const handleSubmit = async () => {
     // Validation
     if (!form.name || !form.category || !form.sku) {
-      alert("Please fill all required fields");
+      toast.error("Please fill all required fields");
       return;
     }
 
@@ -504,7 +520,7 @@ const AddProduct = () => {
 
         {/* RIGHT IMAGE */}
         <div className="bg-white rounded-xl shadow-sm border p-8 space-y-4 ">
-          <h2 className="text-lg font-semibold text-blue-600 mb-4">Product Images ({imagePreviews.length}/15)</h2>
+          <h2 className="text-lg font-semibold text-blue-600 mb-4">Product Images ({imagePreviews.length}/{UI.MAX_PRODUCT_IMAGES})</h2>
 
           <div className="grid grid-cols-2 gap-2 mb-4">
             {imagePreviews.map((img, index) => (
@@ -543,6 +559,7 @@ const AddProduct = () => {
               className="hidden"
               accept="image/*"
               multiple
+              disabled={imagePreviews.length >= UI.MAX_PRODUCT_IMAGES}
               onChange={(e) => handleImageUpload(e.target.files)}
             />
           </label>
@@ -556,7 +573,7 @@ const AddProduct = () => {
 
           <div className="space-y-1 pt-4">
             <p className="text-xs text-gray-600">
-              You can upload up to 15 images, each should not exceed 5 MB.
+              You can upload up to {UI.MAX_PRODUCT_IMAGES} images, each should not exceed 5 MB.
             </p>
             <p className="text-xs text-gray-700 font-medium mt-3">
               *Recommended: Square images, White background.

@@ -60,10 +60,10 @@ const InventoryTable = ({ data, onRowClick }: InventoryTableProps) => {
                                     {item.sku}
                                 </td>
                                 <td className="p-3 text-right font-medium text-gray-700">
-                                    {formatCurrency(item.mrp || 0)}
+                                    {(item as any).type === 'group' ? "---" : formatCurrency(item.mrp || 0)}
                                 </td>
                                 <td className="p-3 text-right font-medium text-blue-600">
-                                    {formatCurrency(item.discounted_price || 0)}
+                                    {(item as any).type === 'group' ? "---" : formatCurrency(item.discounted_price || 0)}
                                 </td>
 
                                 <td className="p-3 text-gray-600">{item.location}</td>

@@ -545,13 +545,12 @@ const ProductsPage = () => {
   };
 
   // Fetch products from API
-  // Fetch products from API
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await productsApi.getAll(page, rows);
+        const response = await productsApi.getAll(page, rows, search);
         if (response.success && response.data) {
           const products: DisplayProduct[] = response.data.map((p: Product) => {
             return {
@@ -581,8 +580,12 @@ const ProductsPage = () => {
       }
     };
 
-    fetchProducts();
-  }, [page, rows]);
+    const timer = setTimeout(() => {
+      fetchProducts();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [page, rows, search]);
 
   // Handle delete
   const handleDelete = async (id: number) => {
@@ -597,11 +600,7 @@ const ProductsPage = () => {
   };
 
   const filtered = useMemo(() => {
-    let d = data.filter((p) =>
-      `${p.name} ${p.sku} ${p.category_name}`
-        .toLowerCase()
-        .includes(search.toLowerCase())
-    );
+    let d = data;
 
     if (sortBy !== "none") {
       d = [...d].sort((a, b) => {
@@ -612,7 +611,7 @@ const ProductsPage = () => {
     }
 
     return d;
-  }, [data, search, sortBy]);
+  }, [data, sortBy]);
 
   // const totalPages = Math.ceil(filtered.length / rows);
   // Client-side slicing removed as we are using server-side pagination

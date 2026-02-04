@@ -9,6 +9,8 @@ export const API_CONFIG = {
   TIMEOUT: 30000,
 } as const;
 
+
+
 // Routes
 export const ROUTES = {
   HOME: "/",
@@ -40,6 +42,7 @@ export const UI = {
   SIDEBAR_COLLAPSED_WIDTH: 80,
   HEADER_HEIGHT: 64,
   ANIMATION_DURATION: 200,
+  MAX_PRODUCT_IMAGES:6,
 } as const;
 
 // Pagination defaults
