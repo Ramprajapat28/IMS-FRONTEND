@@ -1,7 +1,11 @@
 import React from "react";
 import { Check } from "lucide-react";
 
-const ProductSoldSuccess: React.FC = () => {
+interface ProductSoldSuccessProps {
+    message?: string;
+}
+
+const ProductSoldSuccess: React.FC<ProductSoldSuccessProps> = ({ message = "Product Sold Successfully!" }) => {
     return (
         <div className="w-full min-h-[300px] sm:min-h-[460px] flex items-center justify-center">
             <div className="flex flex-col items-center text-center px-4 sm:px-6">
@@ -14,7 +18,7 @@ const ProductSoldSuccess: React.FC = () => {
 
                 {/* Text */}
                 <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
-                    Product Sold Successfully!
+                    {message}
                 </h2>
             </div>
         </div>

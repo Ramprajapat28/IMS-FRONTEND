@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
     X,
     Tag,
@@ -51,15 +51,6 @@ const BarcodeScannerPage: React.FC = () => {
     const controlsRef = useRef<IScannerControls | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // State
-    const [product, setProduct] = useState<Product | null>(null);
-    const [stockDetails, setStockDetails] = useState<StockLocation[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [sold, setSold] = useState(false);
-    const [cameraError, setCameraError] = useState<string | null>(null);
-    const [dragActive, setDragActive] = useState(false);
-
     // Selection State
     const [selectedWarehouseId, setSelectedWarehouseId] = useState<number | "">("");
     const [selectedRoomId, setSelectedRoomId] = useState<number | "">("");
@@ -68,7 +59,32 @@ const BarcodeScannerPage: React.FC = () => {
     const [sellingMode, setSellingMode] = useState<"Online" | "Offline">("Online");
     const [quantity, setQuantity] = useState<number | "">(1);
     const [isReturnMode, setIsReturnMode] = useState(false);
-    const [storageType, setStorageType] = useState<"shelf" | "rack">("shelf");
+    const [storageType, setStorageType] = useState<'shelf' | 'rack'>('shelf');
+    const [sold, setSold] = useState(false);
+    const [cameraError, setCameraError] = useState<string | null>(null);
+
+    // State
+    const [product, setProduct] = useState<Product | null>(null);
+    const [stockDetails, setStockDetails] = useState<StockLocation[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSelling, setIsSelling] = useState(false);
+    const [isReturning, setIsReturning] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // Calculate available stock for the currently selected location (Sell mode)
+    const currentLocationStock = useMemo(() => {
+        if (!product || isReturnMode) return 0;
+        if (storageType === 'shelf' && selectedShelfId) {
+            const shelf = stockDetails.find(s => s.shelf_id === Number(selectedShelfId));
+            return shelf ? shelf.item_count : 0;
+        }
+        if (storageType === 'rack' && selectedRackId) {
+            const rack = stockDetails.find(s => s.rack_id === Number(selectedRackId));
+            return rack ? rack.item_count : 0;
+        }
+        return 0;
+    }, [product, isReturnMode, storageType, selectedShelfId, selectedRackId, stockDetails]);
+    const [dragActive, setDragActive] = useState(false);
 
     // Return Mode: Destination location state
     const [returnWarehouseId, setReturnWarehouseId] = useState<number | "">("")
@@ -81,12 +97,31 @@ const BarcodeScannerPage: React.FC = () => {
     const [allRooms, setAllRooms] = useState<any[]>([]);
     const [allShelves, setAllShelves] = useState<any[]>([]);
     const [allRacks, setAllRacks] = useState<any[]>([]);
-
-    const [isSelling, setIsSelling] = useState(false);
-    const [isReturning, setIsReturning] = useState(false);
+    const [successMessage, setSuccessMessage] = useState<string>("Product Sold Successfully!");
 
 
     /* ---------------- API CALLS ---------------- */
+
+    const resetScanner = () => {
+        setSold(false);
+        setProduct(null);
+        setStockDetails([]);
+        setSelectedWarehouseId("");
+        setSelectedRoomId("");
+        setSelectedShelfId("");
+        setSelectedRackId("");
+        setReturnWarehouseId("");
+        setReturnRoomId("");
+        setReturnShelfId("");
+        setReturnRackId("");
+        setQuantity(1);
+        setIsReturnMode(false);
+        setError(null);
+        setSuccessMessage("Product Sold Successfully!");
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    };
 
     const fetchProductBySku = async (sku: string) => {
         setIsLoading(true);
@@ -131,6 +166,11 @@ const BarcodeScannerPage: React.FC = () => {
 
         const finalQty = Number(quantity) || 1;
 
+        if (finalQty > currentLocationStock) {
+            alert(`Insufficient stock in this location. Available: ${currentLocationStock}`);
+            return;
+        }
+
         setIsSelling(true);
         try {
             const res = await itemsApi.removeStock({
@@ -143,6 +183,7 @@ const BarcodeScannerPage: React.FC = () => {
             });
 
             if (res.success) {
+                setSuccessMessage("Product Sold Successfully!");
                 setSold(true);
             } else {
                 alert("Failed to sell item: " + res.message);
@@ -174,14 +215,9 @@ const BarcodeScannerPage: React.FC = () => {
             });
 
             if (res.success && res.data) {
-                alert(`Successfully returned ${res.data.affected} item(s)`);
-                setProduct(null);
-                setStockDetails([]);
-                setReturnWarehouseId("");
-                setReturnRoomId("");
-                setReturnShelfId("");
-                setReturnRackId("");
-                setQuantity(1);
+                setSuccessMessage("Product Returned Successfully!");
+                setSold(true);
+                // No need to reset scanner manually here as showing success screen hides the scanner logic
             } else {
                 alert("Failed to return item: " + (res as any).message);
             }
@@ -418,7 +454,7 @@ const BarcodeScannerPage: React.FC = () => {
 
                                                     {/* Cancel / Rescan Button */}
                                                     <button
-                                                        onClick={() => { setProduct(null); setStockDetails([]); }}
+                                                        onClick={resetScanner}
                                                         className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition z-10"
                                                         title="Scan another product"
                                                     >
@@ -759,12 +795,18 @@ const BarcodeScannerPage: React.FC = () => {
                                                                         <Plus size={14} />
                                                                     </button>
                                                                 </div>
+                                                                {quantity !== "" && Number(quantity) > currentLocationStock && !isReturnMode && (selectedShelfId || selectedRackId) && (
+                                                                    <p className="text-[10px] text-red-500 font-medium mt-1">
+                                                                        ⚠️ Max available here: {currentLocationStock}
+                                                                    </p>
+                                                                )}
                                                             </div>
                                                             {/* RETURN MODE - Location Selection */}
                                                             {isReturnMode && (
                                                                 <div className="mt-3">
                                                                     <p className="text-sm font-semibold mb-2 text-gray-900">Select Return Destination:</p>
                                                                     <div className="space-y-1.5">
+                                                                        {/* Warehouse */}
                                                                         <div>
                                                                             <label className="text-[11px] text-gray-500 mb-1 block">Warehouse <span className="text-red-500">*</span></label>
                                                                             <div className="relative">
@@ -775,6 +817,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                 <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                                                                             </div>
                                                                         </div>
+                                                                        {/* Room */}
                                                                         <div>
                                                                             <label className="text-[11px] text-gray-500 mb-1 block">Room <span className="text-red-500">*</span></label>
                                                                             <div className="relative">
@@ -785,27 +828,66 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                 <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                                                                             </div>
                                                                         </div>
-                                                                        <div>
-                                                                            <label className="text-[11px] text-gray-500 mb-1 block">Shelf</label>
-                                                                            <div className="relative">
-                                                                                <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-green-500" value={returnShelfId} onChange={(e) => { setReturnShelfId(Number(e.target.value)); if (e.target.value) setReturnRackId(""); }} disabled={!returnRoomId}>
-                                                                                    <option value="">Select Shelf</option>
-                                                                                    {returnShelvesFiltered.map((s: any) => (<option key={s.shelf_id} value={s.shelf_id}>{s.name || s.shelf_name}</option>))}
-                                                                                </select>
-                                                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+
+                                                                        {/* STORAGE TYPE TOGGLE (RETURN) */}
+                                                                        <div className="flex flex-col gap-1.5 mt-2">
+                                                                            <label className="text-[11px] text-gray-500 block">
+                                                                                Storage Type
+                                                                            </label>
+                                                                            <div className="flex p-0.5 bg-gray-100 rounded-lg w-fit">
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => {
+                                                                                        setStorageType('shelf');
+                                                                                        setReturnRackId("");
+                                                                                    }}
+                                                                                    className={`px-3 py-1 text-[10px] font-medium rounded-md transition-all ${storageType === 'shelf'
+                                                                                        ? 'bg-white text-green-600 shadow-sm'
+                                                                                        : 'text-gray-500 hover:text-gray-700'
+                                                                                        }`}
+                                                                                >
+                                                                                    Shelf
+                                                                                </button>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => {
+                                                                                        setStorageType('rack');
+                                                                                        setReturnShelfId("");
+                                                                                    }}
+                                                                                    className={`px-3 py-1 text-[10px] font-medium rounded-md transition-all ${storageType === 'rack'
+                                                                                        ? 'bg-white text-green-600 shadow-sm'
+                                                                                        : 'text-gray-500 hover:text-gray-700'
+                                                                                        }`}
+                                                                                >
+                                                                                    Rack
+                                                                                </button>
                                                                             </div>
                                                                         </div>
-                                                                        <div>
-                                                                            <label className="text-[11px] text-gray-500 mb-1 block">Rack</label>
-                                                                            <div className="relative">
-                                                                                <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-green-500" value={returnRackId} onChange={(e) => { setReturnRackId(Number(e.target.value)); if (e.target.value) setReturnShelfId(""); }} disabled={!returnRoomId}>
-                                                                                    <option value="">Select Rack</option>
-                                                                                    {returnRacksFiltered.map((r: any) => (<option key={r.rack_id} value={r.rack_id}>{r.rack_name}</option>))}
-                                                                                </select>
-                                                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+
+                                                                        {/* SHELF / RACK Selection */}
+                                                                        {storageType === 'shelf' ? (
+                                                                            <div>
+                                                                                <label className="text-[11px] text-gray-500 mb-1 block">Shelf <span className="text-red-500">*</span></label>
+                                                                                <div className="relative">
+                                                                                    <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-green-500" value={returnShelfId} onChange={(e) => setReturnShelfId(Number(e.target.value))} disabled={!returnRoomId}>
+                                                                                        <option value="">Select Shelf</option>
+                                                                                        {returnShelvesFiltered.map((s: any) => (<option key={s.shelf_id} value={s.shelf_id}>{s.name || s.shelf_name}</option>))}
+                                                                                    </select>
+                                                                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                                </div>
                                                                             </div>
-                                                                        </div>
-                                                                        <p className="text-xs text-gray-500">* Select either Shelf or Rack, not both</p>
+                                                                        ) : (
+                                                                            <div>
+                                                                                <label className="text-[11px] text-gray-500 mb-1 block">Rack <span className="text-red-500">*</span></label>
+                                                                                <div className="relative">
+                                                                                    <select className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-1 focus:ring-green-500" value={returnRackId} onChange={(e) => setReturnRackId(Number(e.target.value))} disabled={!returnRoomId}>
+                                                                                        <option value="">Select Rack</option>
+                                                                                        {returnRacksFiltered.map((r: any) => (<option key={r.rack_id} value={r.rack_id}>{r.rack_name}</option>))}
+                                                                                    </select>
+                                                                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
                                                                     </div>
                                                                 </div>
                                                             )}
@@ -819,9 +901,9 @@ const BarcodeScannerPage: React.FC = () => {
                                                 <div className="flex justify-end mt-3">
                                                     <button
                                                         onClick={handleSell}
-                                                        disabled={(!selectedShelfId && !selectedRackId) || isSelling || Number(quantity || 0) < 1}
+                                                        disabled={(!selectedShelfId && !selectedRackId) || isSelling || Number(quantity || 0) < 1 || Number(quantity || 0) > currentLocationStock}
                                                         className={`px-5 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 shadow-sm
-                                                        ${(!selectedShelfId && !selectedRackId) || isSelling ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                                                        ${(!selectedShelfId && !selectedRackId) || isSelling || Number(quantity || 0) > currentLocationStock ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                                                     >
                                                         {isSelling ? (
                                                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -862,16 +944,9 @@ const BarcodeScannerPage: React.FC = () => {
 
                                 {sold && (
                                     <div className="flex-1 flex flex-col items-center justify-center p-6">
-                                        <ProductSoldSuccess />
+                                        <ProductSoldSuccess message={successMessage} />
                                         <button
-                                            onClick={() => {
-                                                setSold(false);
-                                                setProduct(null);
-                                                setStockDetails([]);
-                                                setSelectedWarehouseId("");
-                                                setSelectedRoomId("");
-                                                setSelectedShelfId("");
-                                            }}
+                                            onClick={resetScanner}
                                             className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                                         >
                                             Scan Another Product
