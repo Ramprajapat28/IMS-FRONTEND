@@ -81,7 +81,8 @@ const resolveUrl = (image: any): string => {
 
 const OrdersPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -140,16 +141,26 @@ const OrdersPage = () => {
       }
     };
 
-    fetchOrders();
+    fetchOrders().finally(() => setIsInitialLoading(false));
   }, [page, rowsPerPage, statusFilter.status]);
 
-  // Compute unique filter options from orders data
-  const filterOptions = useMemo(() => {
-    const warehouses = [...new Set(orders.map(o => o.warehouse).filter(Boolean))];
-    const products = [...new Set(orders.map(o => o.product).filter(Boolean))];
-    const categories = [...new Set(orders.map(o => o.category).filter(Boolean))];
-    const statuses = [...new Set(orders.map(o => o.status).filter(Boolean))];
-    return { warehouses, products, categories, statuses };
+  const [filterOptions, setFilterOptions] = useState({
+    warehouses: [] as string[],
+    products: [] as string[],
+    categories: [] as string[],
+    statuses: [] as string[],
+  });
+
+  // Update filter options by accumulating unique values from all fetched orders
+  useEffect(() => {
+    if (orders.length > 0) {
+      setFilterOptions((prev) => ({
+        warehouses: Array.from(new Set([...prev.warehouses, ...orders.map(o => o.warehouse).filter(Boolean)])),
+        products: Array.from(new Set([...prev.products, ...orders.map(o => o.product).filter(Boolean)])),
+        categories: Array.from(new Set([...prev.categories, ...orders.map(o => o.category).filter(Boolean)])),
+        statuses: Array.from(new Set([...prev.statuses, ...orders.map(o => o.status).filter(Boolean), "sold", "returned"])), // Ensure common statuses are always present
+      }));
+    }
   }, [orders]);
 
   const handleFilterChange = (
@@ -196,7 +207,7 @@ const OrdersPage = () => {
 
 
   /* -------------------------------- RENDER -------------------------------- */
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <div className="bg-white rounded-xl border p-6 flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
@@ -218,11 +229,19 @@ const OrdersPage = () => {
   return (
     <div className="bg-white rounded-xl border p-4 md:p-6 space-y-4">
       {/* HEADER */}
-      <div>
-        <h1 className="text-xl font-semibold">Orders</h1>
-        <p className="text-sm text-gray-500">
-          Overview of all order records and statuses
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold">Orders</h1>
+          <p className="text-sm text-gray-500">
+            Overview of all order records and statuses
+          </p>
+        </div>
+        {isLoading && (
+          <div className="flex items-center gap-2 text-blue-600 text-sm font-medium animate-pulse">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600" />
+            Updating...
+          </div>
+        )}
       </div>
 
       {/* FILTERS */}
@@ -266,9 +285,19 @@ const OrdersPage = () => {
       </div>
 
       {/* TABLE */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto relative min-h-[400px]">
+        {/* Loading Overlay */}
+        {isLoading && !isInitialLoading && (
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] z-10 flex items-center justify-center transition-all duration-300">
+            <div className="bg-white/80 p-6 rounded-2xl shadow-xl border flex flex-col items-center gap-3 scale-110">
+              <div className="animate-spin rounded-full h-10 w-10 border-[3px] border-blue-600 border-t-transparent" />
+              <span className="text-sm font-semibold text-gray-700 tracking-wide uppercase">Updating Data</span>
+            </div>
+          </div>
+        )}
+
         <table className="w-full text-sm">
-          <thead className="bg-gray-100 text-left">
+          <thead className="bg-gray-100/80 text-left sticky top-0 z-10 backdrop-blur-sm">
             <tr>
               <th className="p-3">#</th>
               <th className="p-3">Product</th>
@@ -278,18 +307,18 @@ const OrdersPage = () => {
               <th className="p-3">Status</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className={isLoading ? "opacity-40 transition-opacity duration-500 blur-[0.5px]" : "transition-opacity duration-500"}>
             {paginatedOrders.map((o, index) => (
-              <tr key={o.id} className="border-b last:border-none">
-                <td className="p-3">{(page - 1) * rowsPerPage + index + 1}</td>
+              <tr key={o.id} className="border-b last:border-none hover:bg-gray-50/50 transition-colors">
+                <td className="p-3 text-gray-500 font-medium">{(page - 1) * rowsPerPage + index + 1}</td>
 
                 <td className="p-3 flex items-center gap-3 min-w-[220px]">
                   <img
                     src={o.image}
-                    className="w-10 h-10 rounded-lg object-cover"
+                    className="w-10 h-10 rounded-lg object-cover ring-1 ring-gray-200"
                   />
                   <div>
-                    <p className="font-medium">{o.product}</p>
+                    <p className="font-semibold text-gray-900">{o.product}</p>
                     <p className="text-gray-500 text-xs">
                       {o.category}
                     </p>
@@ -297,8 +326,8 @@ const OrdersPage = () => {
                 </td>
 
                 <td className="p-3">
-                  <div className="flex items-center gap-1 text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]" title={(o as any).location_path}>
-                    <MapPin size={14} className="shrink-0" />
+                  <div className="flex items-center gap-1.5 text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]" title={(o as any).location_path}>
+                    <MapPin size={14} className="shrink-0 text-gray-400" />
                     {(o as any).location_path}
                   </div>
                 </td>
@@ -322,12 +351,12 @@ const OrdersPage = () => {
 
                 <td className="p-3">
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm inline-block
                       ${o.status === "Processing"
-                        ? "bg-purple-100 text-purple-600"
+                        ? "bg-purple-100 text-purple-700 ring-1 ring-purple-200"
                         : o.status === "Cancelled"
-                          ? "bg-red-100 text-red-600"
-                          : "bg-sky-100 text-sky-600"
+                          ? "bg-red-100 text-red-700 ring-1 ring-red-200"
+                          : "bg-sky-100 text-sky-700 ring-1 ring-sky-200"
                       }`}
                   >
                     {o.status}
