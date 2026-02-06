@@ -414,7 +414,7 @@ export default function RoomDetailsPage() {
                                     required
                                 />
                             </div>
-                            <div>
+                            {/* <div>
                                 <label className="block text-sm font-medium mb-1">Capacity (optional)</label>
                                 <input
                                     type="number"
@@ -423,7 +423,7 @@ export default function RoomDetailsPage() {
                                     placeholder="Enter capacity"
                                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                                 />
-                            </div>
+                            </div> */}
                             <button
                                 type="submit"
                                 className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
