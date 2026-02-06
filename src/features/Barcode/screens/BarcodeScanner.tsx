@@ -407,7 +407,7 @@ const BarcodeScannerPage: React.FC = () => {
     /* ---------------- UI ---------------- */
 
     return (
-        <div className="h-auto overflow-y-hidden bg-gray-50 flex flex-col">
+        <div className="h-screen md:h-[90%] overflow-y-hidden bg-gray-50 flex flex-col">
             <Header />
 
             <div className="flex-1 overflow-y-hidden">
