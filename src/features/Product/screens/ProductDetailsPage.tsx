@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import JsBarcode from "jsbarcode";
 
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2, Tag, Hash, Package, Download, FileText, Printer, IndianRupee, Percent } from "lucide-react";
@@ -83,24 +84,38 @@ const ProductDetailsPage = () => {
     };
 
     const handleDownloadBarcode = async () => {
-        const imageUrl = resolveUrl(product?.barcode_image);
-        if (!imageUrl) return;
+        if (!product?.sku) return;
 
         try {
-            const response = await fetch(imageUrl);
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
+            // Create a temporary canvas
+            const canvas = document.createElement("canvas");
 
+            // Generate barcode using JsBarcode on the canvas
+            JsBarcode(canvas, product.sku, {
+                format: "CODE128",
+                width: 2,
+                height: 100,
+                displayValue: true,
+                fontSize: 20,
+                margin: 10,
+                background: "#ffffff"
+            });
+
+            // Convert canvas to data URL (PNG)
+            const dataUrl = canvas.toDataURL("image/png");
+
+            // Trigger download
             const link = document.createElement("a");
-            link.href = url;
-            link.download = `${product?.sku || 'barcode'}.png`;
+            link.href = dataUrl;
+            link.download = `${product.sku}-barcode.png`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
         } catch (err) {
-            console.error("Failed to download barcode", err);
-            window.open(imageUrl, '_blank');
+            console.error("Failed to generate and download barcode", err);
+            // Final fallback to window.open if everything else fails
+            const imageUrl = resolveUrl(product?.barcode_image);
+            if (imageUrl) window.open(imageUrl, '_blank');
         }
     };
 
