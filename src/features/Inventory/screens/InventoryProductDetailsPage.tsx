@@ -174,7 +174,7 @@ const InventoryProductDetailsPage = () => {
     const allImages = getAllImages();
 
     return (
-        <div className="max-w-7xl mx-auto space-y-2">
+        <div className=" mx-auto space-y-2">
             {/* HEADER */}
             <div className="flex items-center gap-3">
                 <button
