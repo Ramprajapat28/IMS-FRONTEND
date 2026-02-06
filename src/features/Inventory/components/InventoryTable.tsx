@@ -26,7 +26,7 @@ const InventoryTable = ({ data, onRowClick }: InventoryTableProps) => {
                     <tr>
                         <th className="p-3">Sr.no</th>
                         <th className="p-3">Product Name</th>
-                        <th className="p-3">Category</th>
+                        <th className="p-3">Sub Category</th>
                         <th className="p-3">SKU #</th>
                         <th className="p-3 text-right">MRP</th>
                         <th className="p-3 text-right">Discounted Price</th>

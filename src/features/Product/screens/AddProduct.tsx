@@ -387,7 +387,7 @@ const AddProduct = () => {
               {/* Global Category */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Select Global Category: <span className="text-red-500">*</span>
+                  Select Category: <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={form.global_category_id}
@@ -398,7 +398,7 @@ const AddProduct = () => {
                   }}
                   className="w-72 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                 >
-                  <option value="" className="text-gray-400">Select Global Category</option>
+                  <option value="" className="text-gray-400">Select Category</option>
                   {globalCategories.map((gc) => (
                     <option key={gc.global_category_id} value={gc.global_category_id}>
                       {gc.category_name}
@@ -410,7 +410,7 @@ const AddProduct = () => {
               {/* Sub Category */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Select Category: <span className="text-red-500">*</span>
+                  Select Sub Category: <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={form.category_id}
@@ -428,7 +428,7 @@ const AddProduct = () => {
                   }}
                   className="w-72 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
                 >
-                  <option value="" className="text-gray-400">Select Category</option>
+                  <option value="" className="text-gray-400">Select Sub Category</option>
                   {categories
                     .filter(c => c.global_category_id === Number(form.global_category_id))
                     .map((c) => (
@@ -452,7 +452,7 @@ const AddProduct = () => {
                 className="w-72 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
               >
                 <option value="" className="text-gray-400">
-                  {!form.category_id ? "Select Category First" : "Select Size"}
+                  {!form.category_id ? "Select Sub Category First" : "Select Size"}
                 </option>
                 {/* Dynamically show sizes based on selected category */}
                 {form.category_id && categories.find(c => c.category_id === Number(form.category_id))?.sizes?.map(s => (

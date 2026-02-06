@@ -675,7 +675,7 @@ const ProductsPage = () => {
         >
           <option value="none">Sort By</option>
           <option value="name">Name</option>
-          <option value="category">Category</option>
+          <option value="category">Sub Category</option>
         </select>
       </div>
 
@@ -686,7 +686,7 @@ const ProductsPage = () => {
             <tr>
               <th className="p-3">Sr.no</th>
               <th className="p-3">Product Name</th>
-              <th className="p-3">Category</th>
+              <th className="p-3">Sub Category</th>
               <th className="p-3">SKU #</th>
               <th className="p-3 text-right">MRP</th>
               <th className="p-3 text-right">Discounted Price</th>

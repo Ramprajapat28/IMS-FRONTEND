@@ -61,7 +61,7 @@ const AddGlobalCategoryPage = () => {
                 <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg">
                     <ArrowLeft size={20} />
                 </button>
-                <h1 className="text-2xl font-bold text-blue-600">Add Global Category</h1>
+                <h1 className="text-2xl font-bold text-blue-600">Add Category</h1>
             </div>
 
             <form onSubmit={handleSubmit} className="bg-white rounded-xl border p-6 space-y-6 shadow-sm">
@@ -106,7 +106,7 @@ const AddGlobalCategoryPage = () => {
                     className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                     {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                    Create Global Category
+                    Create Category
                 </button>
             </form>
         </div>

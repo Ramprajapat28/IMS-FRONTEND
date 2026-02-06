@@ -323,14 +323,14 @@ const InventoryProductDetailsPage = () => {
                             <div className="flex gap-2.5">
                                 <Tag size={18} className="text-gray-400 mt-0.5 flex-shrink-0" />
                                 <div>
-                                    <p className="text-xs text-gray-500 mb-0.5 uppercase">Global Category</p>
+                                    <p className="text-xs text-gray-500 mb-0.5 uppercase">Category</p>
                                     <p className="font-medium text-gray-900 text-sm">{product.global_category_name || "-"}</p>
                                 </div>
                             </div>
                             <div className="flex gap-2.5 ml-4 border-l pl-4">
                                 <Tag size={18} className="text-gray-400 mt-0.5 flex-shrink-0" />
                                 <div>
-                                    <p className="text-xs text-gray-500 mb-0.5 uppercase">Category</p>
+                                    <p className="text-xs text-gray-500 mb-0.5 uppercase">Sub Category</p>
                                     <p className="font-medium text-gray-900 text-sm">{product.category_name || "-"}</p>
                                 </div>
                             </div>

@@ -104,21 +104,21 @@ const EditCategoryPage = () => {
                 <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg">
                     <ArrowLeft size={20} />
                 </button>
-                <h1 className="text-2xl font-bold text-blue-600">Edit Category</h1>
+                <h1 className="text-2xl font-bold text-blue-600">Edit Sub Category</h1>
             </div>
 
             <form onSubmit={handleSubmit} className="bg-white rounded-xl border p-6 space-y-6 shadow-sm">
                 {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg border border-red-100 text-sm">{error}</div>}
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Global Category *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
                     <select
                         required
                         value={globalId}
                         onChange={(e) => setGlobalId(e.target.value)}
                         className="w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                     >
-                        <option value="">Select Global Category</option>
+                        <option value="">Select Category</option>
                         {globalCategories.map(gc => (
                             <option key={gc.global_category_id} value={gc.global_category_id}>{gc.category_name}</option>
                         ))}
@@ -126,7 +126,7 @@ const EditCategoryPage = () => {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Category Name *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Sub Category Name *</label>
                     <input
                         type="text"
                         required

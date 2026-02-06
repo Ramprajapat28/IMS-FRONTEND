@@ -25,7 +25,7 @@ const AddCategoryPage = () => {
                 const res = await categoriesApi.getAllGlobal();
                 if (res.success && res.data) setGlobalCategories(res.data);
             } catch (err) {
-                console.error("Failed to load global categories");
+                console.error("Failed to load categories");
             } finally {
                 setIsLoading(false);
             }
@@ -91,21 +91,21 @@ const AddCategoryPage = () => {
                 <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg">
                     <ArrowLeft size={20} />
                 </button>
-                <h1 className="text-2xl font-bold text-blue-600">Add Category</h1>
+                <h1 className="text-2xl font-bold text-blue-600">Add Sub Category</h1>
             </div>
 
             <form onSubmit={handleSubmit} className="bg-white rounded-xl border p-6 space-y-6 shadow-sm">
                 {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg border border-red-100 text-sm">{error}</div>}
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Global Category *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
                     <select
                         required
                         value={globalId}
                         onChange={(e) => setGlobalId(e.target.value)}
                         className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                     >
-                        <option value="">Select Global Category</option>
+                        <option value="">Select Category</option>
                         {globalCategories.map(gc => (
                             <option key={gc.global_category_id} value={gc.global_category_id}>{gc.category_name}</option>
                         ))}
@@ -113,7 +113,7 @@ const AddCategoryPage = () => {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Category Name *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Sub Category Name *</label>
                     <input
                         type="text"
                         required
@@ -163,7 +163,7 @@ const AddCategoryPage = () => {
                     className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                     {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                    Create Category
+                    Create Sub Category
                 </button>
             </form>
         </div>

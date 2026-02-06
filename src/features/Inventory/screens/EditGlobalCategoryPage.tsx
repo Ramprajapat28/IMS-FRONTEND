@@ -84,7 +84,7 @@ const EditGlobalCategoryPage = () => {
                 <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg">
                     <ArrowLeft size={20} />
                 </button>
-                <h1 className="text-2xl font-bold text-blue-600">Edit Global Category</h1>
+                <h1 className="text-2xl font-bold text-blue-600">Edit Category</h1>
             </div>
 
             <form onSubmit={handleSubmit} className="bg-white rounded-xl border p-6 space-y-6 shadow-sm">

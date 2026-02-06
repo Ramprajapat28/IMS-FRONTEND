@@ -154,7 +154,7 @@ const InventoryPage = () => {
                     >
                         <option value="none">Sort By</option>
                         <option value="name">Name</option>
-                        <option value="category">Category</option>
+                        <option value="category">Sub Category</option>
                         <option value="quantity">Quantity</option>
                     </select>
                 </div>

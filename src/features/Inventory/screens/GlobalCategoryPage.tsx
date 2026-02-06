@@ -21,7 +21,7 @@ const GlobalCategoryPage = () => {
                     setGlobalCategories(response.data);
                 }
             } catch (err) {
-                setError("Failed to load global categories");
+                setError("Failed to load categories");
             } finally {
                 setIsLoading(false);
             }
@@ -58,13 +58,13 @@ const GlobalCategoryPage = () => {
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl font-bold text-blue-600">Inventory</h1>
-                    <p className="text-sm text-gray-600 mt-1">Select a global category to browse</p>
+                    <p className="text-sm text-gray-600 mt-1">Select a category to browse</p>
                 </div>
                 <button
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-sm"
                     onClick={() => navigate("/inventory/add-global")}
                 >
-                    <Plus size={18} /> Add Global Category
+                    <Plus size={18} /> Add Category
                 </button>
             </div>
 
@@ -123,7 +123,7 @@ const GlobalCategoryPage = () => {
                 ) : (
                     <div className="col-span-full py-20 text-center bg-gray-50 rounded-xl border border-dashed border-gray-300">
                         <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                        <p className="text-gray-500">No global categories found. Add one to get started.</p>
+                        <p className="text-gray-500">No categories found. Add one to get started.</p>
                     </div>
                 )}
             </div>

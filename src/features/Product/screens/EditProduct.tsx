@@ -583,7 +583,7 @@ const EditProduct = () => {
                                 {/* Global Category */}
                                 <div>
                                     <label className="text-sm font-medium text-gray-700 mb-2 block">
-                                        Select Global Category: <span className="text-red-500">*</span>
+                                        Select Category: <span className="text-red-500">*</span>
                                     </label>
                                     <select
                                         value={form.global_category_id}
@@ -595,7 +595,7 @@ const EditProduct = () => {
                                         }))}
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                                     >
-                                        <option value="" className="text-gray-400">Select Global Category</option>
+                                        <option value="" className="text-gray-400">Select Category</option>
                                         {globalCategories.map((gc) => (
                                             <option key={gc.global_category_id} value={String(gc.global_category_id)}>
                                                 {gc.category_name}
@@ -607,7 +607,7 @@ const EditProduct = () => {
                                 {/* Sub Category */}
                                 <div>
                                     <label className="text-sm font-medium text-gray-700 mb-2 block">
-                                        Select Category: <span className="text-red-500">*</span>
+                                        Select Sub Category: <span className="text-red-500">*</span>
                                     </label>
                                     <select
                                         value={form.category_id || ""}
@@ -615,7 +615,7 @@ const EditProduct = () => {
                                         onChange={handleCategoryChange}
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
                                     >
-                                        <option value="" className="text-gray-400">Select Category</option>
+                                        <option value="" className="text-gray-400">Select Sub Category</option>
                                         {categories
                                             .filter(c => c.global_category_id === Number(form.global_category_id))
                                             .map((c) => (
@@ -639,7 +639,7 @@ const EditProduct = () => {
                                     className="w-48 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
                                 >
                                     <option value="">
-                                        {!form.category_id ? "Select Category" : (form.size || "Select Size")}
+                                        {!form.category_id ? "Select Sub Category" : (form.size || "Select Size")}
                                     </option>
                                     {/* Dynamically show sizes based on selected category */}
                                     {form.category_id && categories.find(c => c.category_id === Number(form.category_id))?.sizes?.map(s => (

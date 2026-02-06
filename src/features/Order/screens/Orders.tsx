@@ -230,7 +230,7 @@ const OrdersPage = () => {
         <span className="text-sm text-gray-600">Filter by :</span>
 
         <Select
-          label="Category"
+          label="Sub Category"
           options={filterOptions.categories}
           value={statusFilter.category}
           onChange={(v) => handleFilterChange("category", v)}
