@@ -500,8 +500,14 @@ const EditProduct = () => {
                                     <label className="text-sm font-medium text-gray-700 mb-2 block">MRP:</label>
                                     <input
                                         type="number"
+                                        min="0"
                                         value={form.mrp}
-                                        onChange={(e) => updateField("mrp", e.target.value)}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val === "" || Number(val) >= 0) {
+                                                updateField("mrp", val);
+                                            }
+                                        }}
                                         placeholder="0.00"
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
@@ -510,8 +516,14 @@ const EditProduct = () => {
                                     <label className="text-sm font-medium text-gray-700 mb-2 block">Discounted Price:</label>
                                     <input
                                         type="number"
+                                        min="0"
                                         value={form.discounted_price}
-                                        onChange={(e) => updateField("discounted_price", e.target.value)}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val === "" || Number(val) >= 0) {
+                                                updateField("discounted_price", val);
+                                            }
+                                        }}
                                         placeholder="0.00"
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
@@ -520,8 +532,14 @@ const EditProduct = () => {
                                     <label className="text-sm font-medium text-gray-700 mb-2 block">Cost to Company:</label>
                                     <input
                                         type="number"
+                                        min="0"
                                         value={form.cost_to_company}
-                                        onChange={(e) => updateField("cost_to_company", e.target.value)}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val === "" || Number(val) >= 0) {
+                                                updateField("cost_to_company", val);
+                                            }
+                                        }}
                                         placeholder="0.00"
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
@@ -530,8 +548,14 @@ const EditProduct = () => {
                                     <label className="text-sm font-medium text-gray-700 mb-2 block">GST %:</label>
                                     <input
                                         type="number"
+                                        min="0"
                                         value={form.gst_percentage}
-                                        onChange={(e) => updateField("gst_percentage", e.target.value)}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val === "" || Number(val) >= 0) {
+                                                updateField("gst_percentage", val);
+                                            }
+                                        }}
                                         placeholder="0"
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
@@ -540,8 +564,14 @@ const EditProduct = () => {
                                     <label className="text-sm font-medium text-gray-700 mb-2 block">Reorder Level (Low Stock Limit):</label>
                                     <input
                                         type="number"
+                                        min="0"
                                         value={form.reorder_level}
-                                        onChange={(e) => updateField("reorder_level", e.target.value)}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val === "" || Number(val) >= 0) {
+                                                updateField("reorder_level", val);
+                                            }
+                                        }}
                                         placeholder="10"
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
