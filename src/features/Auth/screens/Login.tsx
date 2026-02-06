@@ -7,7 +7,7 @@ interface Props {
   switchToSignup: () => void;
 }
 
-const Login: React.FC<Props> = ({ switchToSignup }) => {
+const Login: React.FC<Props> = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,7 +24,7 @@ const Login: React.FC<Props> = ({ switchToSignup }) => {
 
       if (response.success) {
         // Token is already stored in localStorage by the API service
-        navigate("/dashboard");
+        navigate("/inventory");
       } else {
         setError(response.message || "Login failed. Please try again.");
       }
@@ -87,12 +87,12 @@ const Login: React.FC<Props> = ({ switchToSignup }) => {
             />
           </div>
         </div>
-
+{/* 
         <div className="text-right">
           <button type="button" className="text-sm text-blue-600 hover:underline">
             Forgot password?
           </button>
-        </div>
+        </div> */}
 
         <button
           type="submit"
@@ -110,12 +110,12 @@ const Login: React.FC<Props> = ({ switchToSignup }) => {
         </button>
       </form>
       {/* SWITCH */}
-      <p className="text-center text-sm text-gray-600 mt-4">
+      {/* <p className="text-center text-sm text-gray-600 mt-4">
         Don’t have an account?{" "}
         <button onClick={switchToSignup} className="text-blue-600 font-medium">
           Sign up
         </button>
-      </p>
+      </p> */}
     </div>
   );
 };

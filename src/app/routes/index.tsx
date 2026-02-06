@@ -19,7 +19,7 @@ import CategoryProducts from "@/features/Product/screens/CategoryProducts";
 import EditProduct from "@/features/Product/screens/EditProduct";
 // import ProductVariantsPage from "@/features/Product/screens/ProductVariantsPage";
 import ProductDetailsPage from "@/features/Product/screens/ProductDetailsPage";
-import WarehousePage from "@/features/Warehouse/screens/WarehousePage";
+// import WarehousePage from "@/features/Warehouse/screens/WarehousePage";
 import WarehouseListPage from "@/features/Warehouse/screens/WarehouseListPage";
 import WarehouseDetailsPage from "@/features/Warehouse/screens/WarehouseDetailsPage";
 import RoomDetailsPage from "@/features/Warehouse/screens/RoomDetailsPage";
@@ -28,7 +28,7 @@ export const AppRoutes = () => {
   return (
     <Routes>
       {/* Default redirect */}
-      <Route path="/" element={<Navigate to="/auth" replace />} />
+      <Route path="/" element={<Navigate to="/inventory" replace />} />
 
       {/* Auth routes */}
       <Route path="/auth" element={<AuthPage />} />
@@ -91,10 +91,10 @@ const NotFound = () => (
       <h1 className="text-6xl font-bold text-gray-900">404</h1>
       <p className="mt-4 text-xl text-gray-600">Page not found</p>
       <a
-        href="/dashboard"
+        href="/inventory"
         className="mt-6 inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
       >
-        Go to Dashboard
+        Go to Inventory
       </a>
     </div>
   </div>

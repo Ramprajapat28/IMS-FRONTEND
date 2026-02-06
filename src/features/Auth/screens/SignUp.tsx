@@ -11,7 +11,7 @@ const Signup: React.FC<Props> = ({ switchToLogin }) => {
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
     // TEMPORARY NAVIGATION
-    navigate("/dashboard");
+    navigate("/inventory");
   };
 
   return (

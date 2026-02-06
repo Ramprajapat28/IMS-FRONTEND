@@ -68,11 +68,6 @@ const Sidebar = () => {
 
         {/* NAV */}
         <nav className="flex-1 px-4 space-y-1">
-          <NavLink to="/dashboard" className={linkClass} onClick={close}>
-            <Home size={20} />
-            Dashboard
-          </NavLink>
-
           <NavLink to="/inventory" className={linkClass} onClick={close}>
             <Package size={20} />
             Inventory
@@ -96,6 +91,10 @@ const Sidebar = () => {
           <NavLink to="/orders" className={linkClass} onClick={close}>
             <ShoppingCart size={20} />
             Outward
+          </NavLink>
+          <NavLink to="/dashboard" className={linkClass} onClick={close}>
+            <Home size={20} />
+            Dashboard
           </NavLink>
 
           <NavLink to="/profile" className={linkClass} onClick={close}>
