@@ -7,7 +7,7 @@ interface ProductSoldSuccessProps {
 
 const ProductSoldSuccess: React.FC<ProductSoldSuccessProps> = ({ message = "Product Sold Successfully!" }) => {
     return (
-        <div className="w-full min-h-[300px] sm:min-h-[460px] flex items-center justify-center">
+        <div className="w-full min-h-[300px] sm:min-h-auto flex items-center justify-center">
             <div className="flex flex-col items-center text-center px-4 sm:px-6">
                 {/* Success Circle */}
                 <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full
