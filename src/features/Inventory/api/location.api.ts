@@ -46,7 +46,7 @@ export const warehousesApi = {
     },
     delete: async (id: number) => {
         return apiRequest<ApiResponse<any>>(`/api/warehouses/delete/${id}`, {
-            method: 'DELETE',
+            method: 'POST',
         });
     },
 };
@@ -99,7 +99,7 @@ export const roomsApi = {
         return apiRequest<{ success: boolean; deleted_room: Room; message: string }>(
             `/api/rooms/delete_room/${id}`,
             {
-                method: 'DELETE',
+                method: 'POST',
             }
         );
     },
@@ -228,9 +228,9 @@ export const racksApi = {
 
     delete: async (id: number) => {
         return apiRequest<{ success: boolean; data: { rack_id: number; deleted: boolean; message: string } }>(
-            `/api/racks/${id}`,
+            `/api/racks/delete/${id}`,
             {
-                method: 'DELETE',
+                method: 'POST',
             }
         );
     },
