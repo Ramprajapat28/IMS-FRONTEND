@@ -78,7 +78,7 @@ export default function WarehouseListPage() {
 
     return (
         <div className="p-6">
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Warehouses</h1>
                     <p className="text-gray-600 mt-1">Manage your warehouse locations</p>
@@ -89,7 +89,7 @@ export default function WarehouseListPage() {
                         setFormData({ name: '', location: '' });
                         setDialogOpen(true);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 w-full sm:w-auto justify-center"
                 >
                     <Plus className="w-4 h-4" />
                     Add Warehouse

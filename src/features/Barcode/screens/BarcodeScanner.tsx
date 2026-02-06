@@ -407,16 +407,16 @@ const BarcodeScannerPage: React.FC = () => {
     /* ---------------- UI ---------------- */
 
     return (
-        <div className="h-screen overflow-hidden bg-gray-50 flex flex-col">
+        <div className="min-h-screen bg-gray-50 flex flex-col">
             <Header />
 
-            <div className="flex-1 overflow-hidden">
-                <div className="h-[80%] bg-white rounded-xl border shadow-sm p-3">
-                    <div className="h-full grid grid-cols-1 lg:grid-cols-12 gap-3">
+            <div className="flex-1">
+                <div className="bg-white rounded-xl border shadow-sm p-3 m-2 sm:m-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
 
                         {/* PRODUCT INFO / SUCCESS */}
-                        <div className={`order-2 lg:order-1 ${sold || product ? "lg:col-span-12" : "lg:col-span-8"} h-full overflow-hidden`}>
-                            <div className="h-full rounded-lg border overflow-hidden flex flex-col">
+                        <div className={`order-2 lg:order-1 ${sold || product ? "lg:col-span-12" : "lg:col-span-8"}`}>
+                            <div className="rounded-lg border flex flex-col">
 
                                 {!sold && (
                                     <div className="bg-gray-50 px-4 py-2 font-semibold border-b text-gray-900 text-sm">
@@ -425,7 +425,7 @@ const BarcodeScannerPage: React.FC = () => {
                                 )}
 
                                 {!product && !sold && !isLoading && !error && (
-                                    <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+                                    <div className="p-12 flex items-center justify-center text-gray-400 text-sm">
                                         Scan a barcode to see details
                                     </div>
                                 )}
@@ -445,8 +445,8 @@ const BarcodeScannerPage: React.FC = () => {
 
 
                                 {product && !sold && (
-                                    <div className="flex-1 overflow-hidden p-3">
-                                        <div className="h-full flex flex-col">
+                                    <div className="p-3">
+                                        <div className="flex flex-col">
                                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
 
                                                 {/* LEFT BOX - Product Details */}
@@ -461,12 +461,12 @@ const BarcodeScannerPage: React.FC = () => {
                                                         <X size={20} />
                                                     </button>
 
-                                                    <div className="flex gap-2.5">
+                                                    <div className="flex flex-col sm:flex-row gap-4">
 
 
                                                         {/* Product Image */}
-                                                        <div className="flex-shrink-0">
-                                                            <div className="w-24 h-28 rounded-lg border-2 border-gray-300 overflow-hidden bg-white">
+                                                        <div className="flex-shrink-0 flex justify-center sm:block">
+                                                            <div className="w-32 h-36 sm:w-24 sm:h-28 rounded-lg border-2 border-gray-300 overflow-hidden bg-white">
 
                                                                 {(() => {
                                                                     const imgs = product.product_image;
@@ -523,37 +523,37 @@ const BarcodeScannerPage: React.FC = () => {
                                                         </div>
 
                                                         {/* Product Info */}
-                                                        <div className="flex-1 space-y-2">
+                                                        <div className="flex-1 space-y-3">
                                                             {/* Product Name */}
-                                                            <div className="flex items-start gap-2">
-                                                                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                                                    <Edit3 className="w-3.5 h-3.5 text-gray-700" />
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                                    <Edit3 className="w-4 h-4 text-gray-700" />
                                                                 </div>
-                                                                <div className="flex-1">
-                                                                    <p className="text-[10px] text-gray-400 mb-0.5">Product Name</p>
-                                                                    <p className="text-sm font-semibold text-gray-900">{product.name}</p>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-xs text-gray-400 mb-0.5">Product Name</p>
+                                                                    <p className="text-base font-semibold text-gray-900 break-words">{product.name}</p>
                                                                 </div>
                                                             </div>
 
                                                             {/* Category */}
-                                                            <div className="flex items-start gap-2">
-                                                                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                                                    <Tag className="w-3.5 h-3.5 text-gray-700" />
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                                    <Tag className="w-4 h-4 text-gray-700" />
                                                                 </div>
-                                                                <div className="flex-1">
-                                                                    <p className="text-[10px] text-gray-400 uppercase mb-0.5">Category</p>
-                                                                    <p className="text-sm font-medium text-gray-900">{product.category_name || "-"}</p>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-xs text-gray-400 uppercase mb-0.5">Category</p>
+                                                                    <p className="text-sm font-medium text-gray-900 break-words">{product.category_name || "-"}</p>
                                                                 </div>
                                                             </div>
 
                                                             {/* SKU */}
-                                                            <div className="flex items-start gap-2">
-                                                                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                                                    <Hash className="w-3.5 h-3.5 text-gray-700" />
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                                    <Hash className="w-4 h-4 text-gray-700" />
                                                                 </div>
-                                                                <div className="flex-1">
-                                                                    <p className="text-[10px] text-gray-400 uppercase mb-0.5">SKU</p>
-                                                                    <p className="text-sm font-bold text-gray-900">{product.sku}</p>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-xs text-gray-400 uppercase mb-0.5">SKU</p>
+                                                                    <p className="text-sm font-bold text-gray-900 break-all">{product.sku}</p>
                                                                 </div>
                                                             </div>
                                                         </div>

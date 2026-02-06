@@ -684,12 +684,12 @@ const ProductsPage = () => {
         <table className="w-full text-sm">
           <thead className="bg-gray-100 text-left">
             <tr>
-              <th className="p-3">Sr.no</th>
-              <th className="p-3">Product Name</th>
-              <th className="p-3">Sub Category</th>
-              <th className="p-3">SKU #</th>
-              <th className="p-3 text-right">MRP</th>
-              <th className="p-3 text-right">Discounted Price</th>
+              <th className="p-3 whitespace-nowrap">Sr.no</th>
+              <th className="p-3 whitespace-nowrap min-w-[200px]">Product Name</th>
+              <th className="p-3 whitespace-nowrap min-w-[150px]">Sub Category</th>
+              <th className="p-3 whitespace-nowrap min-w-[120px]">SKU #</th>
+              <th className="p-3 whitespace-nowrap text-right min-w-[100px]">MRP</th>
+              <th className="p-3 whitespace-nowrap text-right min-w-[150px]">Discounted Price</th>
               <th className="p-3"></th>
             </tr>
           </thead>
@@ -705,21 +705,21 @@ const ProductsPage = () => {
                     navigate(`/products/details/${p.id}`);
                   }}
                 >
-                  <td className="p-3">{(page - 1) * rows + index + 1}</td>
+                  <td className="p-3 whitespace-nowrap">{(page - 1) * rows + index + 1}</td>
                   <td className="p-3">
-                    <div className="flex gap-3 items-center">
+                    <div className="flex gap-3 items-center min-w-[180px]">
                       <img
                         src={p.image}
                         alt={p.name}
-                        className="w-10 h-10 rounded-lg object-cover"
+                        className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
                       />
                       <span className="font-medium">{p.name}</span>
                     </div>
                   </td>
-                  <td className="p-3 text-gray-600">{p.category_name}</td>
-                  <td className="p-3 text-gray-600">{p.sku}</td>
-                  <td className="p-3 text-right font-medium text-gray-700">{formatCurrency(p.mrp)}</td>
-                  <td className="p-3 text-right font-medium text-blue-600">{formatCurrency(p.discounted_price)}</td>
+                  <td className="p-3 text-gray-600 whitespace-nowrap">{p.category_name}</td>
+                  <td className="p-3 text-gray-600 whitespace-nowrap">{p.sku}</td>
+                  <td className="p-3 text-right font-medium text-gray-700 whitespace-nowrap">{formatCurrency(p.mrp)}</td>
+                  <td className="p-3 text-right font-medium text-blue-600 whitespace-nowrap">{formatCurrency(p.discounted_price)}</td>
                   <td className="p-3">
                     <div className="flex gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
                       <button

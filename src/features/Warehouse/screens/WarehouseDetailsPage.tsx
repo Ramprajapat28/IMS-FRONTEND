@@ -124,7 +124,7 @@ export default function WarehouseDetailsPage() {
             </div>
 
             {/* Header */}
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate('/warehouse')}
@@ -137,8 +137,8 @@ export default function WarehouseDetailsPage() {
                             <Building2 className="w-8 h-8 text-blue-600" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">{warehouse.name}</h1>
-                            {warehouse.location && <p className="text-gray-600 mt-1">{warehouse.location}</p>}
+                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{warehouse.name}</h1>
+                            {warehouse.location && <p className="text-gray-600 mt-1 text-sm sm:text-base">{warehouse.location}</p>}
                         </div>
                     </div>
                 </div>
@@ -148,7 +148,7 @@ export default function WarehouseDetailsPage() {
                         setFormData({ name: '', warehouse_id: Number(id) });
                         setDialogOpen(true);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 w-full sm:w-auto justify-center"
                 >
                     <Plus className="w-4 h-4" />
                     Add Room
