@@ -212,6 +212,14 @@ const Profile = () => {
 
       await profileApi.updateProfile(userId, payload);
 
+      const updatedProfile: ProfileData = {
+  ...formProfile
+};
+
+// update both
+setSavedProfile(updatedProfile);
+setFormProfile(updatedProfile);
+
       // Update local state
       // Dispatch event to update Navbar
       window.dispatchEvent(new Event('user_updated'));

@@ -229,9 +229,40 @@ const BarcodeScannerPage: React.FC = () => {
     };
 
 
+    // Use a stable reader instance
+    const reader = useMemo(() => {
+        const hints = new Map();
+        const formats = [
+            BarcodeFormat.CODE_128,
+        ];
+        hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
+        hints.set(DecodeHintType.TRY_HARDER, true);
+        return new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 250 });
+    }, []);
+
+    const isLoadingRef = useRef(false);
+    useEffect(() => {
+        isLoadingRef.current = isLoading;
+    }, [isLoading]);
+
+    const isStartingRef = useRef(false);
+
     /* ---------------- CAMERA SCAN ---------------- */
     useEffect(() => {
-        if (mode !== "camera" || !videoRef.current || product || isLoading) return;
+        const isCameraMode = mode === "camera";
+        const hasProduct = !!product;
+        const videoElement = videoRef.current;
+
+        if (!isCameraMode || !videoElement || hasProduct) {
+            if (controlsRef.current) {
+                console.log("Stopping camera (Mode change or Product found)");
+                controlsRef.current.stop();
+                controlsRef.current = null;
+            }
+            return;
+        }
+
+        if (isStartingRef.current) return;
 
         // Check if camera API is supported
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -239,66 +270,73 @@ const BarcodeScannerPage: React.FC = () => {
             return;
         }
 
-        // Configuration Hints
-        const hints = new Map();
-        const formats = [
-            BarcodeFormat.EAN_13,
-            BarcodeFormat.EAN_8,
-            BarcodeFormat.CODE_128,
-            BarcodeFormat.CODE_39,
-            BarcodeFormat.UPC_A,
-            BarcodeFormat.UPC_E,
-            BarcodeFormat.ITF
-        ];
-        hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
-        hints.set(DecodeHintType.TRY_HARDER, true);
-
-        const reader = new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 200 }); // 300ms delay between scans
-        let activeControls: IScannerControls | null = null;
         let isMounted = true;
+        let activeControls: IScannerControls | null = null;
+        let startTimeout: ReturnType<typeof setTimeout> | null = null;
 
-        const constraints = {
-            video: {
-                facingMode: 'environment',
-                width: { min: 640, ideal: 1280, max: 1920 },
-                height: { min: 480, ideal: 720, max: 1080 },
-                // @ts-ignore - focusMode is not in standard types but supported by some browsers
-                focusMode: 'continuous'
-            }
-        };
+        const startCamera = () => {
+            if (!isMounted || isStartingRef.current) return;
+            isStartingRef.current = true;
 
-        reader.decodeFromConstraints(
-            constraints,
-            videoRef.current,
-            (result, _err, controls) => {
-                if (result) {
-                    const text = result.getText();
-                    if (text) {
-                        controls.stop();
-                        fetchProductBySku(text);
+            const constraints = {
+                video: {
+                    facingMode: 'environment',
+                    width: { min: 640, ideal: 1280, max: 1920 },
+                    height: { min: 480, ideal: 720, max: 1080 },
+                    // @ts-ignore
+                    focusMode: 'continuous'
+                }
+            };
+
+            console.log("Starting camera scanner delayed...");
+            reader.decodeFromConstraints(
+                constraints,
+                videoElement,
+                (result) => {
+                    if (result && !isLoadingRef.current && !product) {
+                        const text = result.getText();
+                        if (text) {
+                            console.log("Barcode detected:", text);
+                            fetchProductBySku(text);
+                        }
                     }
                 }
-            }
-        ).then((controls) => {
-            if (!isMounted) {
-                controls.stop();
-                return;
-            }
-            activeControls = controls;
-            controlsRef.current = controls;
-        }).catch((err) => {
-            console.error("Failed to start camera:", err);
-            setCameraError(err.message || "Failed to start camera. Please ensure camera permissions are granted and you are using HTTPS.");
-        });
+            ).then((controls) => {
+                isStartingRef.current = false;
+                if (!isMounted) {
+                    controls.stop();
+                    return;
+                }
+                activeControls = controls;
+                controlsRef.current = controls;
+                console.log("Camera successfully active.");
+            }).catch((err) => {
+                isStartingRef.current = false;
+                if (err.name === 'AbortError' || err.message?.includes('already playing')) {
+                    console.warn("Camera start interrupted, ignoring transient error.");
+                    return;
+                }
+                console.error("Failed to start camera:", err);
+                setCameraError(err.message || "Failed to start camera. Please ensure permissions are granted.");
+            });
+        };
+
+        // Delay start to allow React StrictMode and other renders to settle
+        startTimeout = setTimeout(startCamera, 300);
 
         return () => {
             isMounted = false;
+            if (startTimeout) clearTimeout(startTimeout);
+
+            console.log("Cleaning up camera scanner effect...");
             if (activeControls) {
                 activeControls.stop();
             }
-            controlsRef.current?.stop();
+            // We set isStartingRef to false slowly via the promise, 
+            // but we can also set it here if no promise is pending.
+            setTimeout(() => { isStartingRef.current = false; }, 500);
         };
-    }, [mode, product, isLoading]);
+    }, [mode, product, reader]);
 
     /* ---------------- FETCH ALL LOCATIONS FOR RETURN MODE ---------------- */
     useEffect(() => {
@@ -999,6 +1037,9 @@ const BarcodeScannerPage: React.FC = () => {
                                                 <video
                                                     ref={videoRef}
                                                     className="w-full h-full object-cover"
+                                                    autoPlay
+                                                    muted
+                                                    playsInline
                                                 />
 
                                                 <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-between p-4">
