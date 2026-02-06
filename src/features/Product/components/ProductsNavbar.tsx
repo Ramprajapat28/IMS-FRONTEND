@@ -1,4 +1,4 @@
-import { Plus, Download } from "lucide-react";
+import { Plus, Download, FileSpreadsheet } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 type Breadcrumb = {
@@ -72,6 +72,32 @@ const ProductsNavbar = ({ breadcrumbs, onRefresh }: ProductsNavbarProps) => {
     }
   };
 
+  const downloadSampleTemplate = () => {
+    const headers = [
+      "Name",
+      "SKU",
+      "Category",
+      "Sub Category",
+      "Description",
+      "Size",
+      "Product Code",
+      "MRP",
+      "Discounted Price",
+      "GST %",
+      "Cost to Company",
+      "Reorder Level",
+      "Image URL"
+    ];
+    const csvContent = "data:text/csv;charset=utf-8," + headers.join(",");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "product_import_sample.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       {/* LEFT - BREADCRUMB */}
@@ -102,6 +128,13 @@ const ProductsNavbar = ({ breadcrumbs, onRefresh }: ProductsNavbarProps) => {
       {/* RIGHT - ACTIONS */}
       {isProductsRoot && (
         <div className="flex gap-2">
+          <button
+            onClick={downloadSampleTemplate}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm flex gap-1 items-center hover:bg-green-700 transition shadow-sm"
+          >
+            <FileSpreadsheet size={16} /> Sample
+          </button>
+
           <button
             onClick={() => navigate("/products/add")}
             className="bg-black text-white px-4 py-2 rounded-lg text-sm flex gap-1"
