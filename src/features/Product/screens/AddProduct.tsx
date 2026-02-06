@@ -306,6 +306,7 @@ const AddProduct = () => {
                   type="number"
                   min="0"
                   value={form.mrp}
+                  onFocus={(e) => e.target.select()}
                   onChange={(e) => {
                     const val = e.target.value;
                     if (val === "" || Number(val) >= 0) {
@@ -322,6 +323,7 @@ const AddProduct = () => {
                   type="number"
                   min="0"
                   value={form.discounted_price}
+                  onFocus={(e) => e.target.select()}
                   onChange={(e) => {
                     const val = e.target.value;
                     if (val === "" || Number(val) >= 0) {
@@ -338,6 +340,7 @@ const AddProduct = () => {
                   type="number"
                   min="0"
                   value={form.cost_to_company}
+                  onFocus={(e) => e.target.select()}
                   onChange={(e) => {
                     const val = e.target.value;
                     if (val === "" || Number(val) >= 0) {
@@ -354,6 +357,7 @@ const AddProduct = () => {
                   type="number"
                   min="0"
                   value={form.gst_percentage}
+                  onFocus={(e) => e.target.select()}
                   onChange={(e) => {
                     const val = e.target.value;
                     if (val === "" || Number(val) >= 0) {
@@ -370,6 +374,7 @@ const AddProduct = () => {
                   type="number"
                   min="0"
                   value={form.reorder_level}
+                  onFocus={(e) => e.target.select()}
                   onChange={(e) => {
                     const val = e.target.value;
                     if (val === "" || Number(val) >= 0) {

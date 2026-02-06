@@ -66,7 +66,7 @@ const BarcodeScannerPage: React.FC = () => {
     const [selectedShelfId, setSelectedShelfId] = useState<number | "">("");
     const [selectedRackId, setSelectedRackId] = useState<number | "">("");
     const [sellingMode, setSellingMode] = useState<"Online" | "Offline">("Online");
-    const [quantity, setQuantity] = useState<number>(1);
+    const [quantity, setQuantity] = useState<number | "">(1);
     const [isReturnMode, setIsReturnMode] = useState(false);
     const [storageType, setStorageType] = useState<"shelf" | "rack">("shelf");
 
@@ -129,13 +129,15 @@ const BarcodeScannerPage: React.FC = () => {
             return;
         }
 
+        const finalQty = Number(quantity) || 1;
+
         setIsSelling(true);
         try {
             const res = await itemsApi.removeStock({
                 product_id: product.product_id,
                 shelf_id: selectedShelfId ? Number(selectedShelfId) : undefined,
                 rack_id: selectedRackId ? Number(selectedRackId) : undefined,
-                quantity: quantity,
+                quantity: finalQty,
                 status: 'sold',
                 mode: sellingMode
             });
@@ -160,13 +162,15 @@ const BarcodeScannerPage: React.FC = () => {
             return;
         }
 
+        const finalQty = Number(quantity) || 1;
+
         setIsReturning(true);
         try {
             const res = await itemsApi.returnStock({
                 product_id: product.product_id,
                 shelf_id: returnShelfId ? Number(returnShelfId) : undefined,
                 rack_id: returnRackId ? Number(returnRackId) : undefined,
-                quantity: quantity
+                quantity: finalQty
             });
 
             if (res.success && res.data) {
@@ -726,7 +730,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                 </label>
                                                                 <div className="flex items-center border border-gray-300 rounded-md bg-white">
                                                                     <button
-                                                                        onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                                                                        onClick={() => setQuantity(q => Math.max(1, (Number(q) || 0) - 1))}
                                                                         className="px-2 py-1.5 hover:bg-gray-100 text-gray-600 border-r transition"
                                                                         type="button"
                                                                     >
@@ -736,11 +740,19 @@ const BarcodeScannerPage: React.FC = () => {
                                                                         type="number"
                                                                         min="1"
                                                                         value={quantity}
-                                                                        onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
+                                                                        onFocus={(e) => e.target.select()}
+                                                                        onChange={(e) => {
+                                                                            const val = e.target.value;
+                                                                            if (val === "") {
+                                                                                setQuantity("");
+                                                                            } else {
+                                                                                setQuantity(Math.max(1, Number(val)));
+                                                                            }
+                                                                        }}
                                                                         className="w-full text-center text-xs focus:outline-none py-1.5 font-medium appearance-none"
                                                                     />
                                                                     <button
-                                                                        onClick={() => setQuantity(q => q + 1)}
+                                                                        onClick={() => setQuantity(q => (Number(q) || 0) + 1)}
                                                                         className="px-2 py-1.5 hover:bg-gray-100 text-gray-600 border-l transition"
                                                                         type="button"
                                                                     >
@@ -807,7 +819,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                 <div className="flex justify-end mt-3">
                                                     <button
                                                         onClick={handleSell}
-                                                        disabled={(!selectedShelfId && !selectedRackId) || isSelling || quantity < 1}
+                                                        disabled={(!selectedShelfId && !selectedRackId) || isSelling || Number(quantity || 0) < 1}
                                                         className={`px-5 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 shadow-sm
                                                         ${(!selectedShelfId && !selectedRackId) || isSelling ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                                                     >
@@ -829,7 +841,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                 <div className="flex justify-end mt-3">
                                                     <button
                                                         onClick={handleReturn}
-                                                        disabled={(!returnShelfId && !returnRackId) || isReturning || quantity < 1}
+                                                        disabled={(!returnShelfId && !returnRackId) || isReturning || Number(quantity || 0) < 1}
                                                         className={`px-5 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 shadow-sm ${(!returnShelfId && !returnRackId) || isReturning ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
                                                     >
                                                         {isReturning ? (
