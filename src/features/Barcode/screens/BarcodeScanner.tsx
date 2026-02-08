@@ -232,12 +232,9 @@ const BarcodeScannerPage: React.FC = () => {
     // Use a stable reader instance
     const reader = useMemo(() => {
         const hints = new Map();
-        const formats = [
-            BarcodeFormat.CODE_128,
-        ];
-        hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
-        hints.set(DecodeHintType.TRY_HARDER, true);
-        return new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 250 });
+        hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.CODE_128]);
+        // TRY_HARDER = false (removed) for speed
+        return new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 120 });
     }, []);
 
     const isLoadingRef = useRef(false);
@@ -281,26 +278,42 @@ const BarcodeScannerPage: React.FC = () => {
             const constraints = {
                 video: {
                     facingMode: 'environment',
-                    width: { min: 640, ideal: 1280, max: 1920 },
-                    height: { min: 480, ideal: 720, max: 1080 },
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
                     // @ts-ignore
                     focusMode: 'continuous'
                 }
             };
 
-            console.log("Starting camera scanner delayed...");
+            console.log("Starting POS-optimized camera...");
             reader.decodeFromConstraints(
                 constraints,
                 videoElement,
-                (result) => {
+                (result, _error, controls) => {
                     if (result && !isLoadingRef.current && !product) {
+                        // Restrict Scan Area Check (60% W x 30% H)
+                        const points = result.getResultPoints();
+                        if (points && points.length > 0) {
+                            const { videoWidth, videoHeight } = videoElement;
+                            const avgX = points.reduce((s, p) => s + p.getX(), 0) / points.length;
+                            const avgY = points.reduce((s, p) => s + p.getY(), 0) / points.length;
+                            const minX = videoWidth * 0.2;
+                            const maxX = videoWidth * 0.8;
+                            const minY = videoHeight * 0.35;
+                            const maxY = videoHeight * 0.65;
+                            if (avgX < minX || avgX > maxX || avgY < minY || avgY > maxY) return;
+                        }
+
                         const text = result.getText();
                         if (text) {
-                            console.log("Barcode detected:", text);
+                            if (controls) {
+                                controls.stop();
+                                controlsRef.current = null;
+                            }
                             fetchProductBySku(text);
                         }
                     }
-                }
+                },
             ).then((controls) => {
                 isStartingRef.current = false;
                 if (!isMounted) {
