@@ -1,9 +1,15 @@
 import React from "react";
 import { Check } from "lucide-react";
 
+// interface ProductSoldSuccessProps {
+//     message?: string;
+// }
+
 interface ProductSoldSuccessProps {
-    message?: string;
+  message: string;
+  onClose: () => void;
 }
+
 
 const ProductSoldSuccess: React.FC<ProductSoldSuccessProps> = ({ message = "Product Sold Successfully!" }) => {
     return (
