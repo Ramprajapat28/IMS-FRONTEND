@@ -502,6 +502,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search, Pencil, Trash2, Loader2, Printer, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import JsBarcode from "jsbarcode";
 import ProductsNavbar from "../components/ProductsNavbar";
 import ProductsFooter from "../components/ProductsFooter";
 import { productsApi } from "@/features/Product/api/product.api";
@@ -571,16 +572,38 @@ const ProductsPage = () => {
     if (selectedProducts.length === 0) return;
 
     for (const p of selectedProducts) {
-      if (p.barcode_image) {
-        const url = p.barcode_image;
-        const link = document.createElement('a');
-        link.href = url;
+      if (!p.sku || p.sku === "-----") continue;
+
+      try {
+        // Create a temporary canvas
+        const canvas = document.createElement("canvas");
+
+        // Generate barcode using JsBarcode on the canvas (matching ProductDetailsPage logic)
+        JsBarcode(canvas, p.sku, {
+          format: "CODE128",
+          width: 2,
+          height: 100,
+          displayValue: true,
+          fontSize: 20,
+          margin: 10,
+          background: "#ffffff"
+        });
+
+        // Convert canvas to data URL (PNG)
+        const dataUrl = canvas.toDataURL("image/png");
+
+        // Trigger download
+        const link = document.createElement("a");
+        link.href = dataUrl;
         link.download = `${p.sku}-barcode.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+
         // Small delay to prevent browser blocking multiple downloads
-        await new Promise(r => setTimeout(r, 100));
+        await new Promise(r => setTimeout(r, 200));
+      } catch (err) {
+        console.error(`Failed to generate barcode for ${p.sku}`, err);
       }
     }
   };

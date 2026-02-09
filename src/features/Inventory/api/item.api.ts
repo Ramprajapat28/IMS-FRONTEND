@@ -74,4 +74,17 @@ export const itemsApi = {
             body: JSON.stringify(data),
         });
     },
+
+    transferStock: async (data: {
+        product_id: number;
+        quantity: number;
+        source: { shelf_id?: number; rack_id?: number };
+        destination: { shelf_id?: number; rack_id?: number };
+        remark?: string;
+    }) => {
+        return apiRequest<ApiResponse<{ affected: number }>>('/api/items/transfer-stock', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
 };

@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, ChevronLeft, ChevronRight, Save } from "lucide-react";
+import { ArrowLeft, Loader2, ChevronLeft, ChevronRight, Save, MapPin, ArrowRightLeft } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
 import { categoriesApi, type Category } from "@/features/Inventory/api/category.api";
 import { itemsApi } from "@/features/Inventory/api/item.api";
 import { shelvesApi, roomsApi, warehousesApi, racksApi, type Shelf, type Room, type Warehouse, type Rack } from "@/features/Inventory/api/location.api";
 import { UI } from "@/constants";
 import toast from "react-hot-toast";
+import TransferStockModal from "../components/TransferStockModal";
+import type { Product } from "../types";
 
 type ProductForm = {
     name: string;
@@ -64,6 +66,8 @@ const EditProduct = () => {
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // New files to upload
 
     const [isLoading, setIsLoading] = useState(true);
+    const [fullProductData, setFullProductData] = useState<Product | null>(null);
+    const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [lastAddedDate, setLastAddedDate] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -96,9 +100,14 @@ const EditProduct = () => {
 
             setIsLoading(true);
             try {
-                const response = await productsApi.getById(Number(id));
-                if (response.success && response.data) {
-                    const product = response.data;
+                const [basicRes, detailRes] = await Promise.all([
+                    productsApi.getById(Number(id)),
+                    productsApi.getDetails(Number(id))
+                ]);
+
+                if (basicRes.success && basicRes.data) {
+                    const product = basicRes.data;
+                    setFullProductData(detailRes.data || null);
 
                     setForm({
                         name: product.name,
@@ -854,6 +863,15 @@ const EditProduct = () => {
                                 placeholder=""
                                 className="w-52 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
+
+                            <button
+                                type="button"
+                                onClick={() => setIsTransferModalOpen(true)}
+                                className="ml-4 px-4 py-2.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition flex items-center gap-2 text-sm font-semibold border border-blue-200"
+                            >
+                                <MapPin size={16} />
+                                Relocate / Transfer Stock
+                            </button>
                         </div>
 
                         {/* Location */}
@@ -1139,6 +1157,7 @@ const EditProduct = () => {
                                                 <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider">Date</th>
                                                 <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider">Activity</th>
                                                 <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider text-center">Quantity</th>
+                                                <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider">Remarks</th>
                                                 <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider text-right">Status</th>
                                             </tr>
                                         </thead>
@@ -1167,6 +1186,9 @@ const EditProduct = () => {
                                                     </td>
                                                     <td className="px-4 py-3 text-center font-medium text-gray-900">
                                                         {log.quantity}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-[11px] text-gray-600 max-w-[200px] truncate" title={log.remark}>
+                                                        {log.remark || '-'}
                                                     </td>
                                                     <td className="px-4 py-3 text-right text-gray-500 italic">
                                                         {log.status}
@@ -1224,7 +1246,6 @@ const EditProduct = () => {
                             )}
                         </div>
 
-                        {/* Footer Buttons */}
                         <div className="flex justify-between items-center pt-6 border-t">
                             <button
                                 onClick={handlePrevious}
@@ -1234,19 +1255,44 @@ const EditProduct = () => {
                                 Previous
                             </button>
 
-                            <span className="text-sm text-gray-500">Page 2 of 2</span>
-
-                            <button
-                                onClick={handleSubmit}
-                                disabled={isSubmitting}
-                                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium flex items-center gap-2 disabled:opacity-50"
-                            >
-                                <Save size={20} />
-                                Save & Exit
-                            </button>
+                            <div className="flex items-center gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsTransferModalOpen(true)}
+                                    className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium flex items-center gap-2 disabled:opacity-50"
+                                >
+                                    <ArrowRightLeft size={20} />
+                                    Transfer Stock
+                                </button>
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={isSubmitting}
+                                    className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium flex items-center gap-2 disabled:opacity-50"
+                                >
+                                    <Save size={20} />
+                                    Save & Exit
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
+            )}
+
+            {fullProductData && (
+                <TransferStockModal
+                    isOpen={isTransferModalOpen}
+                    onClose={() => setIsTransferModalOpen(false)}
+                    product={fullProductData}
+                    onSuccess={() => {
+                        // Refresh stock logs and potentially product details if stock count changed
+                        setLogsPage(1);
+                        const fetchProduct = async () => {
+                            const detailRes = await productsApi.getDetails(Number(id));
+                            setFullProductData(detailRes.data || null);
+                        };
+                        fetchProduct();
+                    }}
+                />
             )}
         </div>
     );
