@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2, ChevronLeft, ChevronRight, Save } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
-import { ordersApi } from "@/features/Order/api/order.api";
 import { categoriesApi, type Category } from "@/features/Inventory/api/category.api";
 import { itemsApi } from "@/features/Inventory/api/item.api";
 import { shelvesApi, roomsApi, warehousesApi, racksApi, type Shelf, type Room, type Warehouse, type Rack } from "@/features/Inventory/api/location.api";
@@ -72,6 +71,7 @@ const EditProduct = () => {
     const [isLogsLoading, setIsLogsLoading] = useState(false);
     const [logsPage, setLogsPage] = useState(1);
     const [logsRowsPerPage, setLogsRowsPerPage] = useState(10);
+    const [totalLogs, setTotalLogs] = useState(0);
 
     // Autocomplete State
     const [suggestions, setSuggestions] = useState<{ id: number, code: string, name: string }[]>([]);
@@ -154,49 +154,14 @@ const EditProduct = () => {
     // Load stock logs
     useEffect(() => {
         const fetchStockLogs = async () => {
-            if (!id) return;
+            if (!id || currentPage !== 2) return;
             setIsLogsLoading(true);
             try {
-                // 1. Fetch Additions (from items)
-                const itemsRes = await itemsApi.getAll(Number(id), 1, 100);
-                let additions: any[] = [];
-                if (itemsRes.success && itemsRes.data) {
-                    // Group by date to show additions
-                    const grouped = itemsRes.data.reduce((acc: any, item: any) => {
-                        const date = item.created_at ? item.created_at.split('T')[0] : 'Unknown';
-                        if (!acc[date]) acc[date] = 0;
-                        acc[date]++;
-                        return acc;
-                    }, {});
-
-                    additions = Object.entries(grouped).map(([date, qty]) => ({
-                        date,
-                        type: 'Added',
-                        quantity: qty,
-                        status: 'Received',
-                        id: `add-${date}`
-                    }));
+                const response = await productsApi.getStockLogs(Number(id), logsPage, logsRowsPerPage);
+                if (response.success && response.data) {
+                    setStockLogs(response.data);
+                    setTotalLogs(response.pagination?.total || response.data.length);
                 }
-
-                // 2. Fetch Returns (from orders)
-                const ordersRes = await ordersApi.getAll(1, 100, { product_id: Number(id), status: 'returned' });
-                let returns: any[] = [];
-                if (ordersRes.success && ordersRes.data) {
-                    returns = ordersRes.data.map((order: any) => ({
-                        date: order.created_at ? order.created_at.split('T')[0] : 'Unknown',
-                        type: 'Returned',
-                        quantity: order.quantity,
-                        status: 'Restocked',
-                        id: `ret-${order.order_id}`
-                    }));
-                }
-
-                // Combine and sort by date descending
-                const combined = [...additions, ...returns].sort((a, b) =>
-                    new Date(b.date).getTime() - new Date(a.date).getTime()
-                );
-
-                setStockLogs(combined);
             } catch (err) {
                 console.error("Failed to load stock logs:", err);
             } finally {
@@ -204,10 +169,8 @@ const EditProduct = () => {
             }
         };
 
-        if (currentPage === 2) {
-            fetchStockLogs();
-        }
-    }, [id, currentPage]);
+        fetchStockLogs();
+    }, [id, currentPage, logsPage, logsRowsPerPage]);
 
     // Update global_category_id when categories load
     useEffect(() => {
@@ -1180,38 +1143,36 @@ const EditProduct = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100">
-                                            {stockLogs
-                                                .slice((logsPage - 1) * logsRowsPerPage, logsPage * logsRowsPerPage)
-                                                .map((log) => (
-                                                    <tr key={log.id} className="hover:bg-gray-50 transition-colors">
-                                                        <td className="px-4 py-3 text-gray-700">
-                                                            {new Date(log.date).toLocaleDateString('en-GB', {
-                                                                day: '2-digit',
-                                                                month: 'short',
-                                                                year: 'numeric'
-                                                            })}
-                                                        </td>
-                                                        <td className="px-4 py-3">
-                                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${log.type === 'Added'
-                                                                ? 'bg-blue-100 text-blue-700'
-                                                                : 'bg-green-100 text-green-700'
-                                                                }`}>
-                                                                {log.type === 'Added' ? (
-                                                                    <svg className="mr-1 w-2 h-2" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
-                                                                ) : (
-                                                                    <svg className="mr-1 w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path d="M5 13l4 4L19 7" /></svg>
-                                                                )}
-                                                                {log.type}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-4 py-3 text-center font-medium text-gray-900">
-                                                            {log.quantity}
-                                                        </td>
-                                                        <td className="px-4 py-3 text-right text-gray-500 italic">
-                                                            {log.status}
-                                                        </td>
-                                                    </tr>
-                                                ))}
+                                            {stockLogs.map((log) => (
+                                                <tr key={log.id} className="hover:bg-gray-50 transition-colors">
+                                                    <td className="px-4 py-3 text-gray-700">
+                                                        {new Date(log.date).toLocaleDateString('en-GB', {
+                                                            day: '2-digit',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        })}
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${log.activity === 'Added'
+                                                            ? 'bg-blue-100 text-blue-700'
+                                                            : 'bg-green-100 text-green-700'
+                                                            }`}>
+                                                            {log.activity === 'Added' ? (
+                                                                <svg className="mr-1 w-2 h-2" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
+                                                            ) : (
+                                                                <svg className="mr-1 w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path d="M5 13l4 4L19 7" /></svg>
+                                                            )}
+                                                            {log.activity}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-center font-medium text-gray-900">
+                                                        {log.quantity}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right text-gray-500 italic">
+                                                        {log.status}
+                                                    </td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                     </table>
 
@@ -1235,7 +1196,7 @@ const EditProduct = () => {
 
                                         <div className="flex items-center gap-4">
                                             <span className="text-[10px] text-gray-500">
-                                                {Math.min((logsPage - 1) * logsRowsPerPage + 1, stockLogs.length)}-{Math.min(logsPage * logsRowsPerPage, stockLogs.length)} of {stockLogs.length}
+                                                {Math.min((logsPage - 1) * logsRowsPerPage + 1, totalLogs)}-{Math.min(logsPage * logsRowsPerPage, totalLogs)} of {totalLogs}
                                             </span>
                                             <div className="flex items-center gap-1">
                                                 <button
@@ -1246,8 +1207,8 @@ const EditProduct = () => {
                                                     <ChevronLeft size={14} />
                                                 </button>
                                                 <button
-                                                    onClick={() => setLogsPage(p => Math.min(Math.ceil(stockLogs.length / logsRowsPerPage), p + 1))}
-                                                    disabled={logsPage >= Math.ceil(stockLogs.length / logsRowsPerPage)}
+                                                    onClick={() => setLogsPage(p => Math.min(Math.ceil(totalLogs / logsRowsPerPage), p + 1))}
+                                                    disabled={logsPage >= Math.ceil(totalLogs / logsRowsPerPage)}
                                                     className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed text-gray-600"
                                                 >
                                                     <ChevronRight size={14} />

@@ -77,4 +77,10 @@ export const productsApi = {
             body: JSON.stringify({ file_path: filePath }),
         });
     },
+
+    getStockLogs: async (id: number, page = 1, limit = 10) => {
+        return apiRequest<ApiResponse<any[]> & { pagination: PaginationInfo }>(
+            `/api/products/stock-logs/${id}?page=${page}&limit=${limit}`
+        );
+    },
 };
