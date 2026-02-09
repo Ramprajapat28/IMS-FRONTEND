@@ -500,7 +500,7 @@
 
 // export default ProductsPage;
 import { useEffect, useMemo, useState } from "react";
-import { Search, Pencil, Trash2, Loader2, Printer } from "lucide-react";
+import { Search, Pencil, Trash2, Loader2, Printer, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ProductsNavbar from "../components/ProductsNavbar";
 import ProductsFooter from "../components/ProductsFooter";
@@ -508,6 +508,7 @@ import { productsApi } from "@/features/Product/api/product.api";
 import { formatCurrency } from "@/utils";
 import type { Product } from "@/features/Product/types";
 import BarcodePrintModal from "../components/BarcodePrintModal";
+import BulkBarcodePrintModal from "../components/BulkBarcodePrintModal";
 
 // Map API product to display format
 interface DisplayProduct {
@@ -534,14 +535,54 @@ const ProductsPage = () => {
   const [page, setPage] = useState(1);
   const [rows, setRows] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   // Modal State
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [isBulkPrintModalOpen, setIsBulkPrintModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<DisplayProduct | null>(null);
 
   const handlePrintClick = (p: DisplayProduct) => {
     setSelectedProduct(p);
     setIsPrintModalOpen(true);
+  };
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(new Set(data.map(p => p.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectRow = (id: number, e: React.MouseEvent | React.ChangeEvent) => {
+    e.stopPropagation();
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleBulkDownload = async () => {
+    const selectedProducts = data.filter(p => selectedIds.has(p.id));
+    if (selectedProducts.length === 0) return;
+
+    for (const p of selectedProducts) {
+      if (p.barcode_image) {
+        const url = p.barcode_image;
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${p.sku}-barcode.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        // Small delay to prevent browser blocking multiple downloads
+        await new Promise(r => setTimeout(r, 100));
+      }
+    }
   };
 
   // Fetch products from API
@@ -679,11 +720,48 @@ const ProductsPage = () => {
         </select>
       </div>
 
+      {/* BULK ACTIONS */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center justify-between bg-blue-50 border border-blue-100 p-3 rounded-lg animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-blue-700">{selectedIds.size} products selected</span>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="text-xs text-blue-600 hover:underline"
+            >
+              Clear selection
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleBulkDownload}
+              className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-md text-sm font-medium hover:bg-blue-100 transition flex items-center gap-1.5"
+            >
+              <Download size={14} /> Download Barcodes
+            </button>
+            <button
+              onClick={() => setIsBulkPrintModalOpen(true)}
+              className="px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition flex items-center gap-1.5 shadow-sm"
+            >
+              <Printer size={14} /> Bulk Print
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* TABLE */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-100 text-left">
             <tr>
+              <th className="p-3 w-10">
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  checked={selectedIds.size === data.length && data.length > 0}
+                  onChange={handleSelectAll}
+                />
+              </th>
               <th className="p-3 whitespace-nowrap">Sr.no</th>
               <th className="p-3 whitespace-nowrap min-w-[200px]">Product Name</th>
               <th className="p-3 whitespace-nowrap min-w-[150px]">Sub Category</th>
@@ -705,6 +783,14 @@ const ProductsPage = () => {
                     navigate(`/products/details/${p.id}`);
                   }}
                 >
+                  <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      checked={selectedIds.has(p.id)}
+                      onChange={(e) => handleSelectRow(p.id, e)}
+                    />
+                  </td>
                   <td className="p-3 whitespace-nowrap">{(page - 1) * rows + index + 1}</td>
                   <td className="p-3">
                     <div className="flex gap-3 items-center min-w-[180px]">
@@ -776,6 +862,21 @@ const ProductsPage = () => {
           }}
         />
       )}
+
+      <BulkBarcodePrintModal
+        isOpen={isBulkPrintModalOpen}
+        onClose={() => setIsBulkPrintModalOpen(false)}
+        products={data
+          .filter(p => selectedIds.has(p.id))
+          .map(p => ({
+            name: p.name,
+            sku: p.sku,
+            barcode_image: p.barcode_image,
+            mrp: p.mrp,
+            discounted_price: p.discounted_price
+          }))
+        }
+      />
     </div>
   );
 };

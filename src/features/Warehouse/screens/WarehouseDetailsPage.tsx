@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { DoorOpen, ChevronRight, ChevronLeft, Building2, Plus, Pencil, Trash2, X } from 'lucide-react';
+import { DoorOpen, ChevronRight, ChevronLeft, Building2, Plus, Pencil, Trash2, X, User, Phone, MapPin } from 'lucide-react';
 import { warehousesApi, roomsApi, type Warehouse, type Room } from '../../Inventory/api/location.api';
 
 export default function WarehouseDetailsPage() {
@@ -121,6 +121,7 @@ export default function WarehouseDetailsPage() {
                 </button>
                 <ChevronRight className="w-4 h-4 text-gray-400" />
                 <span className="text-gray-600">{warehouse.name}</span>
+                <span className="ml-2 px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs font-medium">Warehouse</span>
             </div>
 
             {/* Header */}
@@ -138,7 +139,26 @@ export default function WarehouseDetailsPage() {
                         </div>
                         <div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{warehouse.name}</h1>
-                            {warehouse.location && <p className="text-gray-600 mt-1 text-sm sm:text-base">{warehouse.location}</p>}
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
+                                {warehouse.location && (
+                                    <div className="flex items-center gap-1 text-gray-600 text-sm sm:text-base">
+                                        <MapPin className="w-4 h-4" />
+                                        {warehouse.location}
+                                    </div>
+                                )}
+                                {warehouse.contact_person && (
+                                    <div className="flex items-center gap-1 text-gray-600 text-sm sm:text-base">
+                                        <User className="w-4 h-4" />
+                                        {warehouse.contact_person}
+                                    </div>
+                                )}
+                                {warehouse.contact_number && (
+                                    <div className="flex items-center gap-1 text-gray-600 text-sm sm:text-base">
+                                        <Phone className="w-4 h-4" />
+                                        {warehouse.contact_number}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

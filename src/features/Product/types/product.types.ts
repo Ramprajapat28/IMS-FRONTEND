@@ -17,6 +17,7 @@ export interface Product {
     location?: string;
     size?: string;
     product_code?: string;
+    hsn_code?: string;
     stock_details?: {
         product_id: number;
         warehouse_name: string;
@@ -36,6 +37,7 @@ export interface CreateProductData {
     name: string;
     sku: string;
     product_code?: string;
+    hsn_code?: string;
     category?: string;
     global_category_id?: number;
     description?: string;

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import JsBarcode from "jsbarcode";
 
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, Tag, Hash, Package, Download, FileText, Percent, IndianRupee, Printer } from "lucide-react";
+import { ArrowLeft, Loader2, Tag, Hash, Package, Download, FileText, Percent, IndianRupee, Printer, MapPin } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
 import { formatCurrency } from "@/utils";
 import type { Product } from "@/features/Product/types";
@@ -354,6 +354,17 @@ const InventoryProductDetailsPage = () => {
                             </div>
                         </div>
 
+                        {/* HSN Code */}
+                        {product.hsn_code && (
+                            <div className="flex gap-2.5">
+                                <FileText size={18} className="text-gray-400 mt-0.5 flex-shrink-0" />
+                                <div>
+                                    <p className="text-xs text-gray-500 mb-0.5">HSN Code</p>
+                                    <p className="font-medium text-gray-900 text-sm">{product.hsn_code}</p>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Pricing Info */}
                         <div className="grid grid-cols-2 gap-4 py-3 border-y border-gray-100">
                             <div>
@@ -396,20 +407,38 @@ const InventoryProductDetailsPage = () => {
                             </div>
                         </div>
 
-                        {/* Location */}
-                        <div>
-                            <p className="text-xs text-gray-500 mb-0.5">LOCATION</p>
+                        {/* Location Table */}
+                        <div className="space-y-2">
+                            <p className="text-xs text-gray-500 flex items-center gap-1">
+                                <MapPin size={14} className="text-gray-400" />
+                                STOCK LOCATIONS
+                            </p>
 
                             {product.stock_details && product.stock_details.length > 0 ? (
-                                <div className="text-sm font-medium text-gray-900 space-y-1">
-                                    {product.stock_details.map((s, index) => (
-                                        <div key={index}>
-                                            {s.warehouse_name} , {s.room_name} , {s.shelf_name} ({s.item_count})
-                                        </div>
-                                    ))}
+                                <div className="border rounded-lg overflow-hidden">
+                                    <table className="w-full text-left text-xs">
+                                        <thead className="bg-gray-50 border-b">
+                                            <tr>
+                                                <th className="px-3 py-2 font-semibold text-gray-600">Warehouse</th>
+                                                <th className="px-3 py-2 font-semibold text-gray-600">Room</th>
+                                                <th className="px-3 py-2 font-semibold text-gray-600 text-center">Shelf</th>
+                                                <th className="px-3 py-2 font-semibold text-gray-600 text-right">Count</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y">
+                                            {product.stock_details.map((s, index) => (
+                                                <tr key={index} className="hover:bg-gray-50">
+                                                    <td className="px-3 py-2 text-gray-700">{s.warehouse_name}</td>
+                                                    <td className="px-3 py-2 text-gray-700">{s.room_name}</td>
+                                                    <td className="px-3 py-2 text-gray-700 text-center">{s.shelf_name}</td>
+                                                    <td className="px-3 py-2 text-gray-900 font-medium text-right">{s.item_count}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
                             ) : (
-                                <p className="text-sm text-gray-400">Not assigned</p>
+                                <p className="text-sm text-gray-400 pl-1">Not assigned to any location</p>
                             )}
                         </div>
 

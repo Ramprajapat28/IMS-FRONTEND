@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, ChevronRight, MapPin, Plus, Pencil, Trash2, X } from 'lucide-react';
+import { Building2, ChevronRight, MapPin, Plus, Pencil, Trash2, X, User, Phone } from 'lucide-react';
 import { warehousesApi, type Warehouse } from '../../Inventory/api/location.api';
 
 export default function WarehouseListPage() {
@@ -8,7 +8,7 @@ export default function WarehouseListPage() {
     const [loading, setLoading] = useState(true);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingWarehouse, setEditingWarehouse] = useState<Warehouse | null>(null);
-    const [formData, setFormData] = useState({ name: '', location: '' });
+    const [formData, setFormData] = useState({ name: '', location: '', contact_person: '', contact_number: '' });
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -45,7 +45,7 @@ export default function WarehouseListPage() {
             }
             setDialogOpen(false);
             setEditingWarehouse(null);
-            setFormData({ name: '', location: '' });
+            setFormData({ name: '', location: '', contact_person: '', contact_number: '' });
             fetchWarehouses();
         } catch (error: any) {
             alert(error.message || 'Failed to save warehouse');
@@ -55,7 +55,12 @@ export default function WarehouseListPage() {
     const handleEdit = (warehouse: Warehouse, e: React.MouseEvent) => {
         e.stopPropagation();
         setEditingWarehouse(warehouse);
-        setFormData({ name: warehouse.name, location: warehouse.location || '' });
+        setFormData({
+            name: warehouse.name,
+            location: warehouse.location || '',
+            contact_person: warehouse.contact_person || '',
+            contact_number: warehouse.contact_number || ''
+        });
         setDialogOpen(true);
     };
 
@@ -86,7 +91,7 @@ export default function WarehouseListPage() {
                 <button
                     onClick={() => {
                         setEditingWarehouse(null);
-                        setFormData({ name: '', location: '' });
+                        setFormData({ name: '', location: '', contact_person: '', contact_number: '' });
                         setDialogOpen(true);
                     }}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 w-full sm:w-auto justify-center"
@@ -123,6 +128,22 @@ export default function WarehouseListPage() {
                                             <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
                                                 <MapPin className="w-3 h-3" />
                                                 {warehouse.location}
+                                            </div>
+                                        )}
+                                        {(warehouse.contact_person || warehouse.contact_number) && (
+                                            <div className="mt-2 pt-2 border-t border-gray-100 space-y-1">
+                                                {warehouse.contact_person && (
+                                                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                                                        <User className="w-3 h-3" />
+                                                        {warehouse.contact_person}
+                                                    </div>
+                                                )}
+                                                {warehouse.contact_number && (
+                                                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                                                        <Phone className="w-3 h-3" />
+                                                        {warehouse.contact_number}
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>
@@ -177,6 +198,26 @@ export default function WarehouseListPage() {
                                     value={formData.location}
                                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                                     placeholder="Enter location"
+                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Contact Person (optional)</label>
+                                <input
+                                    type="text"
+                                    value={formData.contact_person}
+                                    onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
+                                    placeholder="Enter contact person name"
+                                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Contact Number (optional)</label>
+                                <input
+                                    type="text"
+                                    value={formData.contact_number}
+                                    onChange={(e) => setFormData({ ...formData, contact_number: e.target.value })}
+                                    placeholder="Enter contact number"
                                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>

@@ -13,6 +13,8 @@ export interface Warehouse {
     warehouse_id: number;
     name: string;
     location?: string;
+    contact_person?: string;
+    contact_number?: string;
     created_at?: string;
     updated_at?: string;
 }
@@ -32,13 +34,13 @@ export const warehousesApi = {
     getById: async (id: number) => {
         return apiRequest<ApiResponse<Warehouse>>(`/api/warehouses/${id}`);
     },
-    create: async (data: { name: string; location?: string }) => {
+    create: async (data: { name: string; location?: string; contact_person?: string; contact_number?: string }) => {
         return apiRequest<ApiResponse<Warehouse>>('/api/warehouses/create', {
             method: 'POST',
             body: JSON.stringify(data),
         });
     },
-    update: async (id: number, data: { name?: string; location?: string }) => {
+    update: async (id: number, data: { name?: string; location?: string; contact_person?: string; contact_number?: string }) => {
         return apiRequest<ApiResponse<Warehouse>>(`/api/warehouses/update/${id}`, {
             method: 'PUT',
             body: JSON.stringify(data),

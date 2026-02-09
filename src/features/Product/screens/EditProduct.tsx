@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2, ChevronLeft, Save } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
+import { ordersApi } from "@/features/Order/api/order.api";
 import { categoriesApi, type Category } from "@/features/Inventory/api/category.api";
 import { itemsApi } from "@/features/Inventory/api/item.api";
 import { shelvesApi, roomsApi, warehousesApi, racksApi, type Shelf, type Room, type Warehouse, type Rack } from "@/features/Inventory/api/location.api";
@@ -28,6 +29,7 @@ type ProductForm = {
     cost_to_company: number | string;
     gst_percentage: number | string;
     reorder_level: number | string;
+    hsn_code: string;
 };
 
 const EditProduct = () => {
@@ -54,6 +56,7 @@ const EditProduct = () => {
         cost_to_company: "",
         gst_percentage: "",
         reorder_level: "",
+        hsn_code: "",
     });
 
     // Multiple Image States
@@ -65,6 +68,8 @@ const EditProduct = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [lastAddedDate, setLastAddedDate] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [stockLogs, setStockLogs] = useState<any[]>([]);
+    const [isLogsLoading, setIsLogsLoading] = useState(false);
 
     // Autocomplete State
     const [suggestions, setSuggestions] = useState<{ id: number, code: string, name: string }[]>([]);
@@ -113,6 +118,7 @@ const EditProduct = () => {
                         cost_to_company: Number(product.cost_to_company) || "",
                         gst_percentage: Number(product.gst_percentage) || "",
                         reorder_level: Number(product.reorder_level) || "",
+                        hsn_code: product.hsn_code || "",
                     });
                     setLastAddedDate(product.last_added_date || null);
 
@@ -142,6 +148,64 @@ const EditProduct = () => {
 
         fetchProduct();
     }, [id]);
+
+    // Load stock logs
+    useEffect(() => {
+        const fetchStockLogs = async () => {
+            if (!id) return;
+            setIsLogsLoading(true);
+            try {
+                // 1. Fetch Additions (from items)
+                const itemsRes = await itemsApi.getAll(Number(id), 1, 100);
+                let additions: any[] = [];
+                if (itemsRes.success && itemsRes.data) {
+                    // Group by date to show additions
+                    const grouped = itemsRes.data.reduce((acc: any, item: any) => {
+                        const date = item.created_at ? item.created_at.split('T')[0] : 'Unknown';
+                        if (!acc[date]) acc[date] = 0;
+                        acc[date]++;
+                        return acc;
+                    }, {});
+
+                    additions = Object.entries(grouped).map(([date, qty]) => ({
+                        date,
+                        type: 'Added',
+                        quantity: qty,
+                        status: 'Received',
+                        id: `add-${date}`
+                    }));
+                }
+
+                // 2. Fetch Returns (from orders)
+                const ordersRes = await ordersApi.getAll(1, 100, { product_id: Number(id), status: 'returned' });
+                let returns: any[] = [];
+                if (ordersRes.success && ordersRes.data) {
+                    returns = ordersRes.data.map((order: any) => ({
+                        date: order.created_at ? order.created_at.split('T')[0] : 'Unknown',
+                        type: 'Returned',
+                        quantity: order.quantity,
+                        status: 'Restocked',
+                        id: `ret-${order.order_id}`
+                    }));
+                }
+
+                // Combine and sort by date descending
+                const combined = [...additions, ...returns].sort((a, b) =>
+                    new Date(b.date).getTime() - new Date(a.date).getTime()
+                );
+
+                setStockLogs(combined);
+            } catch (err) {
+                console.error("Failed to load stock logs:", err);
+            } finally {
+                setIsLogsLoading(false);
+            }
+        };
+
+        if (currentPage === 2) {
+            fetchStockLogs();
+        }
+    }, [id, currentPage]);
 
     // Update global_category_id when categories load
     useEffect(() => {
@@ -395,6 +459,7 @@ const EditProduct = () => {
                 discounted_price: Number(form.discounted_price) || 0,
                 gst_percentage: Number(form.gst_percentage) || 0,
                 reorder_level: Number(form.reorder_level) || 0,
+                hsn_code: form.hsn_code,
                 category_id: Number(form.category_id),
                 global_category_id: Number(form.global_category_id),
                 product_images: allImages, // Send all images
@@ -578,6 +643,16 @@ const EditProduct = () => {
                                             }
                                         }}
                                         placeholder="10"
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="text-sm font-medium text-gray-700 mb-2 block">HSN Code (optional):</label>
+                                    <input
+                                        type="text"
+                                        value={form.hsn_code}
+                                        onChange={(e) => updateField("hsn_code", e.target.value)}
+                                        placeholder="Enter HSN Code"
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
                                 </div>
@@ -1076,6 +1151,72 @@ const EditProduct = () => {
                                 </p>
                             </div>
                         </label> */}
+
+                        {/* Stock Logs */}
+                        <div className="pt-6 border-t">
+                            <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-600">
+                                    <path d="M12 20v-6M9 20v-10M15 20v-2M3 20h18"></path>
+                                </svg>
+                                Stock Movement History (Logs)
+                            </h3>
+
+                            {isLogsLoading ? (
+                                <div className="flex items-center justify-center py-8">
+                                    <Loader2 className="animate-spin text-blue-600" size={24} />
+                                    <span className="ml-2 text-sm text-gray-500">Loading history...</span>
+                                </div>
+                            ) : stockLogs.length > 0 ? (
+                                <div className="border rounded-lg overflow-hidden">
+                                    <table className="w-full text-left text-xs">
+                                        <thead className="bg-gray-50 border-b">
+                                            <tr>
+                                                <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                                                <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider">Activity</th>
+                                                <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider text-center">Quantity</th>
+                                                <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider text-right">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100">
+                                            {stockLogs.map((log) => (
+                                                <tr key={log.id} className="hover:bg-gray-50 transition-colors">
+                                                    <td className="px-4 py-3 text-gray-700">
+                                                        {new Date(log.date).toLocaleDateString('en-GB', {
+                                                            day: '2-digit',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        })}
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${log.type === 'Added'
+                                                            ? 'bg-blue-100 text-blue-700'
+                                                            : 'bg-green-100 text-green-700'
+                                                            }`}>
+                                                            {log.type === 'Added' ? (
+                                                                <svg className="mr-1 w-2 h-2" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
+                                                            ) : (
+                                                                <svg className="mr-1 w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path d="M5 13l4 4L19 7" /></svg>
+                                                            )}
+                                                            {log.type}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-center font-medium text-gray-900">
+                                                        {log.quantity}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right text-gray-500 italic">
+                                                        {log.status}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed">
+                                    <p className="text-sm text-gray-500">No stock movement history found for this product.</p>
+                                </div>
+                            )}
+                        </div>
 
                         {/* Footer Buttons */}
                         <div className="flex justify-between items-center pt-6 border-t">

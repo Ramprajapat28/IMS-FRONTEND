@@ -21,6 +21,7 @@ type ProductForm = {
   cost_to_company: number | string;
   gst_percentage: number | string;
   reorder_level: number | string;
+  hsn_code: string;
 };
 
 /* ----------------------------- COMPONENT ----------------------------- */
@@ -42,6 +43,7 @@ const AddProduct = () => {
     cost_to_company: "",
     gst_percentage: "",
     reorder_level: "10",
+    hsn_code: "",
   });
 
   // Multiple Image States
@@ -220,6 +222,7 @@ const AddProduct = () => {
         discounted_price: Number(form.discounted_price) || 0,
         gst_percentage: Number(form.gst_percentage) || 0,
         reorder_level: Number(form.reorder_level) || 0,
+        hsn_code: form.hsn_code,
         category_id: Number(form.category_id),
         global_category_id: Number(form.global_category_id),
         product_image: productImages
@@ -382,6 +385,16 @@ const AddProduct = () => {
                     }
                   }}
                   placeholder="10"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">HSN Code (optional):</label>
+                <input
+                  type="text"
+                  value={form.hsn_code}
+                  onChange={(e) => updateField("hsn_code", e.target.value)}
+                  placeholder="Enter HSN Code"
                   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
