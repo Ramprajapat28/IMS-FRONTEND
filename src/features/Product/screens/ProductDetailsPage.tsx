@@ -407,7 +407,8 @@ const ProductDetailsPage = () => {
                                             <tr>
                                                 <th className="px-3 py-2 font-semibold text-gray-600">Warehouse</th>
                                                 <th className="px-3 py-2 font-semibold text-gray-600">Room</th>
-                                                <th className="px-3 py-2 font-semibold text-gray-600 text-center">Shelf</th>
+                                                <th className="px-3 py-2 font-semibold text-gray-600">Shelf</th>
+                                                <th className="px-3 py-2 font-semibold text-gray-600">Rack</th>
                                                 <th className="px-3 py-2 font-semibold text-gray-600 text-right">Count</th>
                                             </tr>
                                         </thead>
@@ -416,7 +417,8 @@ const ProductDetailsPage = () => {
                                                 <tr key={index} className="hover:bg-gray-50">
                                                     <td className="px-3 py-2 text-gray-700">{s.warehouse_name}</td>
                                                     <td className="px-3 py-2 text-gray-700">{s.room_name}</td>
-                                                    <td className="px-3 py-2 text-gray-700 text-center">{s.shelf_name}</td>
+                                                    <td className="px-3 py-2 text-gray-700">{s.shelf_name || "-"}</td>
+                                                    <td className="px-3 py-2 text-gray-700">{s.rack_name || "-"}</td>
                                                     <td className="px-3 py-2 text-gray-900 font-medium text-right">{s.item_count}</td>
                                                 </tr>
                                             ))}

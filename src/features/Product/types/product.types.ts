@@ -23,6 +23,8 @@ export interface Product {
         warehouse_name: string;
         room_name: string;
         shelf_name: string;
+        rack_name?: string;
+        is_rack?: boolean;
         status: string;
         item_count: number | string;
     }[];

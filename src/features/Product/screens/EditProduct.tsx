@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, ChevronLeft, Save } from "lucide-react";
+import { ArrowLeft, Loader2, ChevronLeft, ChevronRight, Save } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
 import { ordersApi } from "@/features/Order/api/order.api";
 import { categoriesApi, type Category } from "@/features/Inventory/api/category.api";
@@ -70,6 +70,8 @@ const EditProduct = () => {
     const [error, setError] = useState<string | null>(null);
     const [stockLogs, setStockLogs] = useState<any[]>([]);
     const [isLogsLoading, setIsLogsLoading] = useState(false);
+    const [logsPage, setLogsPage] = useState(1);
+    const [logsRowsPerPage, setLogsRowsPerPage] = useState(10);
 
     // Autocomplete State
     const [suggestions, setSuggestions] = useState<{ id: number, code: string, name: string }[]>([]);
@@ -1178,38 +1180,81 @@ const EditProduct = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100">
-                                            {stockLogs.map((log) => (
-                                                <tr key={log.id} className="hover:bg-gray-50 transition-colors">
-                                                    <td className="px-4 py-3 text-gray-700">
-                                                        {new Date(log.date).toLocaleDateString('en-GB', {
-                                                            day: '2-digit',
-                                                            month: 'short',
-                                                            year: 'numeric'
-                                                        })}
-                                                    </td>
-                                                    <td className="px-4 py-3">
-                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${log.type === 'Added'
-                                                            ? 'bg-blue-100 text-blue-700'
-                                                            : 'bg-green-100 text-green-700'
-                                                            }`}>
-                                                            {log.type === 'Added' ? (
-                                                                <svg className="mr-1 w-2 h-2" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
-                                                            ) : (
-                                                                <svg className="mr-1 w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path d="M5 13l4 4L19 7" /></svg>
-                                                            )}
-                                                            {log.type}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-4 py-3 text-center font-medium text-gray-900">
-                                                        {log.quantity}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-right text-gray-500 italic">
-                                                        {log.status}
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                            {stockLogs
+                                                .slice((logsPage - 1) * logsRowsPerPage, logsPage * logsRowsPerPage)
+                                                .map((log) => (
+                                                    <tr key={log.id} className="hover:bg-gray-50 transition-colors">
+                                                        <td className="px-4 py-3 text-gray-700">
+                                                            {new Date(log.date).toLocaleDateString('en-GB', {
+                                                                day: '2-digit',
+                                                                month: 'short',
+                                                                year: 'numeric'
+                                                            })}
+                                                        </td>
+                                                        <td className="px-4 py-3">
+                                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${log.type === 'Added'
+                                                                ? 'bg-blue-100 text-blue-700'
+                                                                : 'bg-green-100 text-green-700'
+                                                                }`}>
+                                                                {log.type === 'Added' ? (
+                                                                    <svg className="mr-1 w-2 h-2" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
+                                                                ) : (
+                                                                    <svg className="mr-1 w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path d="M5 13l4 4L19 7" /></svg>
+                                                                )}
+                                                                {log.type}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-3 text-center font-medium text-gray-900">
+                                                            {log.quantity}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-right text-gray-500 italic">
+                                                            {log.status}
+                                                        </td>
+                                                    </tr>
+                                                ))}
                                         </tbody>
                                     </table>
+
+                                    {/* Pagination Controls */}
+                                    <div className="bg-gray-50 border-t px-4 py-2 flex items-center justify-between gap-4">
+                                        <div className="flex items-center gap-2 text-[10px] text-gray-500">
+                                            <span>Rows per page:</span>
+                                            <select
+                                                value={logsRowsPerPage}
+                                                onChange={(e) => {
+                                                    setLogsRowsPerPage(Number(e.target.value));
+                                                    setLogsPage(1);
+                                                }}
+                                                className="bg-transparent border-none focus:ring-0 cursor-pointer font-medium"
+                                            >
+                                                {[5, 10, 20, 50].map(n => (
+                                                    <option key={n} value={n}>{n}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-[10px] text-gray-500">
+                                                {Math.min((logsPage - 1) * logsRowsPerPage + 1, stockLogs.length)}-{Math.min(logsPage * logsRowsPerPage, stockLogs.length)} of {stockLogs.length}
+                                            </span>
+                                            <div className="flex items-center gap-1">
+                                                <button
+                                                    onClick={() => setLogsPage(p => Math.max(1, p - 1))}
+                                                    disabled={logsPage === 1}
+                                                    className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed text-gray-600"
+                                                >
+                                                    <ChevronLeft size={14} />
+                                                </button>
+                                                <button
+                                                    onClick={() => setLogsPage(p => Math.min(Math.ceil(stockLogs.length / logsRowsPerPage), p + 1))}
+                                                    disabled={logsPage >= Math.ceil(stockLogs.length / logsRowsPerPage)}
+                                                    className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed text-gray-600"
+                                                >
+                                                    <ChevronRight size={14} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed">
