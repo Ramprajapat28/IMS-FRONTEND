@@ -18,6 +18,7 @@ export interface Order {
     category_name?: string;
     mode?: string;
     inward_dates?: { date: string; count: number }[];
+    user_name?: string;
 }
 
 export interface OrderFilters {

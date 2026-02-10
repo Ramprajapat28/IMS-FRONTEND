@@ -19,6 +19,7 @@ type Order = {
   mode?: string;
   image: string;
   inward_dates?: { date: string; count: number }[];
+  user_name?: string;
 };
 
 /* ----------------------------- PAGINATION LOGIC ------------------------------ */
@@ -126,6 +127,7 @@ const OrdersPage = () => {
                 : "Unknown Location",
             image: resolveUrl(o.product_image) || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200",
             inward_dates: o.inward_dates as { date: string; count: number }[],
+            user_name: o.user_name || "-",
           }));
           setOrders(mappedOrders);
 
@@ -304,6 +306,7 @@ const OrdersPage = () => {
               <th className="p-3">Warehouse</th>
               <th className="p-3">Inward Date</th>
               <th className="p-3">Outward Date</th>
+              <th className="p-3">User</th>
               <th className="p-3">Status</th>
             </tr>
           </thead>
@@ -326,7 +329,7 @@ const OrdersPage = () => {
                 </td>
 
                 <td className="p-3">
-                  <div className="flex items-center gap-1.5 text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]" title={(o as any).location_path}>
+                  <div className="flex items-center gap-1.5 text-gray-600 whitespace-nowrap" title={(o as any).location_path}>
                     <MapPin size={14} className="shrink-0 text-gray-400" />
                     {(o as any).location_path}
                   </div>
@@ -347,6 +350,10 @@ const OrdersPage = () => {
                 </td>
                 <td className="p-3 text-gray-500">
                   {o.status.toLowerCase() === 'returned' ? '-' : o.datetime}
+                </td>
+
+                <td className="p-3 text-gray-500 font-medium">
+                  {o.user_name}
                 </td>
 
                 <td className="p-3">
