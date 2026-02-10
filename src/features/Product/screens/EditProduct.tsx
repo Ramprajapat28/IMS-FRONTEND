@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, ChevronLeft, ChevronRight, Save, MapPin, ArrowRightLeft } from "lucide-react";
+import { ArrowLeft, Loader2, ChevronLeft, ChevronRight, Save, ArrowRightLeft } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
 import { categoriesApi, type Category } from "@/features/Inventory/api/category.api";
 import { itemsApi } from "@/features/Inventory/api/item.api";
@@ -864,14 +864,14 @@ const EditProduct = () => {
                                 className="w-52 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
 
-                            <button
+                            {/* <button
                                 type="button"
                                 onClick={() => setIsTransferModalOpen(true)}
                                 className="ml-4 px-4 py-2.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition flex items-center gap-2 text-sm font-semibold border border-blue-200"
                             >
                                 <MapPin size={16} />
                                 Relocate / Transfer Stock
-                            </button>
+                            </button> */}
                         </div>
 
                         {/* Location */}
@@ -1158,6 +1158,7 @@ const EditProduct = () => {
                                                 <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider">Activity</th>
                                                 <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider text-center">Quantity</th>
                                                 <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider">Remarks</th>
+                                                <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider">User</th>
                                                 <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider text-right">Status</th>
                                             </tr>
                                         </thead>
@@ -1189,6 +1190,9 @@ const EditProduct = () => {
                                                     </td>
                                                     <td className="px-4 py-3 text-[11px] text-gray-600 max-w-[200px] truncate" title={log.remark}>
                                                         {log.remark || '-'}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-[11px] text-gray-700">
+                                                        {log.user_name || '-'}
                                                     </td>
                                                     <td className="px-4 py-3 text-right text-gray-500 italic">
                                                         {log.status}
