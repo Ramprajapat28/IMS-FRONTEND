@@ -12,8 +12,7 @@ import {
     Minus,
     Package,
     AlertCircle,
-    Camera,
-    Focus
+    Camera
 } from "lucide-react";
 import { BrowserMultiFormatReader, type IScannerControls } from "@zxing/browser";
 import { DecodeHintType, BarcodeFormat } from "@zxing/library";
@@ -72,8 +71,6 @@ const BarcodeScannerPage: React.FC = () => {
     const [isSelling, setIsSelling] = useState(false);
     const [isReturning, setIsReturning] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [scanHint, setScanHint] = useState<string>("Position barcode within frame");
-    const [scanAttempts, setScanAttempts] = useState<number>(0);
 
     // Calculate available stock for the currently selected location (Sell mode)
     const currentLocationStock = useMemo(() => {
@@ -88,7 +85,7 @@ const BarcodeScannerPage: React.FC = () => {
         }
         return 0;
     }, [product, isReturnMode, storageType, selectedShelfId, selectedRackId, stockDetails]);
-    
+
     const [dragActive, setDragActive] = useState(false);
 
     // Return Mode: Destination location state
@@ -121,8 +118,6 @@ const BarcodeScannerPage: React.FC = () => {
         setQuantity(1);
         setIsReturnMode(false);
         setError(null);
-        setScanHint("Position barcode within frame");
-        setScanAttempts(0);
         setSuccessMessage("Product Sold Successfully!");
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
@@ -232,33 +227,21 @@ const BarcodeScannerPage: React.FC = () => {
     // ENHANCED: Optimized reader with all barcode formats
     const reader = useMemo(() => {
         const hints = new Map();
-        const formats = [
-            BarcodeFormat.CODE_128,
-            BarcodeFormat.CODE_39,
-            BarcodeFormat.CODE_93,
-            BarcodeFormat.EAN_13,
-            BarcodeFormat.EAN_8,
-            BarcodeFormat.UPC_A,
-            BarcodeFormat.UPC_E,
-            BarcodeFormat.ITF,
-            BarcodeFormat.CODABAR,
-            BarcodeFormat.QR_CODE,
-            BarcodeFormat.DATA_MATRIX,
-        ];
+        const formats = [BarcodeFormat.CODE_128];
         hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
-        hints.set(DecodeHintType.TRY_HARDER, true);
+        hints.set(DecodeHintType.TRY_HARDER, false);
         hints.set(DecodeHintType.ASSUME_GS1, false);
-        
-        return new BrowserMultiFormatReader(hints, { 
-            delayBetweenScanAttempts: 50,  // FASTER: Scan every 50ms (20 fps)
-            delayBetweenScanSuccess: 500   // Wait 500ms after success
+
+        return new BrowserMultiFormatReader(hints, {
+            delayBetweenScanAttempts: 100, // Balanced speed for CODE_128
+            delayBetweenScanSuccess: 500
         });
     }, []);
 
     // Keep track of loading state in a ref for camera callback
     const isLoadingRef = useRef(false);
     const productRef = useRef<Product | null>(null);
-    
+
     useEffect(() => {
         isLoadingRef.current = isLoading;
     }, [isLoading]);
@@ -270,7 +253,6 @@ const BarcodeScannerPage: React.FC = () => {
     const isStartingRef = useRef(false);
     const lastScannedRef = useRef<string>("");
     const lastScanTimeRef = useRef<number>(0);
-    const hintTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // ENHANCED: Play beep sound on successful scan
     const playBeep = (success: boolean = true) => {
@@ -278,16 +260,16 @@ const BarcodeScannerPage: React.FC = () => {
             const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
-            
+
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
-            
+
             oscillator.frequency.value = success ? 800 : 400;
             oscillator.type = 'sine';
-            
+
             gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-            
+
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + 0.15);
         } catch (e) {
@@ -300,9 +282,9 @@ const BarcodeScannerPage: React.FC = () => {
         const isCameraMode = mode === "camera";
         const videoElement = videoRef.current;
 
-        if (!isCameraMode || !videoElement) {
+        if (product || !isCameraMode || !videoElement) {
             if (controlsRef.current) {
-                console.log("Stopping camera (Mode changed)");
+                console.log("Stopping camera (Product found or Mode changed)");
                 controlsRef.current.stop();
                 controlsRef.current = null;
             }
@@ -321,29 +303,23 @@ const BarcodeScannerPage: React.FC = () => {
         }
 
         let isMounted = true;
-        let activeControls: IScannerControls | null = null;
 
         const startCamera = async () => {
             if (!isMounted || isStartingRef.current) return;
             isStartingRef.current = true;
 
-            // ENHANCED: Higher resolution and frame rate
             const constraints = {
                 video: {
                     facingMode: 'environment',
-                    width: { min: 640, ideal: 1920, max: 3840 },
-                    height: { min: 480, ideal: 1080, max: 2160 },
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
                     aspectRatio: { ideal: 16 / 9 },
-                    frameRate: { ideal: 60, max: 60 },
-                    // @ts-ignore - Advanced camera features for better focus
+                    frameRate: { ideal: 30 },
+                    // @ts-ignore
                     focusMode: 'continuous',
-                    focusDistance: { ideal: 0 },
-                    advanced: [
-                        { focusMode: 'continuous' },
-                        { torch: false }
-                    ]
+                    advanced: [{ focusMode: 'continuous' }]
                 }
-            }as unknown as MediaStreamConstraints;
+            } as unknown as MediaStreamConstraints;
 
             console.log("🎥 Starting enhanced barcode scanner...");
 
@@ -351,67 +327,32 @@ const BarcodeScannerPage: React.FC = () => {
                 const controls = await reader.decodeFromConstraints(
                     constraints,
                     videoElement,
-                    (result, error) => {
-                        // Update scan attempts counter
-                        setScanAttempts(prev => prev + 1);
-
+                    (result) => {
                         if (result) {
                             const text = result.getText();
                             const now = Date.now();
 
-                            // Prevent duplicate scans of same barcode within 3 seconds
                             if (
-                                lastScannedRef.current === text && 
+                                lastScannedRef.current === text &&
                                 now - lastScanTimeRef.current < 3000
                             ) {
                                 return;
                             }
 
-                            // Don't scan if currently loading
                             if (isLoadingRef.current) {
                                 return;
                             }
 
                             console.log("✅ Barcode detected:", text);
-                            
                             lastScannedRef.current = text;
                             lastScanTimeRef.current = now;
-                            
-                            // Success feedback
-                            setScanHint("✓ Barcode scanned successfully!");
                             playBeep(true);
-                            
-                            // Vibrate if supported
+
                             if (navigator.vibrate) {
                                 navigator.vibrate([100, 50, 100]);
                             }
 
                             fetchProductBySku(text);
-
-                            // Reset hint after 2 seconds
-                            if (hintTimeoutRef.current) {
-                                clearTimeout(hintTimeoutRef.current);
-                            }
-                            hintTimeoutRef.current = setTimeout(() => {
-                                setScanHint("Position barcode within frame");
-                            }, 2000);
-
-                        } else if (error) {
-                            // ENHANCED: Provide helpful hints based on error type
-                            const errorMsg = error.message || error.toString();
-                            
-                            if (errorMsg.includes('NotFoundException')) {
-                                if (scanAttempts % 20 === 0) { // Update hint every 20 attempts
-                                    setScanHint("📍 No barcode detected - adjust position");
-                                }
-                            } else if (errorMsg.includes('FormatException')) {
-                                setScanHint("⚠️ Barcode found but unclear - improve focus/lighting");
-                                if (scanAttempts % 30 === 0) {
-                                    playBeep(false); // Warning beep
-                                }
-                            } else if (errorMsg.includes('ChecksumException')) {
-                                setScanHint("🔍 Barcode damaged or unclear - hold steady");
-                            }
                         }
                     }
                 );
@@ -422,15 +363,14 @@ const BarcodeScannerPage: React.FC = () => {
                     return;
                 }
 
-                activeControls = controls;
                 controlsRef.current = controls;
                 isStartingRef.current = false;
-                console.log("✅ Camera active - scanning at 60fps with enhanced focus");
+                console.log("✅ Camera active - scanning at optimal efficiency");
 
             } catch (err: any) {
                 isStartingRef.current = false;
                 console.error("❌ Camera error:", err);
-                
+
                 // Better error messages
                 if (err.name === 'NotAllowedError') {
                     setCameraError("Camera permission denied. Please allow camera access.");
@@ -449,22 +389,18 @@ const BarcodeScannerPage: React.FC = () => {
         return () => {
             isMounted = false;
             clearTimeout(timeout);
-            
-            if (hintTimeoutRef.current) {
-                clearTimeout(hintTimeoutRef.current);
-            }
-            
-            if (activeControls) {
+
+            if (controlsRef.current) {
                 console.log("🛑 Cleaning up camera");
-                activeControls.stop();
+                controlsRef.current.stop();
                 controlsRef.current = null;
             }
-            
+
             setTimeout(() => {
                 isStartingRef.current = false;
             }, 500);
         };
-    }, [mode, reader]);
+    }, [mode, reader, product]);
 
     /* ---------------- FETCH ALL LOCATIONS FOR RETURN MODE ---------------- */
     useEffect(() => {
@@ -495,7 +431,7 @@ const BarcodeScannerPage: React.FC = () => {
             img.onload = () => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d')!;
-                
+
                 if (degrees === 90 || degrees === 270) {
                     canvas.width = img.height;
                     canvas.height = img.width;
@@ -503,11 +439,11 @@ const BarcodeScannerPage: React.FC = () => {
                     canvas.width = img.width;
                     canvas.height = img.height;
                 }
-                
+
                 ctx.translate(canvas.width / 2, canvas.height / 2);
                 ctx.rotate((degrees * Math.PI) / 180);
                 ctx.drawImage(img, -img.width / 2, -img.height / 2);
-                
+
                 resolve(canvas.toDataURL());
             };
             img.src = imageUrl;
@@ -519,11 +455,10 @@ const BarcodeScannerPage: React.FC = () => {
         const imageFile = files[0];
 
         setIsLoading(true);
-        setScanHint("🔍 Analyzing image...");
 
         const imgReader = new BrowserMultiFormatReader();
         const imageUrl = URL.createObjectURL(imageFile);
-        
+
         try {
             // Try original image first
             const result = await imgReader.decodeFromImageUrl(imageUrl);
@@ -541,7 +476,6 @@ const BarcodeScannerPage: React.FC = () => {
         const angles = [90, 180, 270];
         for (const angle of angles) {
             try {
-                setScanHint(`🔄 Trying ${angle}° rotation...`);
                 const rotatedUrl = await rotateImage(imageUrl, angle);
                 const result = await imgReader.decodeFromImageUrl(rotatedUrl);
                 if (result) {
@@ -557,7 +491,6 @@ const BarcodeScannerPage: React.FC = () => {
 
         // No barcode found
         setIsLoading(false);
-        setScanHint("❌ No barcode found in image");
         alert("Could not detect barcode in image. Try:\n• Better lighting\n• Clear focus\n• Straight angle\n• Higher quality image");
     };
 
@@ -629,152 +562,123 @@ const BarcodeScannerPage: React.FC = () => {
                 <div className="h-full bg-white rounded-xl border shadow-sm p-3">
                     <div className="h-full grid grid-cols-1 lg:grid-cols-12 gap-3">
 
-                        {/* LEFT: CAMERA SCANNER */}
-                        <div className={`order-1 lg:order-1 ${product ? "lg:col-span-4" : "lg:col-span-8"} h-full`}>
-                            <div className="h-full rounded-lg border overflow-hidden flex flex-col bg-gray-900">
-                                
-                                <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2 font-semibold text-white text-sm flex items-center justify-between">
-                                    <span className="flex items-center gap-2">
-                                        <Camera size={16} />
-                                        Barcode Scanner
-                                    </span>
-                                    {mode === "camera" && !cameraError && (
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                                            <span className="text-xs">Live • 60fps</span>
-                                        </div>
-                                    )}
-                                </div>
+                        {/* LEFT: CAMERA SCANNER (HIDDEN WHEN PRODUCT FOUND) */}
+                        {!product && (
+                            <div className="order-1 lg:order-1 lg:col-span-8 h-full">
+                                <div className="h-full rounded-lg border overflow-hidden flex flex-col bg-gray-900">
+                                    <div className="bg-white border-b px-4 py-3 font-semibold text-gray-900 text-sm flex items-center justify-between">
+                                        <span className="flex items-center gap-2">
+                                            <Camera size={18} className="text-gray-700" />
+                                            Barcode Scanner
+                                        </span>
+                                    </div>
 
-                                {mode === "camera" && (
-                                    <div className="flex-1 relative bg-black">
-                                        {!cameraError ? (
-                                            <>
-                                                <video
-                                                    ref={videoRef}
-                                                    className="w-full h-full object-cover"
-                                                    autoPlay
-                                                    muted
-                                                    playsInline
-                                                />
-                                                
-                                                {/* ENHANCED Scanning Overlay */}
-                                                <div className="absolute inset-0 pointer-events-none">
-                                                    <div className="absolute inset-8">
-                                                        <div className="relative w-full h-full border-2 border-white/30 rounded-xl">
-                                                            {/* Corner markers with animation */}
-                                                            <div className="absolute top-0 left-0 w-16 h-16 border-t-4 border-l-4 border-green-400 rounded-tl-xl animate-pulse"></div>
-                                                            <div className="absolute top-0 right-0 w-16 h-16 border-t-4 border-r-4 border-green-400 rounded-tr-xl animate-pulse"></div>
-                                                            <div className="absolute bottom-0 left-0 w-16 h-16 border-b-4 border-l-4 border-green-400 rounded-bl-xl animate-pulse"></div>
-                                                            <div className="absolute bottom-0 right-0 w-16 h-16 border-b-4 border-r-4 border-green-400 rounded-br-xl animate-pulse"></div>
-                                                            
-                                                            {/* Scan line with enhanced animation */}
-                                                            <div className="scan-line"></div>
-                                                            
-                                                            {/* Center crosshair for better alignment */}
-                                                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                                                                <Focus className="w-12 h-12 text-white/40" />
+                                    {mode === "camera" && (
+                                        <div className="flex-1 relative bg-black">
+                                            {!cameraError ? (
+                                                <>
+                                                    <video
+                                                        ref={videoRef}
+                                                        className="w-full h-full object-cover"
+                                                        autoPlay
+                                                        muted
+                                                        playsInline
+                                                    />
+
+                                                    {/* Scanning Overlay Matching Screenshot */}
+                                                    <div className="absolute inset-0 pointer-events-none">
+                                                        <div className="absolute inset-8">
+                                                            <div className="relative w-full h-full border border-white/20 rounded-2xl overflow-hidden">
+                                                                {/* Corner markers - RED and rounded */}
+                                                                <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-red-500 rounded-tl-2xl"></div>
+                                                                <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-red-500 rounded-tr-2xl"></div>
+                                                                <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-red-500 rounded-bl-2xl"></div>
+                                                                <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-red-500 rounded-br-2xl"></div>
+
+                                                                {/* Red Scan line */}
+                                                                <div className="scan-line"></div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Top hint badge - Static White Pill */}
+                                                        <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-10">
+                                                            <div className="bg-white/95 backdrop-blur-md px-5 py-2 rounded-full shadow-xl flex items-center gap-2 border border-white/50">
+                                                                <span className="text-gray-900 font-bold text-xs tracking-tight uppercase">Position Barcode Within Frame</span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Bottom instructions */}
+                                                        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
+                                                            <div className="bg-black/40 backdrop-blur-sm px-5 py-2 rounded-xl border border-white/10">
+                                                                <p className="text-white text-[10px] font-medium tracking-wide">
+                                                                    {isLoading ? "🔍 LOADING PRODUCT..." : "HOLD BARCODE STEADY WITHIN THE FRAME"}
+                                                                </p>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    
-                                                    {/* Top hint badge */}
-                                                    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
-                                                        <div className={`backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2 shadow-lg transition-colors ${
-                                                            scanHint.includes('✓') ? 'bg-green-500/90' : 
-                                                            scanHint.includes('⚠️') || scanHint.includes('❌') ? 'bg-yellow-500/90' : 
-                                                            'bg-blue-500/90'
-                                                        }`}>
-                                                            <span className="text-white font-medium text-xs">{scanHint}</span>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    {/* Bottom instructions */}
-                                                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-                                                        <div className="bg-black/70 backdrop-blur-sm px-6 py-3 rounded-xl">
-                                                            <p className="text-white text-xs font-medium mb-1 text-center">
-                                                                {isLoading ? "🔍 Loading product..." : "📦 Tips for best results:"}
-                                                            </p>
-                                                            {!isLoading && (
-                                                                <ul className="text-white/80 text-[10px] space-y-0.5">
-                                                                    <li>• Hold barcode 15-20cm from camera</li>
-                                                                    <li>• Keep barcode straight and steady</li>
-                                                                    <li>• Ensure good lighting without glare</li>
-                                                                </ul>
-                                                            )}
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Scan counter (debug info) */}
-                                                    <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full">
-                                                        <span className="text-white/70 text-[10px]">
-                                                            Scans: {scanAttempts}
-                                                        </span>
-                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+                                                    <AlertCircle className="w-16 h-16 text-red-400 mb-4" />
+                                                    <h3 className="text-white text-lg font-bold mb-2">Camera Error</h3>
+                                                    <p className="text-gray-300 text-sm mb-4 max-w-md">{cameraError}</p>
+                                                    <button
+                                                        onClick={() => window.location.reload()}
+                                                        className="bg-white text-gray-900 px-6 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 transition"
+                                                    >
+                                                        Retry Camera Access
+                                                    </button>
                                                 </div>
-                                            </>
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-                                                <AlertCircle className="w-16 h-16 text-red-400 mb-4" />
-                                                <h3 className="text-white text-lg font-bold mb-2">Camera Error</h3>
-                                                <p className="text-gray-300 text-sm mb-4 max-w-md">{cameraError}</p>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {mode === "upload" && (
+                                        <div className="flex-1 flex items-center justify-center p-6">
+                                            <div
+                                                className={`w-full max-w-md border-2 border-dashed rounded-xl p-8 text-center transition-all ${dragActive ? "border-blue-500 bg-blue-50 scale-105" : "border-gray-300 bg-gray-50"
+                                                    }`}
+                                                onDragEnter={handleDrag}
+                                                onDragLeave={handleDrag}
+                                                onDragOver={handleDrag}
+                                                onDrop={handleDrop}
+                                            >
+                                                <ImageIcon className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                                                <p className="text-gray-700 font-semibold mb-2">Upload Barcode Image</p>
+                                                <p className="text-gray-500 text-sm mb-4">
+                                                    Drag & drop or click to upload<br />
+                                                    <span className="text-xs text-gray-400">Supports auto-rotation for best results</span>
+                                                </p>
+                                                <input
+                                                    ref={fileInputRef}
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={(e) => handleFiles(e.target.files)}
+                                                />
                                                 <button
-                                                    onClick={() => window.location.reload()}
-                                                    className="bg-white text-gray-900 px-6 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 transition"
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    disabled={isLoading}
+                                                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
                                                 >
-                                                    Retry Camera Access
+                                                    {isLoading ? (
+                                                        <span className="flex items-center gap-2 justify-center">
+                                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                                            Analyzing...
+                                                        </span>
+                                                    ) : (
+                                                        "Choose File"
+                                                    )}
                                                 </button>
                                             </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {mode === "upload" && (
-                                    <div className="flex-1 flex items-center justify-center p-6">
-                                        <div
-                                            className={`w-full max-w-md border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-                                                dragActive ? "border-blue-500 bg-blue-50 scale-105" : "border-gray-300 bg-gray-50"
-                                            }`}
-                                            onDragEnter={handleDrag}
-                                            onDragLeave={handleDrag}
-                                            onDragOver={handleDrag}
-                                            onDrop={handleDrop}
-                                        >
-                                            <ImageIcon className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                                            <p className="text-gray-700 font-semibold mb-2">Upload Barcode Image</p>
-                                            <p className="text-gray-500 text-sm mb-4">
-                                                Drag & drop or click to upload<br/>
-                                                <span className="text-xs text-gray-400">Supports auto-rotation for best results</span>
-                                            </p>
-                                            <input
-                                                ref={fileInputRef}
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                onChange={(e) => handleFiles(e.target.files)}
-                                            />
-                                            <button
-                                                onClick={() => fileInputRef.current?.click()}
-                                                disabled={isLoading}
-                                                className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                            >
-                                                {isLoading ? (
-                                                    <span className="flex items-center gap-2 justify-center">
-                                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                                        Analyzing...
-                                                    </span>
-                                                ) : (
-                                                    "Choose File"
-                                                )}
-                                            </button>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* RIGHT: PRODUCT INFO */}
-                        <div className={`order-2 lg:order-2 ${product ? "lg:col-span-8" : "hidden lg:block lg:col-span-4"} h-full overflow-hidden`}>
+                        <div className={`order-1 lg:order-1 ${product ? "lg:col-span-12" : "hidden lg:block lg:col-span-4"} h-full overflow-hidden`}>
                             <div className="h-full rounded-lg border overflow-hidden flex flex-col">
 
                                 {!product && (
@@ -792,11 +696,11 @@ const BarcodeScannerPage: React.FC = () => {
                                                 <div className="text-center">
                                                     <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
                                                     <p className="text-red-500 mb-3">{error}</p>
-                                                    <button 
+                                                    <button
                                                         onClick={() => {
                                                             setError(null);
                                                             setProduct(null);
-                                                        }} 
+                                                        }}
                                                         className="text-blue-600 hover:underline text-sm font-medium"
                                                     >
                                                         Try Scanning Again
@@ -816,7 +720,7 @@ const BarcodeScannerPage: React.FC = () => {
                                 {product && (
                                     <div className="flex-1 overflow-auto p-3">
                                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                                            
+
                                             {/* Product Details Box */}
                                             <div className="border rounded-lg p-3 bg-white relative">
                                                 <button
@@ -922,17 +826,15 @@ const BarcodeScannerPage: React.FC = () => {
                                                     <div className="flex gap-2 border-b pb-2">
                                                         <button
                                                             onClick={() => setIsReturnMode(false)}
-                                                            className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition ${
-                                                                !isReturnMode ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                                            }`}
+                                                            className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition ${!isReturnMode ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                                }`}
                                                         >
                                                             Sell
                                                         </button>
                                                         <button
                                                             onClick={() => setIsReturnMode(true)}
-                                                            className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition ${
-                                                                isReturnMode ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                                            }`}
+                                                            className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition ${isReturnMode ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                                }`}
                                                         >
                                                             Return
                                                         </button>
@@ -942,7 +844,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                     {!isReturnMode && (
                                                         <>
                                                             <p className="text-sm font-semibold text-gray-900">1. Select Location:</p>
-                                                            
+
                                                             <div className="space-y-1.5">
                                                                 {/* Warehouse */}
                                                                 <div>
@@ -1008,9 +910,8 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                 setStorageType('shelf');
                                                                                 setSelectedRackId("");
                                                                             }}
-                                                                            className={`px-3 py-1 text-[10px] font-medium rounded-md transition ${
-                                                                                storageType === 'shelf' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
-                                                                            }`}
+                                                                            className={`px-3 py-1 text-[10px] font-medium rounded-md transition ${storageType === 'shelf' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
+                                                                                }`}
                                                                         >
                                                                             Shelf
                                                                         </button>
@@ -1020,9 +921,8 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                 setStorageType('rack');
                                                                                 setSelectedShelfId("");
                                                                             }}
-                                                                            className={`px-3 py-1 text-[10px] font-medium rounded-md transition ${
-                                                                                storageType === 'rack' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
-                                                                            }`}
+                                                                            className={`px-3 py-1 text-[10px] font-medium rounded-md transition ${storageType === 'rack' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
+                                                                                }`}
                                                                         >
                                                                             Rack
                                                                         </button>
@@ -1087,17 +987,15 @@ const BarcodeScannerPage: React.FC = () => {
                                                                 <div className="flex p-0.5 bg-gray-100 rounded-lg">
                                                                     <button
                                                                         onClick={() => setSellingMode("Online")}
-                                                                        className={`flex-1 px-3 py-1 text-[10px] font-medium rounded-md transition ${
-                                                                            sellingMode === "Online" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
-                                                                        }`}
+                                                                        className={`flex-1 px-3 py-1 text-[10px] font-medium rounded-md transition ${sellingMode === "Online" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
+                                                                            }`}
                                                                     >
                                                                         Online
                                                                     </button>
                                                                     <button
                                                                         onClick={() => setSellingMode("Offline")}
-                                                                        className={`flex-1 px-3 py-1 text-[10px] font-medium rounded-md transition ${
-                                                                            sellingMode === "Offline" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
-                                                                        }`}
+                                                                        className={`flex-1 px-3 py-1 text-[10px] font-medium rounded-md transition ${sellingMode === "Offline" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
+                                                                            }`}
                                                                     >
                                                                         Offline
                                                                     </button>
@@ -1124,8 +1022,8 @@ const BarcodeScannerPage: React.FC = () => {
                                                                     <button
                                                                         onClick={() => setQuantity(prev => {
                                                                             const newQty = (Number(prev) || 1) + 1;
-                                                                            return currentLocationStock > 0 && newQty > currentLocationStock 
-                                                                                ? currentLocationStock 
+                                                                            return currentLocationStock > 0 && newQty > currentLocationStock
+                                                                                ? currentLocationStock
                                                                                 : newQty;
                                                                         })}
                                                                         className="w-8 h-8 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
@@ -1162,7 +1060,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                     {isReturnMode && (
                                                         <>
                                                             <p className="text-sm font-semibold text-gray-900">1. Select Return Location:</p>
-                                                            
+
                                                             <div className="space-y-1.5">
                                                                 {/* Warehouse */}
                                                                 <div>
@@ -1228,9 +1126,8 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                 setStorageType('shelf');
                                                                                 setReturnRackId("");
                                                                             }}
-                                                                            className={`px-3 py-1 text-[10px] font-medium rounded-md transition ${
-                                                                                storageType === 'shelf' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500'
-                                                                            }`}
+                                                                            className={`px-3 py-1 text-[10px] font-medium rounded-md transition ${storageType === 'shelf' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500'
+                                                                                }`}
                                                                         >
                                                                             Shelf
                                                                         </button>
@@ -1240,9 +1137,8 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                 setStorageType('rack');
                                                                                 setReturnShelfId("");
                                                                             }}
-                                                                            className={`px-3 py-1 text-[10px] font-medium rounded-md transition ${
-                                                                                storageType === 'rack' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500'
-                                                                            }`}
+                                                                            className={`px-3 py-1 text-[10px] font-medium rounded-md transition ${storageType === 'rack' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500'
+                                                                                }`}
                                                                         >
                                                                             Rack
                                                                         </button>
@@ -1362,26 +1258,21 @@ const BarcodeScannerPage: React.FC = () => {
                     top: 0;
                     left: 0;
                     right: 0;
-                    height: 3px;
-                    background: linear-gradient(90deg, transparent, #10b981, #10b981, transparent);
-                    box-shadow: 0 0 15px #10b981, 0 0 30px rgba(16, 185, 129, 0.5);
-                    animation: scan 2s ease-in-out infinite;
+                    height: 2px;
+                    background: linear-gradient(90deg, transparent, #ef4444, #ef4444, transparent);
+                    box-shadow: 0 0 15px rgba(239, 68, 68, 0.8), 0 0 30px rgba(239, 68, 68, 0.4);
+                    animation: scan 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
                 }
                 
                 @keyframes scan {
                     0% { 
                         transform: translateY(0); 
-                        opacity: 0; 
                     }
-                    10% { 
-                        opacity: 1; 
-                    }
-                    90% { 
-                        opacity: 1; 
+                    50% {
+                        transform: translateY(400%);
                     }
                     100% { 
-                        transform: translateY(100%); 
-                        opacity: 0; 
+                        transform: translateY(0); 
                     }
                 }
                 
