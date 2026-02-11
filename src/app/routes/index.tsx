@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
 // Features
-import { AuthPage } from "@/features/Auth";
+import { AuthPage, ProtectedRoute } from "@/features/Auth";
 import { DashboardLayout, DashboardPage } from "@/features/Dashboard";
 import {
   SettingsLayout,
@@ -33,50 +33,53 @@ export const AppRoutes = () => {
       {/* Auth routes */}
       <Route path="/auth" element={<AuthPage />} />
 
-      {/* Main Dashboard Layout */}
-      <Route element={<DashboardLayout />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
+      {/* Protected Routes */}
+      <Route element={<ProtectedRoute />}>
+        {/* Main Dashboard Layout */}
+        <Route element={<DashboardLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
 
-        {/* Inventory Routes - Hierarchy */}
-        <Route path="/inventory" element={<GlobalCategoryPage />} />
-        <Route path="/inventory/add-global" element={<AddGlobalCategoryPage />} />
-        <Route path="/inventory/global-category/:globalId/categories" element={<InventoryCategoriesPage />} />
-        <Route path="/inventory/add-category" element={<AddCategoryPage />} />
-        <Route path="/inventory/edit-global/:id" element={<EditGlobalCategoryPage />} />
-        <Route path="/inventory/edit-category/:id" element={<EditCategoryPage />} />
-        <Route path="/inventory/category/:categoryId" element={<InventoryPage />} />
-        <Route path="/inventory/details/:id" element={<InventoryProductDetailsPage />} />
-        <Route path="/inventory/variants/:id" element={<InventoryVariantsPage />} />
+          {/* Inventory Routes - Hierarchy */}
+          <Route path="/inventory" element={<GlobalCategoryPage />} />
+          <Route path="/inventory/add-global" element={<AddGlobalCategoryPage />} />
+          <Route path="/inventory/global-category/:globalId/categories" element={<InventoryCategoriesPage />} />
+          <Route path="/inventory/add-category" element={<AddCategoryPage />} />
+          <Route path="/inventory/edit-global/:id" element={<EditGlobalCategoryPage />} />
+          <Route path="/inventory/edit-category/:id" element={<EditCategoryPage />} />
+          <Route path="/inventory/category/:categoryId" element={<InventoryPage />} />
+          <Route path="/inventory/details/:id" element={<InventoryProductDetailsPage />} />
+          <Route path="/inventory/variants/:id" element={<InventoryVariantsPage />} />
 
-        {/* Warehouse Routes - Drill-down navigation */}
-        <Route path="/warehouse" element={<WarehouseListPage />} />
-        <Route path="/warehouse/:id" element={<WarehouseDetailsPage />} />
-        <Route path="/warehouse/:id/room/:roomId" element={<RoomDetailsPage />} />
+          {/* Warehouse Routes - Drill-down navigation */}
+          <Route path="/warehouse" element={<WarehouseListPage />} />
+          <Route path="/warehouse/:id" element={<WarehouseDetailsPage />} />
+          <Route path="/warehouse/:id/room/:roomId" element={<RoomDetailsPage />} />
 
-        <Route path="/orders" element={<Order />} />
-        <Route path="/barcode/generate" element={<BarcodeGenerate />} />
-        <Route path="/barcode/history" element={<BarcodeHistory />} />
-        <Route path="/barcode/scanner" element={<BarcodeScanner />} />
+          <Route path="/orders" element={<Order />} />
+          <Route path="/barcode/generate" element={<BarcodeGenerate />} />
+          <Route path="/barcode/history" element={<BarcodeHistory />} />
+          <Route path="/barcode/scanner" element={<BarcodeScanner />} />
 
-        {/* Products Routes - WITHOUT categories (back to original) */}
-        <Route path="/products" element={<GroupItem />} />
-        <Route path="/products/add" element={<AddProduct />} />
-        <Route path="/products/category/:name" element={<CategoryProducts />} />
-        {/* <Route path="/products/variants/:id" element={<ProductVariantsPage />} /> */}
-        <Route path="/products/edit/:id" element={<EditProduct />} />
-        <Route path="/products/details/:id" element={<ProductDetailsPage />} />
+          {/* Products Routes - WITHOUT categories (back to original) */}
+          <Route path="/products" element={<GroupItem />} />
+          <Route path="/products/add" element={<AddProduct />} />
+          <Route path="/products/category/:name" element={<CategoryProducts />} />
+          {/* <Route path="/products/variants/:id" element={<ProductVariantsPage />} /> */}
+          <Route path="/products/edit/:id" element={<EditProduct />} />
+          <Route path="/products/details/:id" element={<ProductDetailsPage />} />
 
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/help" element={<HelpSupport />} />
-        <Route path="/notifications" element={<Notifications />} />
-      </Route>
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/help" element={<HelpSupport />} />
+          <Route path="/notifications" element={<Notifications />} />
+        </Route>
 
-      {/* Settings Layout */}
-      <Route path="/settings" element={<SettingsLayout />}>
-        <Route path="general" element={<GeneralSettings />} />
-        <Route path="notifications" element={<Notifications />} />
-        <Route path="help" element={<HelpSupport />} />
+        {/* Settings Layout */}
+        <Route path="/settings" element={<SettingsLayout />}>
+          <Route path="general" element={<GeneralSettings />} />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="help" element={<HelpSupport />} />
+        </Route>
       </Route>
 
       {/* 404 */}

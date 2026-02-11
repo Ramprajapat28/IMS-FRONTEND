@@ -83,7 +83,7 @@ const InventoryPage = () => {
     useEffect(() => {
         const timer = setTimeout(() => {
             fetchProducts();
-        }, 500); // 500ms debounce
+        }, 300); // reduced debounce for snappier feel
 
         return () => clearTimeout(timer);
     }, [categoryName, page, rows, search]);
@@ -134,11 +134,17 @@ const InventoryPage = () => {
 
                 {/* SEARCH & SORT */}
                 <div className="flex flex-col md:flex-row gap-3">
-                    <div className="relative md:max-w-sm w-full">
-                        <Search className="absolute left-3 top-3 text-gray-400" size={16} />
+                    <div className="relative md:max-w-sm w-full group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                            {isLoading ? (
+                                <Loader2 className="text-blue-500 animate-spin" size={16} />
+                            ) : (
+                                <Search className="text-gray-400 group-focus-within:text-blue-500 transition-colors" size={16} />
+                            )}
+                        </div>
                         <input
-                            className="w-full border rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Search..."
+                            className={`w-full border rounded-lg pl-9 pr-3 py-2 text-sm transition-all focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none ${isLoading ? 'bg-blue-50/30' : 'bg-white'}`}
+                            placeholder="Search inventory..."
                             value={search}
                             onChange={(e) => {
                                 setSearch(e.target.value);
@@ -160,9 +166,10 @@ const InventoryPage = () => {
                 </div>
 
                 {/* TABLE */}
-                {isLoading ? (
-                    <div className="flex justify-center items-center py-20">
-                        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                {(isLoading && data.length === 0) ? (
+                    <div className="flex flex-col justify-center items-center py-32 border-2 border-dashed border-gray-100 rounded-xl bg-gray-50/50">
+                        <Loader2 className="w-10 h-10 animate-spin text-blue-600 mb-3" />
+                        <p className="text-gray-500 font-medium font-inter animate-pulse">Loading Inventory Items...</p>
                     </div>
                 ) : (
                     <InventoryTable
