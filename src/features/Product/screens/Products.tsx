@@ -646,7 +646,7 @@ const ProductsPage = () => {
 
     const timer = setTimeout(() => {
       fetchProducts();
-    }, 500);
+    }, 400);
 
     return () => clearTimeout(timer);
   }, [page, rows, search]);
@@ -681,10 +681,11 @@ const ProductsPage = () => {
   // Client-side slicing removed as we are using server-side pagination
   const visible = filtered; // .slice((page - 1) * rows, page * rows);
 
-  if (isLoading) {
+  if (isLoading && data.length === 0) {
     return (
-      <div className="bg-white rounded-xl border p-6 flex items-center justify-center min-h-[400px]">
-        <Loader2 className="animate-spin text-gray-400" size={48} />
+      <div className="bg-white rounded-xl border p-6 flex flex-col items-center justify-center min-h-[500px]">
+        <Loader2 className="animate-spin text-blue-600 mb-4" size={48} />
+        <p className="text-gray-500 font-medium animate-pulse">Initializing Product List...</p>
       </div>
     );
   }
@@ -717,11 +718,17 @@ const ProductsPage = () => {
 
       {/* SEARCH & SORT */}
       <div className="flex flex-col md:flex-row gap-3">
-        <div className="relative md:max-w-sm w-full">
-          <Search className="absolute left-3 top-3 text-gray-400" size={16} />
+        <div className="relative md:max-w-sm w-full group">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            {isLoading ? (
+              <Loader2 className="text-blue-500 animate-spin" size={16} />
+            ) : (
+              <Search className="text-gray-400 group-focus-within:text-blue-500 transition-colors" size={16} />
+            )}
+          </div>
           <input
-            className="w-full border rounded-lg pl-9 pr-3 py-2 text-sm"
-            placeholder="Search"
+            className={`w-full border rounded-lg pl-9 pr-3 py-2 text-sm transition-all focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none ${isLoading ? 'bg-blue-50/30' : 'bg-white'}`}
+            placeholder="Search products..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
