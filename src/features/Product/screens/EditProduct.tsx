@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2, ChevronLeft, ChevronRight, Save, ArrowRightLeft } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
@@ -88,9 +88,6 @@ const EditProduct = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
     const [shelves, setShelves] = useState<Shelf[]>([]);
     const [racks, setRacks] = useState<Rack[]>([]);
-    const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
-    const [filteredShelves, setFilteredShelves] = useState<Shelf[]>([]);
-    const [filteredRacks, setFilteredRacks] = useState<Rack[]>([]);
     const [selectionType, setSelectionType] = useState<'shelf' | 'rack'>('shelf');
 
     // Load product data
@@ -242,29 +239,44 @@ const EditProduct = () => {
         fetchDropdownData();
     }, []);
 
-    // Filter rooms based on warehouse
-    useEffect(() => {
-        if (form.warehouse_id) {
-            const filtered = rooms.filter(r => r.warehouse_id === Number(form.warehouse_id));
-            setFilteredRooms(filtered);
-        } else {
-            setFilteredRooms([]);
-        }
+    // Memoized location filtering
+    const filteredRooms = useMemo(() => {
+        if (!form.warehouse_id) return [];
+        return rooms.filter(r => r.warehouse_id === Number(form.warehouse_id));
     }, [form.warehouse_id, rooms]);
 
-    // Filter shelves and racks based on room
+    const filteredShelves = useMemo(() => {
+        if (!form.room_id) return [];
+        return shelves.filter(s => s.room_id === Number(form.room_id));
+    }, [form.room_id, shelves]);
+
+    const filteredRacks = useMemo(() => {
+        if (!form.room_id) return [];
+        return racks.filter(r => r.room_id === Number(form.room_id));
+    }, [form.room_id, racks]);
+
+    // Auto-selection logic
+    useEffect(() => {
+        if (warehouses.length === 1 && !form.warehouse_id) {
+            updateField("warehouse_id", warehouses[0].warehouse_id.toString());
+        }
+    }, [warehouses, form.warehouse_id]);
+
+    useEffect(() => {
+        if (form.warehouse_id && filteredRooms.length === 1 && !form.room_id) {
+            updateField("room_id", filteredRooms[0].room_id.toString());
+        }
+    }, [filteredRooms, form.warehouse_id, form.room_id]);
+
     useEffect(() => {
         if (form.room_id) {
-            const filteredS = shelves.filter(s => s.room_id === Number(form.room_id));
-            setFilteredShelves(filteredS);
-
-            const filteredR = racks.filter(r => r.room_id === Number(form.room_id));
-            setFilteredRacks(filteredR);
-        } else {
-            setFilteredShelves([]);
-            setFilteredRacks([]);
+            if (selectionType === 'shelf' && filteredShelves.length === 1 && !form.shelf_id) {
+                setForm(prev => ({ ...prev, shelf_id: filteredShelves[0].shelf_id.toString(), rack_id: "" }));
+            } else if (selectionType === 'rack' && filteredRacks.length === 1 && !form.rack_id) {
+                setForm(prev => ({ ...prev, rack_id: filteredRacks[0].rack_id.toString(), shelf_id: "" }));
+            }
         }
-    }, [form.room_id, shelves, racks]);
+    }, [filteredShelves, filteredRacks, form.room_id, form.shelf_id, form.rack_id, selectionType]);
 
     const updateField = <K extends keyof ProductForm>(
         key: K,
@@ -887,16 +899,23 @@ const EditProduct = () => {
                                     <label className="text-sm text-gray-700 mb-2 block">
                                         Warehouse <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={form.warehouse_id}
-                                        onChange={(e) => updateField("warehouse_id", e.target.value)}
-                                        className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                                    >
-                                        <option value="">Select Warehouse</option>
-                                        {warehouses.map(w => (
-                                            <option key={w.warehouse_id} value={w.warehouse_id}>{w.name}</option>
-                                        ))}
-                                    </select>
+                                    {warehouses.length === 1 ? (
+                                        <div className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[42px]">
+                                            <span className="truncate">{warehouses[0].name}</span>
+                                            <span className="ml-2 flex-shrink-0 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Auto</span>
+                                        </div>
+                                    ) : (
+                                        <select
+                                            value={form.warehouse_id}
+                                            onChange={(e) => updateField("warehouse_id", e.target.value)}
+                                            className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                        >
+                                            <option value="">Select Warehouse</option>
+                                            {warehouses.map(w => (
+                                                <option key={w.warehouse_id} value={w.warehouse_id}>{w.name || (w as any).warehouse_name}</option>
+                                            ))}
+                                        </select>
+                                    )}
                                 </div>
 
                                 {/* Arrow */}
@@ -911,18 +930,24 @@ const EditProduct = () => {
                                     <label className="text-sm text-gray-700 mb-2 block">
                                         Room <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={form.room_id}
-                                        onChange={(e) => updateField("room_id", e.target.value)}
-                                        disabled={!form.warehouse_id}
-                                        className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                    >
-                                        {/* Current Selection */}
-                                        <option value="">Select Room</option>
-                                        {filteredRooms.map(r => (
-                                            <option key={r.room_id} value={r.room_id}>{r.name}</option>
-                                        ))}
-                                    </select>
+                                    {filteredRooms.length === 1 ? (
+                                        <div className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[42px]">
+                                            <span className="truncate">{filteredRooms[0].room_name || filteredRooms[0].name}</span>
+                                            <span className="ml-2 flex-shrink-0 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Auto</span>
+                                        </div>
+                                    ) : (
+                                        <select
+                                            value={form.room_id}
+                                            onChange={(e) => updateField("room_id", e.target.value)}
+                                            disabled={!form.warehouse_id}
+                                            className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                        >
+                                            <option value="">Select Room</option>
+                                            {filteredRooms.map(r => (
+                                                <option key={r.room_id} value={r.room_id}>{r.name || (r as any).room_name}</option>
+                                            ))}
+                                        </select>
+                                    )}
                                     {!form.warehouse_id && (
                                         <p className="text-xs text-gray-500 mt-1">Select a warehouse first</p>
                                     )}
@@ -983,29 +1008,43 @@ const EditProduct = () => {
                                         {selectionType === 'shelf' ? 'Shelf' : 'Rack'} <span className="text-red-500">*</span>
                                     </label>
                                     {selectionType === 'shelf' ? (
-                                        <select
-                                            value={form.shelf_id}
-                                            onChange={(e) => setForm(prev => ({ ...prev, shelf_id: e.target.value, rack_id: "" }))}
-                                            disabled={!form.room_id}
-                                            className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                        >
-                                            <option value="">Select Shelf</option>
-                                            {filteredShelves.map(s => (
-                                                <option key={s.shelf_id} value={s.shelf_id}>{s.name}</option>
-                                            ))}
-                                        </select>
+                                        filteredShelves.length === 1 ? (
+                                            <div className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[42px]">
+                                                <span className="truncate">{filteredShelves[0].shelf_name || filteredShelves[0].name}</span>
+                                                <span className="ml-2 flex-shrink-0 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Auto</span>
+                                            </div>
+                                        ) : (
+                                            <select
+                                                value={form.shelf_id}
+                                                onChange={(e) => setForm(prev => ({ ...prev, shelf_id: e.target.value, rack_id: "" }))}
+                                                disabled={!form.room_id}
+                                                className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                            >
+                                                <option value="">Select Shelf</option>
+                                                {filteredShelves.map(s => (
+                                                    <option key={s.shelf_id} value={s.shelf_id}>{s.shelf_name || s.name}</option>
+                                                ))}
+                                            </select>
+                                        )
                                     ) : (
-                                        <select
-                                            value={form.rack_id}
-                                            onChange={(e) => setForm(prev => ({ ...prev, rack_id: e.target.value, shelf_id: "" }))}
-                                            disabled={!form.room_id}
-                                            className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                        >
-                                            <option value="">Select Rack</option>
-                                            {filteredRacks.map(r => (
-                                                <option key={r.rack_id} value={r.rack_id}>{r.name}</option>
-                                            ))}
-                                        </select>
+                                        filteredRacks.length === 1 ? (
+                                            <div className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[42px]">
+                                                <span className="truncate">{filteredRacks[0].rack_name || filteredRacks[0].name}</span>
+                                                <span className="ml-2 flex-shrink-0 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Auto</span>
+                                            </div>
+                                        ) : (
+                                            <select
+                                                value={form.rack_id}
+                                                onChange={(e) => setForm(prev => ({ ...prev, rack_id: e.target.value, shelf_id: "" }))}
+                                                disabled={!form.room_id}
+                                                className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                            >
+                                                <option value="">Select Rack</option>
+                                                {filteredRacks.map(r => (
+                                                    <option key={r.rack_id} value={r.rack_id}>{r.rack_name || r.name}</option>
+                                                ))}
+                                            </select>
+                                        )
                                     )}
                                 </div>
                             </div>
@@ -1017,16 +1056,23 @@ const EditProduct = () => {
                                     <label className="text-sm text-gray-700 mb-2 block">
                                         Warehouse <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={form.warehouse_id}
-                                        onChange={(e) => updateField("warehouse_id", e.target.value)}
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                                    >
-                                        <option value="">Select Warehouse</option>
-                                        {warehouses.map(w => (
-                                            <option key={w.warehouse_id} value={w.warehouse_id}>{w.name}</option>
-                                        ))}
-                                    </select>
+                                    {warehouses.length === 1 ? (
+                                        <div className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[42px]">
+                                            <span className="truncate">{warehouses[0].name}</span>
+                                            <span className="ml-2 flex-shrink-0 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Auto</span>
+                                        </div>
+                                    ) : (
+                                        <select
+                                            value={form.warehouse_id}
+                                            onChange={(e) => updateField("warehouse_id", e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                        >
+                                            <option value="">Select Warehouse</option>
+                                            {warehouses.map(w => (
+                                                <option key={w.warehouse_id} value={w.warehouse_id}>{w.name}</option>
+                                            ))}
+                                        </select>
+                                    )}
                                 </div>
 
                                 {/* Room */}
@@ -1034,18 +1080,25 @@ const EditProduct = () => {
                                     <label className="text-sm text-gray-700 mb-2 block">
                                         Room <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={form.room_id}
-                                        onChange={(e) => updateField("room_id", e.target.value)}
-                                        disabled={!form.warehouse_id}
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                    >
-                                        <option value="">Select Room</option>
-                                        {filteredRooms.map(r => (
-                                            <option key={r.room_id} value={r.room_id}>{r.name}</option>
-                                        ))}
-                                    </select>
-                                    {!form.warehouse_id && (
+                                    {filteredRooms.length === 1 ? (
+                                        <div className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[42px]">
+                                            <span className="truncate">{filteredRooms[0].room_name || filteredRooms[0].name}</span>
+                                            <span className="ml-2 flex-shrink-0 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Auto</span>
+                                        </div>
+                                    ) : (
+                                        <select
+                                            value={form.room_id}
+                                            onChange={(e) => updateField("room_id", e.target.value)}
+                                            disabled={!form.warehouse_id}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                        >
+                                            <option value="">Select Room</option>
+                                            {filteredRooms.map(r => (
+                                                <option key={r.room_id} value={r.room_id}>{r.name}</option>
+                                            ))}
+                                        </select>
+                                    )}
+                                    {!form.warehouse_id && filteredRooms.length !== 1 && (
                                         <p className="text-xs text-gray-500 mt-1">Select a warehouse first</p>
                                     )}
                                 </div>
@@ -1091,29 +1144,43 @@ const EditProduct = () => {
                                         {selectionType === 'shelf' ? 'Shelf' : 'Rack'} <span className="text-red-500">*</span>
                                     </label>
                                     {selectionType === 'shelf' ? (
-                                        <select
-                                            value={form.shelf_id}
-                                            onChange={(e) => setForm(prev => ({ ...prev, shelf_id: e.target.value, rack_id: "" }))}
-                                            disabled={!form.room_id}
-                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                        >
-                                            <option value="">Select Shelf</option>
-                                            {filteredShelves.map(s => (
-                                                <option key={s.shelf_id} value={s.shelf_id}>{s.name}</option>
-                                            ))}
-                                        </select>
+                                        filteredShelves.length === 1 ? (
+                                            <div className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[42px]">
+                                                <span className="truncate">{filteredShelves[0].shelf_name || filteredShelves[0].name}</span>
+                                                <span className="ml-2 flex-shrink-0 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Auto</span>
+                                            </div>
+                                        ) : (
+                                            <select
+                                                value={form.shelf_id}
+                                                onChange={(e) => setForm(prev => ({ ...prev, shelf_id: e.target.value, rack_id: "" }))}
+                                                disabled={!form.room_id}
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                            >
+                                                <option value="">Select Shelf</option>
+                                                {filteredShelves.map(s => (
+                                                    <option key={s.shelf_id} value={s.shelf_id}>{s.name}</option>
+                                                ))}
+                                            </select>
+                                        )
                                     ) : (
-                                        <select
-                                            value={form.rack_id}
-                                            onChange={(e) => setForm(prev => ({ ...prev, rack_id: e.target.value, shelf_id: "" }))}
-                                            disabled={!form.room_id}
-                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                        >
-                                            <option value="">Select Rack</option>
-                                            {filteredRacks.map(r => (
-                                                <option key={r.rack_id} value={r.rack_id}>{r.name}</option>
-                                            ))}
-                                        </select>
+                                        filteredRacks.length === 1 ? (
+                                            <div className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[42px]">
+                                                <span className="truncate">{filteredRacks[0].rack_name || filteredRacks[0].name}</span>
+                                                <span className="ml-2 flex-shrink-0 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Auto</span>
+                                            </div>
+                                        ) : (
+                                            <select
+                                                value={form.rack_id}
+                                                onChange={(e) => setForm(prev => ({ ...prev, rack_id: e.target.value, shelf_id: "" }))}
+                                                disabled={!form.room_id}
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                            >
+                                                <option value="">Select Rack</option>
+                                                {filteredRacks.map(r => (
+                                                    <option key={r.rack_id} value={r.rack_id}>{r.name}</option>
+                                                ))}
+                                            </select>
+                                        )
                                     )}
                                 </div>
                             </div>
@@ -1280,25 +1347,28 @@ const EditProduct = () => {
                         </div>
                     </div>
                 </div>
-            )}
+            )
+            }
 
-            {fullProductData && (
-                <TransferStockModal
-                    isOpen={isTransferModalOpen}
-                    onClose={() => setIsTransferModalOpen(false)}
-                    product={fullProductData}
-                    onSuccess={() => {
-                        // Refresh stock logs and potentially product details if stock count changed
-                        setLogsPage(1);
-                        const fetchProduct = async () => {
-                            const detailRes = await productsApi.getDetails(Number(id));
-                            setFullProductData(detailRes.data || null);
-                        };
-                        fetchProduct();
-                    }}
-                />
-            )}
-        </div>
+            {
+                fullProductData && (
+                    <TransferStockModal
+                        isOpen={isTransferModalOpen}
+                        onClose={() => setIsTransferModalOpen(false)}
+                        product={fullProductData}
+                        onSuccess={() => {
+                            // Refresh stock logs and potentially product details if stock count changed
+                            setLogsPage(1);
+                            const fetchProduct = async () => {
+                                const detailRes = await productsApi.getDetails(Number(id));
+                                setFullProductData(detailRes.data || null);
+                            };
+                            fetchProduct();
+                        }}
+                    />
+                )
+            }
+        </div >
     );
 };
 

@@ -507,46 +507,101 @@ const BarcodeScannerPage: React.FC = () => {
         handleFiles(e.dataTransfer.files);
     };
 
-    /* ---------------- DROPDOWN LOGIC ---------------- */
-    const uniqueWarehouses = Array.from(new Set(stockDetails.map(s => s.warehouse_id)))
-        .filter(id => id !== undefined && id !== null)
-        .map(id => stockDetails.find(s => s.warehouse_id === id))
-        .filter(x => x !== undefined);
+    /* ---------------- DROPDOWN LOGIC (MEMOIZED) ---------------- */
+    const uniqueWarehouses = useMemo(() => {
+        return Array.from(new Set(stockDetails.map(s => s.warehouse_id)))
+            .filter(id => id !== undefined && id !== null)
+            .map(id => stockDetails.find(s => s.warehouse_id === id))
+            .filter(x => x !== undefined);
+    }, [stockDetails]);
 
-    const uniqueRooms = selectedWarehouseId
-        ? Array.from(new Set(stockDetails.filter(s => s.warehouse_id === Number(selectedWarehouseId)).map(s => s.room_id)))
+    const uniqueRooms = useMemo(() => {
+        if (!selectedWarehouseId) return [];
+        return Array.from(new Set(stockDetails
+            .filter(s => s.warehouse_id === Number(selectedWarehouseId))
+            .map(s => s.room_id)))
             .filter(id => id !== undefined && id !== null)
             .map(id => stockDetails.find(s => s.room_id === id))
-            .filter(x => x !== undefined)
-        : [];
+            .filter(x => x !== undefined);
+    }, [selectedWarehouseId, stockDetails]);
 
-    const uniqueShelves = selectedRoomId
-        ? Array.from(new Set(stockDetails
+    const uniqueShelves = useMemo(() => {
+        if (!selectedRoomId) return [];
+        return Array.from(new Set(stockDetails
             .filter(s => s.room_id === Number(selectedRoomId) && s.shelf_id)
             .map(s => s.shelf_id)))
             .map(id => stockDetails.find(s => s.shelf_id === id))
-            .filter(x => x !== undefined)
-        : [];
+            .filter(x => x !== undefined);
+    }, [selectedRoomId, stockDetails]);
 
-    const uniqueRacks = selectedRoomId
-        ? Array.from(new Set(stockDetails
+    const uniqueRacks = useMemo(() => {
+        if (!selectedRoomId) return [];
+        return Array.from(new Set(stockDetails
             .filter(s => s.room_id === Number(selectedRoomId) && s.rack_id)
             .map(s => s.rack_id)))
             .map(id => stockDetails.find(s => s.rack_id === id))
-            .filter(x => x !== undefined)
-        : [];
+            .filter(x => x !== undefined);
+    }, [selectedRoomId, stockDetails]);
 
-    const returnRoomsFiltered = returnWarehouseId
-        ? allRooms.filter((r: any) => r.warehouse_id === Number(returnWarehouseId))
-        : [];
+    const returnRoomsFiltered = useMemo(() => {
+        if (!returnWarehouseId) return [];
+        return allRooms.filter((r: any) => r.warehouse_id === Number(returnWarehouseId));
+    }, [returnWarehouseId, allRooms]);
 
-    const returnShelvesFiltered = returnRoomId
-        ? allShelves.filter((s: any) => s.room_id === Number(returnRoomId))
-        : [];
+    const returnShelvesFiltered = useMemo(() => {
+        if (!returnRoomId) return [];
+        return allShelves.filter((s: any) => s.room_id === Number(returnRoomId));
+    }, [returnRoomId, allShelves]);
 
-    const returnRacksFiltered = returnRoomId
-        ? allRacks.filter((r: any) => r.room_id === Number(returnRoomId))
-        : [];
+    const returnRacksFiltered = useMemo(() => {
+        if (!returnRoomId) return [];
+        return allRacks.filter((r: any) => r.room_id === Number(returnRoomId));
+    }, [returnRoomId, allRacks]);
+
+    /* ---------------- AUTO-SELECT LOGIC ---------------- */
+    // Sell Mode Auto-select
+    useEffect(() => {
+        if (!isReturnMode && uniqueWarehouses.length === 1 && !selectedWarehouseId) {
+            setSelectedWarehouseId(Number(uniqueWarehouses[0]?.warehouse_id));
+        }
+    }, [uniqueWarehouses, isReturnMode, selectedWarehouseId]);
+
+    useEffect(() => {
+        if (!isReturnMode && selectedWarehouseId && uniqueRooms.length === 1 && !selectedRoomId) {
+            setSelectedRoomId(Number(uniqueRooms[0]?.room_id));
+        }
+    }, [uniqueRooms, selectedWarehouseId, isReturnMode, selectedRoomId]);
+
+    useEffect(() => {
+        if (!isReturnMode && selectedRoomId && storageType === 'shelf' && uniqueShelves.length === 1 && !selectedShelfId) {
+            setSelectedShelfId(Number(uniqueShelves[0]?.shelf_id));
+        }
+        if (!isReturnMode && selectedRoomId && storageType === 'rack' && uniqueRacks.length === 1 && !selectedRackId) {
+            setSelectedRackId(Number(uniqueRacks[0]?.rack_id));
+        }
+    }, [uniqueShelves, uniqueRacks, selectedRoomId, storageType, isReturnMode, selectedShelfId, selectedRackId]);
+
+    // Return Mode Auto-select
+    useEffect(() => {
+        if (isReturnMode && allWarehouses.length === 1 && !returnWarehouseId) {
+            setReturnWarehouseId(Number(allWarehouses[0]?.warehouse_id));
+        }
+    }, [allWarehouses, isReturnMode, returnWarehouseId]);
+
+    useEffect(() => {
+        if (isReturnMode && returnWarehouseId && returnRoomsFiltered.length === 1 && !returnRoomId) {
+            setReturnRoomId(Number(returnRoomsFiltered[0]?.room_id));
+        }
+    }, [returnRoomsFiltered, returnWarehouseId, isReturnMode, returnRoomId]);
+
+    useEffect(() => {
+        if (isReturnMode && returnRoomId && storageType === 'shelf' && returnShelvesFiltered.length === 1 && !returnShelfId) {
+            setReturnShelfId(Number(returnShelvesFiltered[0]?.shelf_id));
+        }
+        if (isReturnMode && returnRoomId && storageType === 'rack' && returnRacksFiltered.length === 1 && !returnRackId) {
+            setReturnRackId(Number(returnRacksFiltered[0]?.rack_id));
+        }
+    }, [returnShelvesFiltered, returnRacksFiltered, returnRoomId, storageType, isReturnMode, returnShelfId, returnRackId]);
 
     /* ---------------- UI ---------------- */
 
@@ -852,24 +907,33 @@ const BarcodeScannerPage: React.FC = () => {
                                                                         Warehouse <span className="text-red-500">*</span>
                                                                     </label>
                                                                     <div className="relative">
-                                                                        <select
-                                                                            className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                                            value={selectedWarehouseId}
-                                                                            onChange={(e) => {
-                                                                                setSelectedWarehouseId(Number(e.target.value));
-                                                                                setSelectedRoomId("");
-                                                                                setSelectedShelfId("");
-                                                                                setSelectedRackId("");
-                                                                            }}
-                                                                        >
-                                                                            <option value="">Select Warehouse</option>
-                                                                            {uniqueWarehouses.map((w) => (
-                                                                                <option key={w?.warehouse_id} value={w?.warehouse_id}>
-                                                                                    {w?.warehouse_name}
-                                                                                </option>
-                                                                            ))}
-                                                                        </select>
-                                                                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                        {uniqueWarehouses.length === 1 ? (
+                                                                            <div className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                                <span className="truncate">{uniqueWarehouses[0]?.warehouse_name}</span>
+                                                                                <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <>
+                                                                                <select
+                                                                                    className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                                                                                    value={selectedWarehouseId}
+                                                                                    onChange={(e) => {
+                                                                                        setSelectedWarehouseId(Number(e.target.value));
+                                                                                        setSelectedRoomId("");
+                                                                                        setSelectedShelfId("");
+                                                                                        setSelectedRackId("");
+                                                                                    }}
+                                                                                >
+                                                                                    <option value="">Select Warehouse</option>
+                                                                                    {uniqueWarehouses.map((w) => (
+                                                                                        <option key={w?.warehouse_id} value={w?.warehouse_id}>
+                                                                                            {w?.warehouse_name}
+                                                                                        </option>
+                                                                                    ))}
+                                                                                </select>
+                                                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                            </>
+                                                                        )}
                                                                     </div>
                                                                 </div>
 
@@ -879,24 +943,33 @@ const BarcodeScannerPage: React.FC = () => {
                                                                         Room <span className="text-red-500">*</span>
                                                                     </label>
                                                                     <div className="relative">
-                                                                        <select
-                                                                            className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-                                                                            value={selectedRoomId}
-                                                                            onChange={(e) => {
-                                                                                setSelectedRoomId(Number(e.target.value));
-                                                                                setSelectedShelfId("");
-                                                                                setSelectedRackId("");
-                                                                            }}
-                                                                            disabled={!selectedWarehouseId}
-                                                                        >
-                                                                            <option value="">Select Room</option>
-                                                                            {uniqueRooms.map((r) => (
-                                                                                <option key={r?.room_id} value={r?.room_id}>
-                                                                                    {r?.room_name}
-                                                                                </option>
-                                                                            ))}
-                                                                        </select>
-                                                                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                        {uniqueRooms.length === 1 ? (
+                                                                            <div className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                                <span className="truncate">{uniqueRooms[0]?.room_name}</span>
+                                                                                <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <>
+                                                                                <select
+                                                                                    className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
+                                                                                    value={selectedRoomId}
+                                                                                    onChange={(e) => {
+                                                                                        setSelectedRoomId(Number(e.target.value));
+                                                                                        setSelectedShelfId("");
+                                                                                        setSelectedRackId("");
+                                                                                    }}
+                                                                                    disabled={!selectedWarehouseId}
+                                                                                >
+                                                                                    <option value="">Select Room</option>
+                                                                                    {uniqueRooms.map((r) => (
+                                                                                        <option key={r?.room_id} value={r?.room_id}>
+                                                                                            {r?.room_name}
+                                                                                        </option>
+                                                                                    ))}
+                                                                                </select>
+                                                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                            </>
+                                                                        )}
                                                                     </div>
                                                                 </div>
 
@@ -936,20 +1009,29 @@ const BarcodeScannerPage: React.FC = () => {
                                                                             Shelf <span className="text-red-500">*</span>
                                                                         </label>
                                                                         <div className="relative">
-                                                                            <select
-                                                                                className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-                                                                                value={selectedShelfId}
-                                                                                onChange={(e) => setSelectedShelfId(Number(e.target.value))}
-                                                                                disabled={!selectedRoomId}
-                                                                            >
-                                                                                <option value="">Select Shelf</option>
-                                                                                {uniqueShelves.map((s) => (
-                                                                                    <option key={s?.shelf_id} value={s?.shelf_id}>
-                                                                                        {s?.shelf_name} (Stock: {s?.item_count})
-                                                                                    </option>
-                                                                                ))}
-                                                                            </select>
-                                                                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                            {uniqueShelves.length === 1 ? (
+                                                                                <div className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                                    <span className="truncate">{uniqueShelves[0]?.shelf_name}</span>
+                                                                                    <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <>
+                                                                                    <select
+                                                                                        className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
+                                                                                        value={selectedShelfId}
+                                                                                        onChange={(e) => setSelectedShelfId(Number(e.target.value))}
+                                                                                        disabled={!selectedRoomId}
+                                                                                    >
+                                                                                        <option value="">Select Shelf</option>
+                                                                                        {uniqueShelves.map((s) => (
+                                                                                            <option key={s?.shelf_id} value={s?.shelf_id}>
+                                                                                                {s?.shelf_name} (Stock: {s?.item_count})
+                                                                                            </option>
+                                                                                        ))}
+                                                                                    </select>
+                                                                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                                </>
+                                                                            )}
                                                                         </div>
                                                                     </div>
                                                                 )}
@@ -960,20 +1042,29 @@ const BarcodeScannerPage: React.FC = () => {
                                                                             Rack <span className="text-red-500">*</span>
                                                                         </label>
                                                                         <div className="relative">
-                                                                            <select
-                                                                                className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-                                                                                value={selectedRackId}
-                                                                                onChange={(e) => setSelectedRackId(Number(e.target.value))}
-                                                                                disabled={!selectedRoomId}
-                                                                            >
-                                                                                <option value="">Select Rack</option>
-                                                                                {uniqueRacks.map((r) => (
-                                                                                    <option key={r?.rack_id} value={r?.rack_id}>
-                                                                                        {r?.rack_name} (Stock: {r?.item_count})
-                                                                                    </option>
-                                                                                ))}
-                                                                            </select>
-                                                                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                            {uniqueRacks.length === 1 ? (
+                                                                                <div className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                                    <span className="truncate">{uniqueRacks[0]?.rack_name}</span>
+                                                                                    <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <>
+                                                                                    <select
+                                                                                        className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
+                                                                                        value={selectedRackId}
+                                                                                        onChange={(e) => setSelectedRackId(Number(e.target.value))}
+                                                                                        disabled={!selectedRoomId}
+                                                                                    >
+                                                                                        <option value="">Select Rack</option>
+                                                                                        {uniqueRacks.map((r) => (
+                                                                                            <option key={r?.rack_id} value={r?.rack_id}>
+                                                                                                {r?.rack_name} (Stock: {r?.item_count})
+                                                                                            </option>
+                                                                                        ))}
+                                                                                    </select>
+                                                                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                                </>
+                                                                            )}
                                                                         </div>
                                                                     </div>
                                                                 )}
@@ -1017,7 +1108,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                         min="1"
                                                                         value={quantity}
                                                                         onChange={(e) => setQuantity(Number(e.target.value) || "")}
-                                                                        className="flex-1 border border-gray-300 rounded-md px-2.5 py-1.5 text-xs text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                        className="flex-1 border border-gray-300 rounded-md px-2.5 py-1.5 text-xs text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                                                                     />
                                                                     <button
                                                                         onClick={() => setQuantity(prev => {
@@ -1068,24 +1159,33 @@ const BarcodeScannerPage: React.FC = () => {
                                                                         Warehouse <span className="text-red-500">*</span>
                                                                     </label>
                                                                     <div className="relative">
-                                                                        <select
-                                                                            className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                                                            value={returnWarehouseId}
-                                                                            onChange={(e) => {
-                                                                                setReturnWarehouseId(Number(e.target.value));
-                                                                                setReturnRoomId("");
-                                                                                setReturnShelfId("");
-                                                                                setReturnRackId("");
-                                                                            }}
-                                                                        >
-                                                                            <option value="">Select Warehouse</option>
-                                                                            {allWarehouses.map((w: any) => (
-                                                                                <option key={w.warehouse_id} value={w.warehouse_id}>
-                                                                                    {w.name}
-                                                                                </option>
-                                                                            ))}
-                                                                        </select>
-                                                                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                        {allWarehouses.length === 1 ? (
+                                                                            <div className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                                <span className="truncate">{allWarehouses[0]?.name}</span>
+                                                                                <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <>
+                                                                                <select
+                                                                                    className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
+                                                                                    value={returnWarehouseId}
+                                                                                    onChange={(e) => {
+                                                                                        setReturnWarehouseId(Number(e.target.value));
+                                                                                        setReturnRoomId("");
+                                                                                        setReturnShelfId("");
+                                                                                        setReturnRackId("");
+                                                                                    }}
+                                                                                >
+                                                                                    <option value="">Select Warehouse</option>
+                                                                                    {allWarehouses.map((w: any) => (
+                                                                                        <option key={w.warehouse_id} value={w.warehouse_id}>
+                                                                                            {w.name || w.warehouse_name}
+                                                                                        </option>
+                                                                                    ))}
+                                                                                </select>
+                                                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                            </>
+                                                                        )}
                                                                     </div>
                                                                 </div>
 
@@ -1095,24 +1195,33 @@ const BarcodeScannerPage: React.FC = () => {
                                                                         Room <span className="text-red-500">*</span>
                                                                     </label>
                                                                     <div className="relative">
-                                                                        <select
-                                                                            className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100"
-                                                                            value={returnRoomId}
-                                                                            onChange={(e) => {
-                                                                                setReturnRoomId(Number(e.target.value));
-                                                                                setReturnShelfId("");
-                                                                                setReturnRackId("");
-                                                                            }}
-                                                                            disabled={!returnWarehouseId}
-                                                                        >
-                                                                            <option value="">Select Room</option>
-                                                                            {returnRoomsFiltered.map((r: any) => (
-                                                                                <option key={r.room_id} value={r.room_id}>
-                                                                                    {r.name}
-                                                                                </option>
-                                                                            ))}
-                                                                        </select>
-                                                                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                        {returnRoomsFiltered.length === 1 ? (
+                                                                            <div className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                                <span className="truncate">{returnRoomsFiltered[0]?.room_name || returnRoomsFiltered[0]?.name}</span>
+                                                                                <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <>
+                                                                                <select
+                                                                                    className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
+                                                                                    value={returnRoomId}
+                                                                                    onChange={(e) => {
+                                                                                        setReturnRoomId(Number(e.target.value));
+                                                                                        setReturnShelfId("");
+                                                                                        setReturnRackId("");
+                                                                                    }}
+                                                                                    disabled={!returnWarehouseId}
+                                                                                >
+                                                                                    <option value="">Select Room</option>
+                                                                                    {returnRoomsFiltered.map((r: any) => (
+                                                                                        <option key={r.room_id} value={r.room_id}>
+                                                                                            {r.name || r.room_name}
+                                                                                        </option>
+                                                                                    ))}
+                                                                                </select>
+                                                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                            </>
+                                                                        )}
                                                                     </div>
                                                                 </div>
 
@@ -1152,20 +1261,29 @@ const BarcodeScannerPage: React.FC = () => {
                                                                             Shelf <span className="text-red-500">*</span>
                                                                         </label>
                                                                         <div className="relative">
-                                                                            <select
-                                                                                className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100"
-                                                                                value={returnShelfId}
-                                                                                onChange={(e) => setReturnShelfId(Number(e.target.value))}
-                                                                                disabled={!returnRoomId}
-                                                                            >
-                                                                                <option value="">Select Shelf</option>
-                                                                                {returnShelvesFiltered.map((s: any) => (
-                                                                                    <option key={s.shelf_id} value={s.shelf_id}>
-                                                                                        {s.name}
-                                                                                    </option>
-                                                                                ))}
-                                                                            </select>
-                                                                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                            {returnShelvesFiltered.length === 1 ? (
+                                                                                <div className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                                    <span className="truncate">{returnShelvesFiltered[0]?.shelf_name || returnShelvesFiltered[0]?.name}</span>
+                                                                                    <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <>
+                                                                                    <select
+                                                                                        className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
+                                                                                        value={returnShelfId}
+                                                                                        onChange={(e) => setReturnShelfId(Number(e.target.value))}
+                                                                                        disabled={!returnRoomId}
+                                                                                    >
+                                                                                        <option value="">Select Shelf</option>
+                                                                                        {returnShelvesFiltered.map((s: any) => (
+                                                                                            <option key={s.shelf_id} value={s.shelf_id}>
+                                                                                                {s.shelf_name || s.name}
+                                                                                            </option>
+                                                                                        ))}
+                                                                                    </select>
+                                                                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                                </>
+                                                                            )}
                                                                         </div>
                                                                     </div>
                                                                 )}
@@ -1176,20 +1294,29 @@ const BarcodeScannerPage: React.FC = () => {
                                                                             Rack <span className="text-red-500">*</span>
                                                                         </label>
                                                                         <div className="relative">
-                                                                            <select
-                                                                                className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100"
-                                                                                value={returnRackId}
-                                                                                onChange={(e) => setReturnRackId(Number(e.target.value))}
-                                                                                disabled={!returnRoomId}
-                                                                            >
-                                                                                <option value="">Select Rack</option>
-                                                                                {returnRacksFiltered.map((r: any) => (
-                                                                                    <option key={r.rack_id} value={r.rack_id}>
-                                                                                        {r.name}
-                                                                                    </option>
-                                                                                ))}
-                                                                            </select>
-                                                                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                            {returnRacksFiltered.length === 1 ? (
+                                                                                <div className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                                    <span className="truncate">{returnRacksFiltered[0]?.rack_name || returnRacksFiltered[0]?.name}</span>
+                                                                                    <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <>
+                                                                                    <select
+                                                                                        className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
+                                                                                        value={returnRackId}
+                                                                                        onChange={(e) => setReturnRackId(Number(e.target.value))}
+                                                                                        disabled={!returnRoomId}
+                                                                                    >
+                                                                                        <option value="">Select Rack</option>
+                                                                                        {returnRacksFiltered.map((r: any) => (
+                                                                                            <option key={r.rack_id} value={r.rack_id}>
+                                                                                                {r.rack_name || r.name}
+                                                                                            </option>
+                                                                                        ))}
+                                                                                    </select>
+                                                                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                                </>
+                                                                            )}
                                                                         </div>
                                                                     </div>
                                                                 )}

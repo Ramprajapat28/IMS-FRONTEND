@@ -59,6 +59,7 @@ export const warehousesApi = {
 export interface Room {
     room_id: number;
     name: string;
+    room_name?: string;
     warehouse_id?: number;
     created_at?: string;
     updated_at?: string;
@@ -113,6 +114,7 @@ export const roomsApi = {
 export interface Shelf {
     shelf_id: number;
     name: string;
+    shelf_name?: string;
     room_id?: number;
     created_at?: string;
     updated_at?: string;

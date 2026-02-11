@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { X, ArrowRight, Loader2 } from "lucide-react";
 import { itemsApi } from "@/features/Inventory/api/item.api";
 import { warehousesApi, roomsApi, shelvesApi, racksApi, type Warehouse, type Room, type Shelf, type Rack } from "@/features/Inventory/api/location.api";
@@ -119,9 +119,50 @@ const TransferStockModal = ({ isOpen, onClose, product, onSuccess }: TransferSto
 
     if (!isOpen) return null;
 
-    const filteredRooms = rooms.filter(r => r.warehouse_id === Number(destWarehouseId));
-    const filteredShelves = shelves.filter(s => s.room_id === Number(destRoomId));
-    const filteredRacks = racks.filter(r => r.room_id === Number(destRoomId));
+    const filteredRooms = useMemo(() => {
+        if (!destWarehouseId) return [];
+        return rooms.filter(r => r.warehouse_id === Number(destWarehouseId));
+    }, [destWarehouseId, rooms]);
+
+    const filteredShelves = useMemo(() => {
+        if (!destRoomId) return [];
+        return shelves.filter(s => s.room_id === Number(destRoomId));
+    }, [destRoomId, shelves]);
+
+    const filteredRacks = useMemo(() => {
+        if (!destRoomId) return [];
+        return racks.filter(r => r.room_id === Number(destRoomId));
+    }, [destRoomId, racks]);
+
+    // Auto-selection for Source
+    useEffect(() => {
+        if (product.stock_details?.length === 1 && selectedSourceIndex === null) {
+            setSelectedSourceIndex(0);
+        }
+    }, [product.stock_details, selectedSourceIndex]);
+
+    // Auto-selection for Destination
+    useEffect(() => {
+        if (warehouses.length === 1 && !destWarehouseId) {
+            setDestWarehouseId(warehouses[0].warehouse_id.toString());
+        }
+    }, [warehouses, destWarehouseId]);
+
+    useEffect(() => {
+        if (destWarehouseId && filteredRooms.length === 1 && !destRoomId) {
+            setDestRoomId(filteredRooms[0].room_id.toString());
+        }
+    }, [filteredRooms, destWarehouseId, destRoomId]);
+
+    useEffect(() => {
+        if (destRoomId) {
+            if (destType === 'shelf' && filteredShelves.length === 1 && !destShelfId) {
+                setDestShelfId(filteredShelves[0].shelf_id.toString());
+            } else if (destType === 'rack' && filteredRacks.length === 1 && !destRackId) {
+                setDestRackId(filteredRacks[0].rack_id.toString());
+            }
+        }
+    }, [filteredShelves, filteredRacks, destRoomId, destShelfId, destRackId, destType]);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -192,30 +233,44 @@ const TransferStockModal = ({ isOpen, onClose, product, onSuccess }: TransferSto
                             <div className="space-y-4 bg-gray-50 p-4 rounded-xl border">
                                 <div>
                                     <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Warehouse</label>
-                                    <select
-                                        value={destWarehouseId}
-                                        onChange={(e) => {
-                                            setDestWarehouseId(e.target.value);
-                                            setDestRoomId("");
-                                        }}
-                                        className="w-full border p-2 rounded-lg text-sm bg-white"
-                                    >
-                                        <option value="">Select Warehouse</option>
-                                        {warehouses.map(w => <option key={w.warehouse_id} value={w.warehouse_id}>{w.name}</option>)}
-                                    </select>
+                                    {warehouses.length === 1 ? (
+                                        <div className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[38px]">
+                                            <span className="truncate">{warehouses[0].name}</span>
+                                            <span className="ml-2 flex-shrink-0 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Auto</span>
+                                        </div>
+                                    ) : (
+                                        <select
+                                            value={destWarehouseId}
+                                            onChange={(e) => {
+                                                setDestWarehouseId(e.target.value);
+                                                setDestRoomId("");
+                                            }}
+                                            className="w-full border p-2 rounded-lg text-sm bg-white text-gray-900"
+                                        >
+                                            <option value="">Select Warehouse</option>
+                                            {warehouses.map(w => <option key={w.warehouse_id} value={w.warehouse_id}>{w.name || (w as any).warehouse_name}</option>)}
+                                        </select>
+                                    )}
                                 </div>
 
                                 <div>
                                     <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Room</label>
-                                    <select
-                                        value={destRoomId}
-                                        onChange={(e) => setDestRoomId(e.target.value)}
-                                        disabled={!destWarehouseId}
-                                        className="w-full border p-2 rounded-lg text-sm bg-white disabled:bg-gray-100"
-                                    >
-                                        <option value="">Select Room</option>
-                                        {filteredRooms.map(r => <option key={r.room_id} value={r.room_id}>{r.name || (r as any).room_name}</option>)}
-                                    </select>
+                                    {filteredRooms.length === 1 ? (
+                                        <div className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[38px]">
+                                            <span className="truncate">{filteredRooms[0].room_name || filteredRooms[0].name}</span>
+                                            <span className="ml-2 flex-shrink-0 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Auto</span>
+                                        </div>
+                                    ) : (
+                                        <select
+                                            value={destRoomId}
+                                            onChange={(e) => setDestRoomId(e.target.value)}
+                                            disabled={!destWarehouseId}
+                                            className="w-full border p-2 rounded-lg text-sm bg-white disabled:bg-gray-100 text-gray-900"
+                                        >
+                                            <option value="">Select Room</option>
+                                            {filteredRooms.map(r => <option key={r.room_id} value={r.room_id}>{r.name || (r as any).room_name}</option>)}
+                                        </select>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
@@ -236,25 +291,39 @@ const TransferStockModal = ({ isOpen, onClose, product, onSuccess }: TransferSto
                                         </button>
                                     </div>
                                     {destType === 'shelf' ? (
-                                        <select
-                                            value={destShelfId}
-                                            onChange={(e) => setDestShelfId(e.target.value)}
-                                            disabled={!destRoomId}
-                                            className="w-full border p-2 rounded-lg text-sm bg-white disabled:bg-gray-100"
-                                        >
-                                            <option value="">Select Shelf</option>
-                                            {filteredShelves.map(s => <option key={s.shelf_id} value={s.shelf_id}>{s.name || (s as any).shelf_name}</option>)}
-                                        </select>
+                                        filteredShelves.length === 1 ? (
+                                            <div className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[38px]">
+                                                <span className="truncate">{filteredShelves[0].shelf_name || filteredShelves[0].name}</span>
+                                                <span className="ml-2 flex-shrink-0 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Auto</span>
+                                            </div>
+                                        ) : (
+                                            <select
+                                                value={destShelfId}
+                                                onChange={(e) => setDestShelfId(e.target.value)}
+                                                disabled={!destRoomId}
+                                                className="w-full border p-2 rounded-lg text-sm bg-white disabled:bg-gray-100 text-gray-900"
+                                            >
+                                                <option value="">Select Shelf</option>
+                                                {filteredShelves.map(s => <option key={s.shelf_id} value={s.shelf_id}>{s.name || (s as any).shelf_name}</option>)}
+                                            </select>
+                                        )
                                     ) : (
-                                        <select
-                                            value={destRackId}
-                                            onChange={(e) => setDestRackId(e.target.value)}
-                                            disabled={!destRoomId}
-                                            className="w-full border p-2 rounded-lg text-sm bg-white disabled:bg-gray-100"
-                                        >
-                                            <option value="">Select Rack</option>
-                                            {filteredRacks.map(r => <option key={r.rack_id} value={r.rack_id}>{r.rack_name || r.name}</option>)}
-                                        </select>
+                                        filteredRacks.length === 1 ? (
+                                            <div className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[38px]">
+                                                <span className="truncate">{filteredRacks[0].rack_name || filteredRacks[0].name}</span>
+                                                <span className="ml-2 flex-shrink-0 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Auto</span>
+                                            </div>
+                                        ) : (
+                                            <select
+                                                value={destRackId}
+                                                onChange={(e) => setDestRackId(e.target.value)}
+                                                disabled={!destRoomId}
+                                                className="w-full border p-2 rounded-lg text-sm bg-white disabled:bg-gray-100"
+                                            >
+                                                <option value="">Select Rack</option>
+                                                {filteredRacks.map(r => <option key={r.rack_id} value={r.rack_id}>{r.rack_name || r.name}</option>)}
+                                            </select>
+                                        )
                                     )}
                                 </div>
                             </div>
