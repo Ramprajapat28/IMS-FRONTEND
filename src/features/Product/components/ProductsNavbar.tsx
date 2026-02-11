@@ -81,6 +81,7 @@ const ProductsNavbar = ({ breadcrumbs, onRefresh }: ProductsNavbarProps) => {
       "Description",
       "Size",
       "Product Code",
+      "HSN Code",
       "MRP",
       "Discounted Price",
       "GST %",
