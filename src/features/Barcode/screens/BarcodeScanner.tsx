@@ -250,6 +250,13 @@ const BarcodeScannerPage: React.FC = () => {
         productRef.current = product;
     }, [product]);
 
+    // Deep linking from Products page
+    useEffect(() => {
+        if (location.state?.sku) {
+            fetchProductBySku(location.state.sku);
+        }
+    }, [location.state?.sku]);
+
     const isStartingRef = useRef(false);
     const lastScannedRef = useRef<string>("");
     const lastScanTimeRef = useRef<number>(0);
@@ -627,6 +634,7 @@ const BarcodeScannerPage: React.FC = () => {
                                             Barcode Scanner
                                         </span>
                                     </div>
+
 
                                     {mode === "camera" && (
                                         <div className="flex-1 relative bg-black">

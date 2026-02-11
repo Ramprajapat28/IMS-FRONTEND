@@ -500,7 +500,7 @@
 
 // export default ProductsPage;
 import { useEffect, useMemo, useState } from "react";
-import { Search, Pencil, Trash2, Loader2, Printer, Download } from "lucide-react";
+import { Search, Pencil, Trash2, Loader2, Printer, Download, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import JsBarcode from "jsbarcode";
 import ProductsNavbar from "../components/ProductsNavbar";
@@ -831,6 +831,13 @@ const ProductsPage = () => {
                   <td className="p-3 text-right font-medium text-blue-600 whitespace-nowrap">{formatCurrency(p.discounted_price)}</td>
                   <td className="p-3">
                     <div className="flex gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => navigate("/barcode/scanner", { state: { sku: p.sku } })}
+                        className="border p-1.5 rounded-lg hover:bg-gray-100 text-green-600 border-green-100"
+                        title="Sell Manual"
+                      >
+                        <ShoppingBag size={16} />
+                      </button>
                       <button
                         onClick={() => handlePrintClick(p)}
                         className="border p-1.5 rounded-lg hover:bg-gray-100 text-blue-600 border-blue-100"
