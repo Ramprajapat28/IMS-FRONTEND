@@ -12,7 +12,9 @@ import {
     Minus,
     Package,
     AlertCircle,
-    Camera
+    Camera,
+    FileText,
+    Type
 } from "lucide-react";
 import { BrowserMultiFormatReader, type IScannerControls } from "@zxing/browser";
 import { DecodeHintType, BarcodeFormat } from "@zxing/library";
@@ -130,16 +132,19 @@ const BarcodeScannerPage: React.FC = () => {
         try {
             const res = await productsApi.getBySku(sku);
             if (res.success && res.data) {
-                const prod = res.data;
-                setProduct(prod);
+                let prod = res.data;
 
                 if (prod.product_id) {
                     const detailRes = await productsApi.getDetails(prod.product_id);
-                    if (detailRes.success && detailRes.data && detailRes.data.stock_details) {
-                        const availableStock = detailRes.data.stock_details.filter((s: any) => s.status === 'available');
-                        setStockDetails(availableStock as any);
+                    if (detailRes.success && detailRes.data) {
+                        prod = { ...prod, ...detailRes.data };
+                        if (detailRes.data.stock_details) {
+                            const availableStock = detailRes.data.stock_details.filter((s: any) => s.status === 'available');
+                            setStockDetails(availableStock as any);
+                        }
                     }
                 }
+                setProduct(prod);
             } else {
                 setError("Product not found");
                 setProduct(null);
@@ -742,7 +747,7 @@ const BarcodeScannerPage: React.FC = () => {
 
                         {/* RIGHT: PRODUCT INFO */}
                         <div className={`order-1 lg:order-1 ${product ? "md:col-span-12" : "hidden lg:block lg:col-span-4"} h-full overflow-hidden`}>
-                           <div className="h-full rounded-lg border overflow-hidden flex flex-col">
+                            <div className="h-full rounded-lg border overflow-hidden flex flex-col">
 
                                 {!product && (
                                     <>
@@ -854,7 +859,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                 <Edit3 className="w-3.5 h-3.5 text-gray-700" />
                                                             </div>
                                                             <div className="flex-1">
-                                                                <p className="text-[10px] text-gray-400 mb-0.5">Product Name</p>
+                                                                <p className="text-[14px] text-gray-400 mb-0.5">Product Name</p>
                                                                 <p className="text-sm font-semibold text-gray-900">{product.name}</p>
                                                             </div>
                                                         </div>
@@ -864,7 +869,17 @@ const BarcodeScannerPage: React.FC = () => {
                                                                 <Tag className="w-3.5 h-3.5 text-gray-700" />
                                                             </div>
                                                             <div className="flex-1">
-                                                                <p className="text-[10px] text-gray-400 uppercase mb-0.5">Category</p>
+                                                                <p className="text-[14px] text-gray-400 uppercase mb-0.5">Category</p>
+                                                                <p className="text-sm font-medium text-gray-900">{product.global_category_name || "-"}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-start gap-2">
+                                                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                                <Tag className="w-3.5 h-3.5 text-gray-700" />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <p className="text-[14px] text-gray-400 uppercase mb-0.5">Sub Category</p>
                                                                 <p className="text-sm font-medium text-gray-900">{product.category_name || "-"}</p>
                                                             </div>
                                                         </div>
@@ -874,8 +889,38 @@ const BarcodeScannerPage: React.FC = () => {
                                                                 <Hash className="w-3.5 h-3.5 text-gray-700" />
                                                             </div>
                                                             <div className="flex-1">
-                                                                <p className="text-[10px] text-gray-400 uppercase mb-0.5">SKU</p>
+                                                                <p className="text-[14px] text-gray-400 uppercase mb-0.5">SKU</p>
                                                                 <p className="text-sm font-bold text-gray-900">{product.sku}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-start gap-2">
+                                                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                                <FileText className="w-3.5 h-3.5 text-gray-700" />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <p className="text-[14px] text-gray-400 uppercase mb-0.5">HSN Code</p>
+                                                                <p className="text-sm font-medium text-gray-900">{product.hsn_code || "-"}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-start gap-2">
+                                                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                                <Type className="w-3.5 h-3.5 text-gray-700" />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <p className="text-[14px] text-gray-400 uppercase mb-0.5">Size</p>
+                                                                <p className="text-sm font-medium text-gray-900">{product.size || "-"}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-start gap-2 col-span-full">
+                                                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                                <FileText className="w-3.5 h-3.5 text-gray-700" />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <p className="text-[14px] text-gray-400 uppercase mb-0.5">Description</p>
+                                                                <p className="text-sm text-gray-600 leading-relaxed">{product.description || "-"}</p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -931,7 +976,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                         setSelectedShelfId("");
                                                                                         setSelectedRackId("");
                                                                                     }}
-                                                                                    
+
                                                                                 >
                                                                                     <option value="">Select Warehouse</option>
                                                                                     {uniqueWarehouses.map((w) => (
@@ -939,7 +984,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                             {w?.warehouse_name}
                                                                                         </option>
                                                                                     ))}
-     
+
                                                                                 </select>
 
                                                                             </>
@@ -977,7 +1022,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                         </option>
                                                                                     ))}
                                                                                 </select>
- 
+
                                                                             </>
                                                                         )}
                                                                     </div>
@@ -1039,7 +1084,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                             </option>
                                                                                         ))}
                                                                                     </select>
-     
+
                                                                                 </>
                                                                             )}
                                                                         </div>
@@ -1072,7 +1117,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                             </option>
                                                                                         ))}
                                                                                     </select>
-     
+
                                                                                 </>
                                                                             )}
                                                                         </div>
@@ -1193,7 +1238,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                         </option>
                                                                                     ))}
                                                                                 </select>
- 
+
                                                                             </>
                                                                         )}
                                                                     </div>
@@ -1229,7 +1274,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                         </option>
                                                                                     ))}
                                                                                 </select>
- 
+
                                                                             </>
                                                                         )}
                                                                     </div>
@@ -1291,7 +1336,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                             </option>
                                                                                         ))}
                                                                                     </select>
-     
+
                                                                                 </>
                                                                             )}
                                                                         </div>
@@ -1323,9 +1368,9 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                                 {r.rack_name || r.name}
                                                                                             </option>
                                                                                         ))}
-                                                                                        
+
                                                                                     </select>
-                                                                                   
+
                                                                                 </>
                                                                             )}
                                                                         </div>
