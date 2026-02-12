@@ -100,7 +100,7 @@ const ProductsNavbar = ({ breadcrumbs, onRefresh }: ProductsNavbarProps) => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-y-4">
       {/* LEFT - BREADCRUMB */}
       <div>
         <h1 className="text-xl font-semibold">
@@ -128,22 +128,22 @@ const ProductsNavbar = ({ breadcrumbs, onRefresh }: ProductsNavbarProps) => {
 
       {/* RIGHT - ACTIONS */}
       {isProductsRoot && (
-        <div className="flex gap-2">
+        <div className="flex justify-between gap-2 ">
           <button
             onClick={downloadSampleTemplate}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm flex gap-1 items-center hover:bg-green-700 transition shadow-sm"
+            className="bg-green-600 text-white px-3 md:px-4 py-2 rounded-lg text-sm flex gap-1 items-center hover:bg-green-700 transition shadow-sm"
           >
             <FileSpreadsheet size={16} /> Sample
           </button>
 
           <button
             onClick={() => navigate("/products/add")}
-            className="bg-black text-white px-4 py-2 rounded-lg text-sm flex gap-1"
+            className="bg-black text-white px-3 md:px-4 py-2 rounded-lg text-sm flex gap-1"
           >
             <Plus size={16} /> Add Product
           </button>
 
-          <label className="bg-gray-200 px-4 py-2 rounded-lg text-sm flex gap-1 cursor-pointer hover:bg-gray-300 transition">
+          <label className="bg-gray-200 px-3 md:px-4 py-2 rounded-lg text-sm flex gap-1 cursor-pointer hover:bg-gray-300 transition">
             <Download size={16} /> Import Product
             <input
               type="file"

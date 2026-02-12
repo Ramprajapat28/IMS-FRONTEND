@@ -97,7 +97,7 @@ const InventoryCategoriesPage = () => {
     return (
         <div className=" mx-auto p-4 space-y-6">
             {/* Header */}
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center gap-3">
                 <div className="flex items-center gap-3">
                     <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg">
                         <ArrowLeft size={20} />
