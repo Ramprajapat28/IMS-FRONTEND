@@ -9,4 +9,5 @@ export interface InventoryProduct {
     type?: string;
     mrp?: number;
     discounted_price?: number;
+    image?: string;
 }

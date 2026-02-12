@@ -52,6 +52,9 @@ const InventoryPage = () => {
                             quantity: p.stock_quantity || 0,
                             mrp: p.type === 'group' ? 0 : p.mrp, // Will be formatted as --- if 0 and type is group
                             discounted_price: p.type === 'group' ? 0 : p.discounted_price,
+                            image: Array.isArray(p.product_image) && p.product_image.length > 0
+                                ? p.product_image[0].file_path
+                                : "",
                             type: p.type // "group" or "product"
                         };
                     });

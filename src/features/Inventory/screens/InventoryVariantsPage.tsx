@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Search } from "lucide-react";
+import { ArrowLeft, Search, Package } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
 import InventoryFooter from "../components/InventoryFooter";
 import { formatCurrency } from "@/utils";
@@ -15,6 +15,7 @@ type Variant = {
     mrp?: number;
     discounted_price?: number;
     qty: number;
+    image?: string;
 };
 
 const InventoryVariantsPage = () => {
@@ -49,7 +50,10 @@ const InventoryVariantsPage = () => {
                         location: p.location || "-",
                         mrp: p.mrp,
                         discounted_price: p.discounted_price,
-                        qty: p.stock_quantity || 0
+                        qty: p.stock_quantity || 0,
+                        image: Array.isArray(p.product_image) && p.product_image.length > 0
+                            ? p.product_image[0].file_path
+                            : "",
                     }));
                     setVariants(mappedVariants as any);
                 } else {
@@ -160,7 +164,22 @@ const InventoryVariantsPage = () => {
                                     onClick={() => handleRowClick(variant.id)}
                                 >
                                     <td className="p-3">{(page - 1) * rows + index + 1}</td>
-                                    <td className="p-3 font-medium">{variant.productName}</td>
+                                    <td className="p-3">
+                                        <div className="flex items-center gap-3 min-w-[220px]">
+                                            {variant.image ? (
+                                                <img
+                                                    src={variant.image}
+                                                    alt={variant.productName}
+                                                    className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border"
+                                                />
+                                            ) : (
+                                                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 border text-gray-400">
+                                                    <Package size={20} />
+                                                </div>
+                                            )}
+                                            <span className="font-medium">{variant.productName}</span>
+                                        </div>
+                                    </td>
                                     <td className="p-3 text-gray-600">{variant.size}</td>
                                     <td className="p-3 text-gray-600">{variant.sku}</td>
                                     <td className="p-3 text-right font-medium text-gray-700">

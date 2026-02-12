@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { InventoryProduct } from "../types/inventory.types";
 import { formatCurrency } from "@/utils";
+import { Package } from "lucide-react";
 
 type InventoryTableProps = {
     data: InventoryProduct[];
@@ -48,6 +49,17 @@ const InventoryTable = ({ data, onRowClick }: InventoryTableProps) => {
 
                                 <td className="p-3">
                                     <div className="flex items-center gap-3 min-w-[220px]">
+                                        {item.image ? (
+                                            <img
+                                                src={item.image}
+                                                alt={item.name}
+                                                className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border"
+                                            />
+                                        ) : (
+                                            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 border text-gray-400">
+                                                <Package size={20} />
+                                            </div>
+                                        )}
                                         <span className="font-medium">{item.name}</span>
                                     </div>
                                 </td>

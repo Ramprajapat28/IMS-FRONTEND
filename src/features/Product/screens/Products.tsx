@@ -500,7 +500,7 @@
 
 // export default ProductsPage;
 import { useEffect, useMemo, useState } from "react";
-import { Search, Pencil, Trash2, Loader2, Printer, Download, ShoppingBag } from "lucide-react";
+import { Search, Pencil, Trash2, Loader2, Printer, Download, ShoppingBag, Package } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import JsBarcode from "jsbarcode";
 import ProductsNavbar from "../components/ProductsNavbar";
@@ -625,7 +625,7 @@ const ProductsPage = () => {
               sku: p.sku || "-----",
               image: Array.isArray(p.product_image) && p.product_image.length > 0
                 ? p.product_image[0].file_path
-                : "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200",
+                : "",
               mrp: p.mrp || 0,
               discounted_price: p.discounted_price || 0,
               barcode_image: p.barcode_image,
@@ -824,11 +824,17 @@ const ProductsPage = () => {
                   <td className="p-3 whitespace-nowrap">{(page - 1) * rows + index + 1}</td>
                   <td className="p-3">
                     <div className="flex gap-3 items-center min-w-[180px]">
-                      <img
-                        src={p.image}
-                        alt={p.name}
-                        className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-                      />
+                      {p.image ? (
+                        <img
+                          src={p.image}
+                          alt={p.name}
+                          className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 border text-gray-400">
+                          <Package size={20} />
+                        </div>
+                      )}
                       <span className="font-medium">{p.name}</span>
                     </div>
                   </td>
