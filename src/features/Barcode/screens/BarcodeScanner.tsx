@@ -6,7 +6,7 @@ import {
     Hash,
     Image as ImageIcon,
     Edit3,
-    ChevronDown,
+
     Loader2,
     Plus,
     Minus,
@@ -916,14 +916,14 @@ const BarcodeScannerPage: React.FC = () => {
                                                                     </label>
                                                                     <div className="relative">
                                                                         {uniqueWarehouses.length === 1 ? (
-                                                                            <div className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                            <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
                                                                                 <span className="truncate">{uniqueWarehouses[0]?.warehouse_name}</span>
                                                                                 <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
                                                                             </div>
                                                                         ) : (
                                                                             <>
                                                                                 <select
-                                                                                    className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                                                                                    className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                                                                                     value={selectedWarehouseId}
                                                                                     onChange={(e) => {
                                                                                         setSelectedWarehouseId(Number(e.target.value));
@@ -931,6 +931,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                         setSelectedShelfId("");
                                                                                         setSelectedRackId("");
                                                                                     }}
+                                                                                    
                                                                                 >
                                                                                     <option value="">Select Warehouse</option>
                                                                                     {uniqueWarehouses.map((w) => (
@@ -938,8 +939,9 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                             {w?.warehouse_name}
                                                                                         </option>
                                                                                     ))}
+     
                                                                                 </select>
-                                                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+
                                                                             </>
                                                                         )}
                                                                     </div>
@@ -952,14 +954,14 @@ const BarcodeScannerPage: React.FC = () => {
                                                                     </label>
                                                                     <div className="relative">
                                                                         {uniqueRooms.length === 1 ? (
-                                                                            <div className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                            <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
                                                                                 <span className="truncate">{uniqueRooms[0]?.room_name}</span>
                                                                                 <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
                                                                             </div>
                                                                         ) : (
                                                                             <>
                                                                                 <select
-                                                                                    className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
+                                                                                    className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
                                                                                     value={selectedRoomId}
                                                                                     onChange={(e) => {
                                                                                         setSelectedRoomId(Number(e.target.value));
@@ -975,7 +977,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                         </option>
                                                                                     ))}
                                                                                 </select>
-                                                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+ 
                                                                             </>
                                                                         )}
                                                                     </div>
@@ -1018,14 +1020,14 @@ const BarcodeScannerPage: React.FC = () => {
                                                                         </label>
                                                                         <div className="relative">
                                                                             {uniqueShelves.length === 1 ? (
-                                                                                <div className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                                <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
                                                                                     <span className="truncate">{uniqueShelves[0]?.shelf_name}</span>
                                                                                     <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
                                                                                 </div>
                                                                             ) : (
                                                                                 <>
                                                                                     <select
-                                                                                        className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
+                                                                                        className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
                                                                                         value={selectedShelfId}
                                                                                         onChange={(e) => setSelectedShelfId(Number(e.target.value))}
                                                                                         disabled={!selectedRoomId}
@@ -1037,7 +1039,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                             </option>
                                                                                         ))}
                                                                                     </select>
-                                                                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+     
                                                                                 </>
                                                                             )}
                                                                         </div>
@@ -1051,14 +1053,14 @@ const BarcodeScannerPage: React.FC = () => {
                                                                         </label>
                                                                         <div className="relative">
                                                                             {uniqueRacks.length === 1 ? (
-                                                                                <div className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                                <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
                                                                                     <span className="truncate">{uniqueRacks[0]?.rack_name}</span>
                                                                                     <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
                                                                                 </div>
                                                                             ) : (
                                                                                 <>
                                                                                     <select
-                                                                                        className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
+                                                                                        className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
                                                                                         value={selectedRackId}
                                                                                         onChange={(e) => setSelectedRackId(Number(e.target.value))}
                                                                                         disabled={!selectedRoomId}
@@ -1070,7 +1072,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                             </option>
                                                                                         ))}
                                                                                     </select>
-                                                                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+     
                                                                                 </>
                                                                             )}
                                                                         </div>
@@ -1081,7 +1083,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                             <p className="text-sm font-semibold text-gray-900 mt-3">2. Selling Details:</p>
 
                                                             {/* Selling Mode */}
-                                                            <div>
+                                                            <div className="w-[250px]">
                                                                 <label className="text-[11px] text-gray-500 mb-1 block">Mode</label>
                                                                 <div className="flex p-0.5 bg-gray-100 rounded-lg">
                                                                     <button
@@ -1102,12 +1104,12 @@ const BarcodeScannerPage: React.FC = () => {
                                                             </div>
 
                                                             {/* Quantity */}
-                                                            <div>
+                                                            <div className="w-[50px]">
                                                                 <label className="text-[11px] text-gray-500 mb-1 block">Quantity</label>
                                                                 <div className="flex items-center gap-2">
                                                                     <button
                                                                         onClick={() => setQuantity(prev => Math.max(1, (Number(prev) || 1) - 1))}
-                                                                        className="w-8 h-8 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
+                                                                        className="w- h-8 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
                                                                     >
                                                                         <Minus size={14} />
                                                                     </button>
@@ -1141,7 +1143,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                             <button
                                                                 onClick={handleSell}
                                                                 disabled={isSelling || !selectedShelfId && !selectedRackId}
-                                                                className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
+                                                                className="w-[200px] bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
                                                             >
                                                                 {isSelling ? (
                                                                     <>
@@ -1168,14 +1170,14 @@ const BarcodeScannerPage: React.FC = () => {
                                                                     </label>
                                                                     <div className="relative">
                                                                         {allWarehouses.length === 1 ? (
-                                                                            <div className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                            <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
                                                                                 <span className="truncate">{allWarehouses[0]?.name}</span>
                                                                                 <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
                                                                             </div>
                                                                         ) : (
                                                                             <>
                                                                                 <select
-                                                                                    className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
+                                                                                    className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
                                                                                     value={returnWarehouseId}
                                                                                     onChange={(e) => {
                                                                                         setReturnWarehouseId(Number(e.target.value));
@@ -1191,7 +1193,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                         </option>
                                                                                     ))}
                                                                                 </select>
-                                                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+ 
                                                                             </>
                                                                         )}
                                                                     </div>
@@ -1204,14 +1206,14 @@ const BarcodeScannerPage: React.FC = () => {
                                                                     </label>
                                                                     <div className="relative">
                                                                         {returnRoomsFiltered.length === 1 ? (
-                                                                            <div className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                            <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
                                                                                 <span className="truncate">{returnRoomsFiltered[0]?.room_name || returnRoomsFiltered[0]?.name}</span>
                                                                                 <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
                                                                             </div>
                                                                         ) : (
                                                                             <>
                                                                                 <select
-                                                                                    className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
+                                                                                    className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
                                                                                     value={returnRoomId}
                                                                                     onChange={(e) => {
                                                                                         setReturnRoomId(Number(e.target.value));
@@ -1227,7 +1229,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                         </option>
                                                                                     ))}
                                                                                 </select>
-                                                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+ 
                                                                             </>
                                                                         )}
                                                                     </div>
@@ -1270,14 +1272,14 @@ const BarcodeScannerPage: React.FC = () => {
                                                                         </label>
                                                                         <div className="relative">
                                                                             {returnShelvesFiltered.length === 1 ? (
-                                                                                <div className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                                <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
                                                                                     <span className="truncate">{returnShelvesFiltered[0]?.shelf_name || returnShelvesFiltered[0]?.name}</span>
                                                                                     <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
                                                                                 </div>
                                                                             ) : (
                                                                                 <>
                                                                                     <select
-                                                                                        className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
+                                                                                        className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
                                                                                         value={returnShelfId}
                                                                                         onChange={(e) => setReturnShelfId(Number(e.target.value))}
                                                                                         disabled={!returnRoomId}
@@ -1289,7 +1291,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                             </option>
                                                                                         ))}
                                                                                     </select>
-                                                                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+     
                                                                                 </>
                                                                             )}
                                                                         </div>
@@ -1303,14 +1305,14 @@ const BarcodeScannerPage: React.FC = () => {
                                                                         </label>
                                                                         <div className="relative">
                                                                             {returnRacksFiltered.length === 1 ? (
-                                                                                <div className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                                <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
                                                                                     <span className="truncate">{returnRacksFiltered[0]?.rack_name || returnRacksFiltered[0]?.name}</span>
                                                                                     <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
                                                                                 </div>
                                                                             ) : (
                                                                                 <>
                                                                                     <select
-                                                                                        className="w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
+                                                                                        className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
                                                                                         value={returnRackId}
                                                                                         onChange={(e) => setReturnRackId(Number(e.target.value))}
                                                                                         disabled={!returnRoomId}
@@ -1321,8 +1323,9 @@ const BarcodeScannerPage: React.FC = () => {
                                                                                                 {r.rack_name || r.name}
                                                                                             </option>
                                                                                         ))}
+                                                                                        
                                                                                     </select>
-                                                                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                                                                                   
                                                                                 </>
                                                                             )}
                                                                         </div>
@@ -1335,7 +1338,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                             {/* Quantity */}
                                                             <div>
                                                                 <label className="text-[11px] text-gray-500 mb-1 block">Quantity</label>
-                                                                <div className="flex items-center gap-2">
+                                                                <div className="flex w-[200px] items-center gap-2">
                                                                     <button
                                                                         onClick={() => setQuantity(prev => Math.max(1, (Number(prev) || 1) - 1))}
                                                                         className="w-8 h-8 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
@@ -1362,7 +1365,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                             <button
                                                                 onClick={handleReturn}
                                                                 disabled={isReturning || !returnShelfId && !returnRackId}
-                                                                className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
+                                                                className="w-[200px] bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
                                                             >
                                                                 {isReturning ? (
                                                                     <>

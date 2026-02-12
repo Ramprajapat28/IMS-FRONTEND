@@ -752,12 +752,12 @@ const ProductsPage = () => {
 
       {/* BULK ACTIONS */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center justify-between bg-blue-50 border border-blue-100 p-3 rounded-lg animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center flex-col md:flex-row gap-4 bg-blue-50 border border-blue-100 p-3 rounded-lg animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center justify-around w-full md:w-auto gap-4 ">
             <span className="text-sm font-medium text-blue-700">{selectedIds.size} products selected</span>
             <button
               onClick={() => setSelectedIds(new Set())}
-              className="text-xs text-blue-600 hover:underline"
+              className="text-xs border border-blue-200 p-2 rounded-md bg-white text-blue-600 hover:bg-blue-100"
             >
               Clear selection
             </button>
