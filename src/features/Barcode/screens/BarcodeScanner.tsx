@@ -617,7 +617,7 @@ const BarcodeScannerPage: React.FC = () => {
     }
 
     return (
-        <div className="h-screen md:h-[90%] overflow-y-hidden bg-gray-50 flex flex-col">
+        <div className="h-screen lg:h-[95%] overflow-y-hidden bg-gray-50 flex flex-col">
             <Header />
 
             <div className="flex-1 overflow-y-hidden">
@@ -659,7 +659,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                                 <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-red-500 rounded-br-2xl"></div>
 
                                                                 {/* Red Scan line */}
-                                                                <div className="scan-line"></div>
+                                                                {/* <div className="scan-line"></div> */}
                                                             </div>
                                                         </div>
 
@@ -741,8 +741,8 @@ const BarcodeScannerPage: React.FC = () => {
                         )}
 
                         {/* RIGHT: PRODUCT INFO */}
-                        <div className={`order-1 lg:order-1 ${product ? "lg:col-span-12" : "hidden lg:block lg:col-span-4"} h-full overflow-hidden`}>
-                            <div className="h-full rounded-lg border overflow-hidden flex flex-col">
+                        <div className={`order-1 lg:order-1 ${product ? "md:col-span-12" : "hidden lg:block lg:col-span-4"} h-full overflow-hidden`}>
+                           <div className="h-full rounded-lg border overflow-hidden flex flex-col">
 
                                 {!product && (
                                     <>
@@ -781,7 +781,7 @@ const BarcodeScannerPage: React.FC = () => {
                                 )}
 
                                 {product && (
-                                    <div className="flex-1 overflow-auto p-3">
+                                    <div className="flex-1 h-full overflow-auto p-3">
                                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
 
                                             {/* Product Details Box */}
