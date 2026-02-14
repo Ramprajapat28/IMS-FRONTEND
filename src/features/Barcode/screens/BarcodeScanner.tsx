@@ -325,7 +325,7 @@ const BarcodeScannerPage: React.FC = () => {
                     facingMode: 'environment',
                     width: { ideal: 1280 },
                     height: { ideal: 720 },
-                    aspectRatio: { ideal: 16 / 9 },
+                    aspectRatio: { ideal: window.innerWidth < 768 ? 1 : 16 / 9 },
                     frameRate: { ideal: 30 },
                     // @ts-ignore
                     focusMode: 'continuous',
@@ -632,7 +632,7 @@ const BarcodeScannerPage: React.FC = () => {
                         {/* LEFT: CAMERA SCANNER (HIDDEN WHEN PRODUCT FOUND) */}
                         {!product && (
                             <div className="order-1 overflow-hidden lg:order-1 lg:col-span-8">
-                                <div className="min-h-[400px] lg:min-h-[700px]  rounded-lg border flex flex-col bg-gray-900 overflow-hidden">
+                                <div className="aspect-square sm:aspect-auto sm:min-h-[400px] lg:min-h-[700px] rounded-lg border flex flex-col bg-gray-900 overflow-hidden">
                                     <div className="bg-white border-b px-4 py-3 font-semibold text-gray-900 text-sm flex items-center justify-between">
                                         <span className="flex items-center gap-2">
                                             <Camera size={18} className="text-gray-700" />
@@ -748,45 +748,45 @@ const BarcodeScannerPage: React.FC = () => {
                         {/* RIGHT: PRODUCT INFO */}
                         <div className={`order-1 lg:order-1 ${product ? "md:col-span-12" : "hidden lg:block lg:col-span-4"}`}>
 
-                            
+
                             {!product && (
                                 <>
-                                <div className="h-full  border rounded-lg ">
-                                    <div className=" bg-gray-50 px-4 py-2 font-semibold border-b text-gray-900 text-sm">
-                                        Product Information
-                                    </div>
-                                    <div className="flex-1 h-full  flex items-center justify-center text-gray-400 text-sm p-6">
-                                        {isLoading ? (
-                                            <div className="text-center">
-                                                <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-3" />
-                                                <p className="text-gray-600">Loading product details...</p>
-                                            </div>
-                                        ) : error ? (
-                                            <div className="text-center">
-                                                <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
-                                                <p className="text-red-500 mb-3">{error}</p>
-                                                <button
-                                                    onClick={() => {
-                                                        setError(null);
-                                                        setProduct(null);
-                                                    }}
-                                                    className="text-blue-600 hover:underline text-sm font-medium"
-                                                >
-                                                    Try Scanning Again
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div className="text-center">
-                                                <Package className="w-16 h-16 mx-auto mb-3 text-gray-300" />
-                                                <p className="text-gray-600 font-medium mb-1">Ready to Scan</p>
-                                                <p className="text-gray-400 text-xs">Position barcode in camera view</p>
-                                            </div>
-                                        )}
-                                    </div>
+                                    <div className="h-full  border rounded-lg ">
+                                        <div className=" bg-gray-50 px-4 py-2 font-semibold border-b text-gray-900 text-sm">
+                                            Product Information
+                                        </div>
+                                        <div className="flex-1 h-full  flex items-center justify-center text-gray-400 text-sm p-6">
+                                            {isLoading ? (
+                                                <div className="text-center">
+                                                    <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-3" />
+                                                    <p className="text-gray-600">Loading product details...</p>
+                                                </div>
+                                            ) : error ? (
+                                                <div className="text-center">
+                                                    <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+                                                    <p className="text-red-500 mb-3">{error}</p>
+                                                    <button
+                                                        onClick={() => {
+                                                            setError(null);
+                                                            setProduct(null);
+                                                        }}
+                                                        className="text-blue-600 hover:underline text-sm font-medium"
+                                                    >
+                                                        Try Scanning Again
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="text-center">
+                                                    <Package className="w-16 h-16 mx-auto mb-3 text-gray-300" />
+                                                    <p className="text-gray-600 font-medium mb-1">Ready to Scan</p>
+                                                    <p className="text-gray-400 text-xs">Position barcode in camera view</p>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </>
                             )}
-                            
+
 
                             {product && (
                                 <div className="flex-1 p-3">
