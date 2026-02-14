@@ -789,16 +789,16 @@ const BarcodeScannerPage: React.FC = () => {
                                         <div className="border rounded-lg p-3 bg-white relative ">
                                             <button
                                                 onClick={resetScanner}
-                                                className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 z-10 transition"
+                                                className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-1 rounded-lg bg-blue-50 hover:bg-gray-100 z-10 transition"
                                                 title="Clear and scan another"
                                             >
                                                 <X size={20} />
                                             </button>
 
-                                            <div className="flex gap-3">
+                                            <div className="flex gap-3 md:gap-8">
                                                 {/* Product Image */}
                                                 <div className="flex-shrink-0">
-                                                    <div className="w-24 h-28 rounded-lg border-2 border-gray-300 overflow-hidden bg-gray-50">
+                                                    <div className="w-24 h-28 md:w-32 md:h-36 rounded-lg border-2 border-gray-300 overflow-hidden bg-gray-50">
                                                         {(() => {
                                                             const imgs = product.product_image;
                                                             let url = "";
@@ -849,9 +849,9 @@ const BarcodeScannerPage: React.FC = () => {
                                                 </div>
 
                                                 {/* Product Info */}
-                                                <div className="flex-1 space-y-3">
+                                                <div className="flex-1 space-y-4 mt-2 ">
                                                     <div className="flex items-start gap-2">
-                                                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                                                             <Edit3 className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
                                                         <div className="flex-1">
@@ -861,7 +861,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                     </div>
 
                                                     <div className="flex items-start gap-2">
-                                                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                                                             <Tag className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
                                                         <div className="flex-1">
@@ -871,7 +871,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                     </div>
 
                                                     <div className="flex items-start gap-2">
-                                                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                                                             <Tag className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
                                                         <div className="flex-1">
@@ -881,7 +881,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                     </div>
 
                                                     <div className="flex items-start gap-2">
-                                                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                                                             <Hash className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
                                                         <div className="flex-1">
@@ -891,7 +891,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                     </div>
 
                                                     <div className="flex items-start gap-2">
-                                                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                                                             <FileText className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
                                                         <div className="flex-1">
@@ -901,7 +901,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                     </div>
 
                                                     <div className="flex items-start gap-2">
-                                                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                                                             <Type className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
                                                         <div className="flex-1">
@@ -911,7 +911,7 @@ const BarcodeScannerPage: React.FC = () => {
                                                     </div>
 
                                                     <div className="flex items-start gap-2 col-span-full">
-                                                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                                                             <FileText className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
                                                         <div className="flex-1">
