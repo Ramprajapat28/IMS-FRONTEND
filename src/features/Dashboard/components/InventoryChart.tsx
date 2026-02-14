@@ -5,7 +5,21 @@ interface InventoryChartProps {
   categories?: CategoryCount[];
 }
 
-const COLORS = ["#FF9F43", "#E8590C", "#102E4A", "#28C76F", "#EA5455", "#7367F0"];
+const PALETTE = [
+  "#FF9F43", "#E8590C", "#102E4A", "#28C76F", "#EA5455", "#7367F0",
+  "#F72585", "#7209B7", "#3A0CA3", "#4361EE", "#4CC9F0", "#06D6A0",
+  "#FFD166", "#EF476F", "#118AB2", "#073B4C", "#8338EC", "#3A86FF",
+  "#FF006E", "#FB5607", "#FFBE0B", "#38B000", "#00B4D8", "#90E0EF"
+];
+
+const getDeterministicColor = (str: string) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % PALETTE.length;
+  return PALETTE[index];
+};
 
 const InventoryByCategory = ({ categories = [] }: InventoryChartProps) => {
   const total = useMemo(
@@ -13,12 +27,12 @@ const InventoryByCategory = ({ categories = [] }: InventoryChartProps) => {
     [categories]
   );
 
-  // Assign colors to all categories first to ensure consistency between list and chart
+  // Assign colors based on category name hash for stability
   const categoriesWithColors = useMemo(
     () =>
-      categories.map((item, index) => ({
+      categories.map((item) => ({
         ...item,
-        color: COLORS[index % COLORS.length],
+        color: getDeterministicColor(item.category_name),
       })),
     [categories]
   );
@@ -71,7 +85,7 @@ const InventoryByCategory = ({ categories = [] }: InventoryChartProps) => {
           </svg>
         </div>
         <h2 className="font-semibold text-gray-800 text-lg">
-          Inventory By Sub Category
+          Inventory By Category
         </h2>
       </div>
 
@@ -97,20 +111,20 @@ const InventoryByCategory = ({ categories = [] }: InventoryChartProps) => {
             {/* Segments - NO GAP */}
             {chartData.map((item) => {
               const STROKE_WIDTH = 30;
-  const GAP_PX = -28; // tiny gap so rounded ends don't clash visually
+              const GAP_PX = -28; // tiny gap so rounded ends don't clash visually
 
-  const arcLength = (item.percentage / 100) * CIRCUMFERENCE;
-  if (arcLength <= 0) return null;
+              const arcLength = (item.percentage / 100) * CIRCUMFERENCE;
+              if (arcLength <= 0) return null;
 
-  // Reduce a little for the rounded caps + tiny gap
-  // Visual length ≈ dashValue + STROKE_WIDTH
-  let dashValue = arcLength - STROKE_WIDTH - GAP_PX;
-  if (dashValue < 0) dashValue = 0.1;
+              // Reduce a little for the rounded caps + tiny gap
+              // Visual length ≈ dashValue + STROKE_WIDTH
+              let dashValue = arcLength - STROKE_WIDTH - GAP_PX;
+              if (dashValue < 0) dashValue = 0.1;
 
-  const gapValue = CIRCUMFERENCE - dashValue;
+              const gapValue = CIRCUMFERENCE - dashValue;
 
-  // Position segment at the correct angle
-  const offset = -(item.startAngle / 360) * CIRCUMFERENCE + (STROKE_WIDTH + GAP_PX) / 2;
+              // Position segment at the correct angle
+              const offset = -(item.startAngle / 360) * CIRCUMFERENCE + (STROKE_WIDTH + GAP_PX) / 2;
 
               return (
                 <circle
