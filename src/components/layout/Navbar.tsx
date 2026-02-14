@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Menu } from "lucide-react";
+import { Menu, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSidebar } from "@/app/providers";
 import { profileApi } from "@/features/Profile/api/profile.api";
@@ -7,7 +7,8 @@ import { profileApi } from "@/features/Profile/api/profile.api";
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const { open } = useSidebar();
-  const [avatar, setAvatar] = useState("https://i.pravatar.cc/40"); // Default
+  const [avatar, setAvatar] = useState(""); // Default
+  const [isImgLoading, setIsImgLoading] = useState(true);
 
   const updateAvatar = async () => {
     const userStr = localStorage.getItem("user");
@@ -17,11 +18,22 @@ const Navbar: React.FC = () => {
         if (user.user_id) {
           try {
             const res = await profileApi.getProfile(user.user_id);
-            if (res.success && res.data && res.data.profile_picture_url) {
-              setAvatar(res.data.profile_picture_url);
+            if (res.success && res.data) {
+              const newUrl = res.data.profile_picture_url || "";
+              if (newUrl !== avatar) {
+                setAvatar(newUrl);
+                if (newUrl) setIsImgLoading(true);
+                else setIsImgLoading(false);
+              } else {
+                // If it's the same URL, we are already loaded (or failed)
+                setIsImgLoading(false);
+              }
+            } else {
+              setIsImgLoading(false);
             }
           } catch (apiErr) {
             console.error("Failed to fetch profile for navbar", apiErr);
+            setIsImgLoading(false);
           }
         }
       } catch (e) {
@@ -41,6 +53,7 @@ const Navbar: React.FC = () => {
       window.removeEventListener("user_updated", updateAvatar);
     };
   }, []);
+
 
   return (
     <header className="h-16 bg-white border-b flex items-center px-4 sm:px-6">
@@ -94,12 +107,30 @@ const Navbar: React.FC = () => {
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
         </button> */}
 
-        <img
+        <div
           onClick={() => navigate("/profile")}
-          src={avatar}
-          alt="profile"
-          className="w-8 h-8 rounded-full cursor-pointer object-cover border"
-        />
+          className="relative w-8 h-8 rounded-full cursor-pointer overflow-hidden border bg-gray-100"
+        >
+          {/* Default Base Layer (Always there) */}
+          <div className="absolute inset-0 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">
+            <User size={18} />
+          </div>
+
+          {/* Profile Image Layer (Fades in over the base) */}
+          {avatar && (
+            <img
+              key={avatar}
+              src={avatar}
+              alt="profile"
+              onLoad={() => setIsImgLoading(false)}
+              onError={() => {
+                setIsImgLoading(false);
+                setAvatar("");
+              }}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${isImgLoading ? 'opacity-0' : 'opacity-100'}`}
+            />
+          )}
+        </div>
       </div>
     </header>
   );

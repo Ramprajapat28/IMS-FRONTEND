@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, User } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { profileApi } from "../api";
 
@@ -32,7 +32,7 @@ const DEFAULT_PROFILE: ProfileData = {
   address: "",
   location: "Mumbai, INDIA",
   postalCode: "400 088",
-  avatar: "https://i.pravatar.cc/300?img=12",
+  avatar: "",
 };
 
 /* ---------------- COMPONENT ---------------- */
@@ -47,6 +47,7 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isImageUploading, setIsImageUploading] = useState(false);
+  const [isImgLoading, setIsImgLoading] = useState(true);
 
   /* -------- FETCH PROFILE DATA -------- */
   useEffect(() => {
@@ -81,7 +82,7 @@ const Profile = () => {
             address: apiProfile.address || '',
             location: apiProfile.location || '',
             postalCode: apiProfile.postal_code?.toString() || '',
-            avatar: apiProfile.profile_picture_url || 'https://i.pravatar.cc/300?img=12',
+            avatar: apiProfile.profile_picture_url || '',
           };
 
           setSavedProfile(mappedProfile);
@@ -137,10 +138,12 @@ const Profile = () => {
 
       const uploadedUrl = presignedRes.cdnUrl;
 
-      setFormProfile((prev) => ({
-        ...prev,
-        avatar: uploadedUrl
-      }));
+      setFormProfile((prev) => {
+        if (prev.avatar !== uploadedUrl) {
+          setIsImgLoading(true);
+        }
+        return { ...prev, avatar: uploadedUrl };
+      });
 
       toast.success("Image uploaded successfully");
 
@@ -213,12 +216,12 @@ const Profile = () => {
       await profileApi.updateProfile(userId, payload);
 
       const updatedProfile: ProfileData = {
-  ...formProfile
-};
+        ...formProfile
+      };
 
-// update both
-setSavedProfile(updatedProfile);
-setFormProfile(updatedProfile);
+      // update both
+      setSavedProfile(updatedProfile);
+      setFormProfile(updatedProfile);
 
       // Update local state
       // Dispatch event to update Navbar
@@ -232,6 +235,9 @@ setFormProfile(updatedProfile);
   };
 
   const handleDiscard = () => {
+    if (savedProfile.avatar !== formProfile.avatar) {
+      setIsImgLoading(true);
+    }
     setFormProfile(savedProfile);
     toast("Changes discarded", { icon: "↩️" });
   };
@@ -267,17 +273,33 @@ setFormProfile(updatedProfile);
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* LEFT PROFILE CARD */}
           <div className="bg-white border rounded-xl p-6 flex flex-col items-center">
-            <div className="relative">
+            <div className="relative w-40 h-40">
               {isImageUploading ? (
-                <div className="w-40 h-40 rounded-full border flex items-center justify-center bg-gray-50">
+                <div className="w-full h-full rounded-full border flex items-center justify-center bg-gray-50">
                   <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                 </div>
               ) : (
-                <img
-                  src={formProfile.avatar}
-                  alt="profile"
-                  className="w-40 h-40 rounded-full object-cover border"
-                />
+                <div className="relative w-full h-full rounded-full overflow-hidden border bg-gray-100">
+                  {/* Default Base Layer (Always there) */}
+                  <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                    <User size={64} />
+                  </div>
+
+                  {/* Profile Image Layer (Fades in over the base) */}
+                  {formProfile.avatar && (
+                    <img
+                      key={formProfile.avatar}
+                      src={formProfile.avatar}
+                      alt="profile"
+                      onLoad={() => setIsImgLoading(false)}
+                      onError={() => {
+                        setIsImgLoading(false);
+                        setFormProfile((prev) => ({ ...prev, avatar: "" }));
+                      }}
+                      className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${isImgLoading ? 'opacity-0' : 'opacity-100'}`}
+                    />
+                  )}
+                </div>
               )}
 
               <label className="absolute bottom-2 right-2 w-9 h-9 rounded-full bg-white border shadow flex items-center justify-center cursor-pointer hover:bg-gray-100">
@@ -286,9 +308,10 @@ setFormProfile(updatedProfile);
                   type="file"
                   accept="image/*"
                   hidden
-                  onChange={(e) =>
-                    handleImageUpload(e.target.files?.[0] || null)
-                  }
+                  onChange={(e) => {
+                    handleImageUpload(e.target.files?.[0] || null);
+                    e.target.value = ""; // Clear for re-selection
+                  }}
                 />
               </label>
             </div>
