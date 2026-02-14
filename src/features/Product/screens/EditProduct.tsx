@@ -481,7 +481,7 @@ const EditProduct = () => {
     }
 
     return (
-        <div className="max-w-7xl mx-auto space-y-3">
+        <div className=" mx-auto space-y-3">
             {/* HEADER */}
             <div className="flex items-center gap-3">
                 <button
@@ -1218,51 +1218,60 @@ const EditProduct = () => {
                                 </div>
                             ) : stockLogs.length > 0 ? (
                                 <div className="border rounded-lg overflow-hidden">
-                                    <table className="w-full text-left text-xs">
+                                    <table className="w-full text-left text-[14px]">
                                         <thead className="bg-gray-50 border-b">
                                             <tr>
-                                                <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider">Date</th>
-                                                <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider">Activity</th>
-                                                <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider text-center">Quantity</th>
-                                                <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider">Remarks</th>
-                                                <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider">User</th>
-                                                <th className="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider text-right">Status</th>
+                                                <th className="pl-4 pr-2 py-3 font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                                                <th className="px-2 py-3 font-semibold text-gray-600 uppercase tracking-wider">Activity</th>
+                                                <th className="px-2 py-3 font-semibold text-gray-600 uppercase tracking-wider text-center">Qty</th>
+                                                <th className="px-2 py-2 font-semibold text-gray-600 uppercase tracking-wider">Source</th>
+                                                <th className="px-2 py-2 font-semibold text-gray-600 uppercase tracking-wider">Destination</th>
+                                                <th className="px-2 py-3 font-semibold text-gray-600 uppercase tracking-wider">Remarks</th>
+                                                <th className="pl-2 pr-4 py-3 font-semibold text-gray-600 uppercase tracking-wider text-right">User</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-gray-100">
+                                        <tbody className="divide-y divide-gray-100 text-[13px]">
                                             {stockLogs.map((log) => (
                                                 <tr key={log.id} className="hover:bg-gray-50 transition-colors">
-                                                    <td className="px-4 py-3 text-gray-700">
-                                                        {new Date(log.date).toLocaleDateString('en-GB', {
-                                                            day: '2-digit',
-                                                            month: 'short',
-                                                            year: 'numeric'
-                                                        })}
+                                                    <td className="pl-4 pr-2 py-3 text-gray-700 whitespace-nowrap">
+                                                        {new Date(log.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                     </td>
-                                                    <td className="px-4 py-3">
-                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${log.activity === 'Added'
-                                                            ? 'bg-blue-100 text-blue-700'
-                                                            : 'bg-green-100 text-green-700'
+                                                    <td className="px-2 py-3">
+                                                        <span className={`px-2 py-0.5 rounded-full font-medium ${log.activity === 'Added' ? 'bg-green-100 text-green-700' :
+                                                            log.activity === 'Transferred' ? 'bg-blue-100 text-blue-700' :
+                                                                'bg-orange-100 text-orange-700'
                                                             }`}>
-                                                            {log.activity === 'Added' ? (
-                                                                <svg className="mr-1 w-2 h-2" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
-                                                            ) : (
-                                                                <svg className="mr-1 w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path d="M5 13l4 4L19 7" /></svg>
-                                                            )}
                                                             {log.activity}
                                                         </span>
                                                     </td>
-                                                    <td className="px-4 py-3 text-center font-medium text-gray-900">
+                                                    <td className="px-2 py-3 text-center font-medium text-gray-900">
                                                         {log.quantity}
                                                     </td>
-                                                    <td className="px-4 py-3 text-[11px] text-gray-600 max-w-[200px] truncate" title={log.remark}>
+                                                    <td className="px-2 py-3 leading-tight">
+                                                        {log.source_location ? (
+                                                            <span className="text-gray-700 truncate max-w-[250px] inline-block" title={log.source_location}>
+                                                                {log.source_location}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-gray-300">-</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-2 py-3 leading-tight">
+                                                        {log.dest_location ? (
+                                                            <span className="text-blue-700 font-medium truncate max-w-[250px] inline-block" title={log.dest_location}>
+                                                                {log.dest_location}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-gray-300">-</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-2 py-3 text-gray-600 max-w-[250px] truncate" title={log.remark}>
                                                         {log.remark || '-'}
                                                     </td>
-                                                    <td className="px-4 py-3 text-[11px] text-gray-700">
-                                                        {log.user_name || '-'}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-right text-gray-500 italic">
-                                                        {log.status}
+                                                    <td className="pl-2 pr-4 py-3 text-gray-700 text-right">
+                                                        <span className="truncate max-w-[150px] inline-block align-middle" title={log.user_name}>
+                                                            {log.user_name || '-'}
+                                                        </span>
                                                     </td>
                                                 </tr>
                                             ))}
