@@ -1217,17 +1217,17 @@ const EditProduct = () => {
                                     <span className="ml-2 text-sm text-gray-500">Loading history...</span>
                                 </div>
                             ) : stockLogs.length > 0 ? (
-                                <div className="border rounded-lg overflow-hidden">
-                                    <table className="w-full text-left text-[14px]">
+                                <div className="border rounded-lg overflow-x-auto">
+                                    <table className="min-w-full text-left text-[14px]">
                                         <thead className="bg-gray-50 border-b">
                                             <tr>
-                                                <th className="pl-4 pr-2 py-3 font-semibold text-gray-600 uppercase tracking-wider">Date</th>
-                                                <th className="px-2 py-3 font-semibold text-gray-600 uppercase tracking-wider">Activity</th>
-                                                <th className="px-2 py-3 font-semibold text-gray-600 uppercase tracking-wider text-center">Qty</th>
-                                                <th className="pl-6 py-2 font-semibold text-gray-600 uppercase tracking-wider">Source</th>
-                                                <th className="px-2 py-2 font-semibold text-gray-600 uppercase tracking-wider">Destination</th>
-                                                <th className="px-2 py-3 font-semibold text-gray-600 uppercase tracking-wider">Remarks</th>
-                                                <th className="pr-4 py-3 font-semibold text-gray-600 uppercase tracking-wider text-right">User</th>
+                                                <th className="pl-4 pr-2 py-3 font-semibold text-gray-600 uppercase tracking-wider text-xs sm:text-sm">Date</th>
+                                                <th className="px-2 py-3 font-semibold text-gray-600 uppercase tracking-wider text-xs sm:text-sm">Activity</th>
+                                                <th className="px-2 py-3 font-semibold text-gray-600 uppercase tracking-wider text-center text-xs sm:text-sm">Qty</th>
+                                                <th className="px-2 py-3 font-semibold text-gray-600 uppercase tracking-wider text-xs sm:text-sm">Source</th>
+                                                <th className="px-2 py-3 font-semibold text-gray-600 uppercase tracking-wider text-xs sm:text-sm">Destination</th>
+                                                <th className="px-2 py-3 font-semibold text-gray-600 uppercase tracking-wider text-xs sm:text-sm">Remarks</th>
+                                                <th className="pr-4 py-3 font-semibold text-gray-600 uppercase tracking-wider text-right text-xs sm:text-sm">User</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100 text-[13px]">
@@ -1249,27 +1249,27 @@ const EditProduct = () => {
                                                     </td>
                                                     <td className="px-2 py-3 leading-tight">
                                                         {log.source_location ? (
-                                                            <span className="text-gray-700 truncate max-w-[300px] inline-block" title={log.source_location}>
+                                                            <span className="text-gray-700 whitespace-nowrap" title={log.source_location}>
                                                                 {log.source_location}
                                                             </span>
                                                         ) : (
                                                             <span className="text-gray-300">-</span>
                                                         )}
                                                     </td>
-                                                    <td className="pr-2 py-3 leading-tight">
+                                                    <td className="px-2 py-3 leading-tight">
                                                         {log.dest_location ? (
-                                                            <span className="text-blue-700 font-medium truncate max-w-[300px] inline-block" title={log.dest_location}>
+                                                            <span className="text-blue-700 font-medium whitespace-nowrap" title={log.dest_location}>
                                                                 {log.dest_location}
                                                             </span>
                                                         ) : (
                                                             <span className="text-gray-300">-</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-2 py-3 text-gray-600 max-w-[300px] truncate" title={log.remark}>
+                                                    <td className="px-2 py-3 text-gray-600 whitespace-nowrap" title={log.remark}>
                                                         {log.remark || '-'}
                                                     </td>
                                                     <td className="pl-2 pr-4 py-3 text-gray-700 text-right">
-                                                        <span className="truncate max-w-[150px] inline-block align-middle" title={log.user_name}>
+                                                        <span className="whitespace-nowrap inline-block align-middle" title={log.user_name}>
                                                             {log.user_name || '-'}
                                                         </span>
                                                     </td>
@@ -1326,20 +1326,20 @@ const EditProduct = () => {
                             )}
                         </div>
 
-                        <div className="flex justify-between items-center pt-6 border-t">
+                        <div className="flex flex-col sm:flex-row justify-between items-center pt-6 border-t gap-4">
                             <button
                                 onClick={handlePrevious}
-                                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium flex items-center gap-2"
+                                className="w-full sm:w-auto px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium flex items-center justify-center gap-2"
                             >
                                 <ChevronLeft size={20} />
                                 Previous
                             </button>
 
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                                 <button
                                     type="button"
                                     onClick={() => setIsTransferModalOpen(true)}
-                                    className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium flex items-center gap-2 disabled:opacity-50"
+                                    className="w-full sm:w-auto px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
                                     <ArrowRightLeft size={20} />
                                     Transfer Stock
@@ -1347,7 +1347,7 @@ const EditProduct = () => {
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isSubmitting}
-                                    className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium flex items-center gap-2 disabled:opacity-50"
+                                    className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
                                     <Save size={20} />
                                     Save & Exit
