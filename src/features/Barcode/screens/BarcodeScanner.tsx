@@ -855,8 +855,8 @@ const BarcodeScannerPage: React.FC = () => {
                                                             <Edit3 className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
                                                         <div className="flex-1">
-                                                            <p className="text-[14px] text-gray-400 mb-0.5">Product Name</p>
-                                                            <p className="text-sm font-semibold text-gray-900">{product.name}</p>
+                                                            <p className="text-[14px] md:text-[16px] text-gray-400 mb-0.5">Product Name</p>
+                                                            <p className="text-sm md:text-lg font-medium text-gray-600">{product.name}</p>
                                                         </div>
                                                     </div>
 
@@ -865,8 +865,8 @@ const BarcodeScannerPage: React.FC = () => {
                                                             <Tag className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
                                                         <div className="flex-1">
-                                                            <p className="text-[14px] text-gray-400 uppercase mb-0.5">Category</p>
-                                                            <p className="text-sm font-medium text-gray-900">{product.global_category_name || "-"}</p>
+                                                            <p className="text-[14px] md:text-[16px] text-gray-400 uppercase mb-0.5">Category</p>
+                                                            <p className="text-sm md:text-lg font-medium text-gray-600">{product.global_category_name || "-"}</p>
                                                         </div>
                                                     </div>
 
@@ -875,8 +875,8 @@ const BarcodeScannerPage: React.FC = () => {
                                                             <Tag className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
                                                         <div className="flex-1">
-                                                            <p className="text-[14px] text-gray-400 uppercase mb-0.5">Sub Category</p>
-                                                            <p className="text-sm font-medium text-gray-900">{product.category_name || "-"}</p>
+                                                            <p className="text-[14px] md:text-[16px] text-gray-400 uppercase mb-0.5">Sub Category</p>
+                                                            <p className="text-sm md:text-lg font-medium text-gray-600">{product.category_name || "-"}</p>
                                                         </div>
                                                     </div>
 
@@ -885,8 +885,8 @@ const BarcodeScannerPage: React.FC = () => {
                                                             <Hash className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
                                                         <div className="flex-1">
-                                                            <p className="text-[14px] text-gray-400 uppercase mb-0.5">SKU</p>
-                                                            <p className="text-sm font-bold text-gray-900">{product.sku}</p>
+                                                            <p className="text-[14px] md:text-[16px] text-gray-400 uppercase mb-0.5">SKU</p>
+                                                            <p className="text-sm md:text-lg  font-medium text-gray-600">{product.sku}</p>
                                                         </div>
                                                     </div>
 
@@ -895,8 +895,8 @@ const BarcodeScannerPage: React.FC = () => {
                                                             <FileText className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
                                                         <div className="flex-1">
-                                                            <p className="text-[14px] text-gray-400 uppercase mb-0.5">HSN Code</p>
-                                                            <p className="text-sm font-medium text-gray-900">{product.hsn_code || "-"}</p>
+                                                            <p className="text-[14px] md:text-[16px] text-gray-400 uppercase mb-0.5">HSN Code</p>
+                                                            <p className="text-sm md:text-lg font-medium text-gray-600">{product.hsn_code || "-"}</p>
                                                         </div>
                                                     </div>
 
@@ -905,8 +905,8 @@ const BarcodeScannerPage: React.FC = () => {
                                                             <Type className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
                                                         <div className="flex-1">
-                                                            <p className="text-[14px] text-gray-400 uppercase mb-0.5">Size</p>
-                                                            <p className="text-sm font-medium text-gray-900">{product.size || "-"}</p>
+                                                            <p className="text-[14px] md:text-[16px] text-gray-400 uppercase mb-0.5">Size</p>
+                                                            <p className="text-sm md:text-lg font-medium text-gray-600">{product.size || "-"}</p>
                                                         </div>
                                                     </div>
 
@@ -915,8 +915,8 @@ const BarcodeScannerPage: React.FC = () => {
                                                             <FileText className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
                                                         <div className="flex-1">
-                                                            <p className="text-[14px] text-gray-400 uppercase mb-0.5">Description</p>
-                                                            <p className="text-sm text-gray-600 leading-relaxed">{product.description || "-"}</p>
+                                                            <p className="text-[14px] md:text-[16px] text-gray-400 uppercase mb-0.5">Description</p>
+                                                            <p className="text-sm md:text-lg text-gray-600 font-medium leading-relaxed">{product.description || "-"}</p>
                                                         </div>
                                                     </div>
                                                 </div>
