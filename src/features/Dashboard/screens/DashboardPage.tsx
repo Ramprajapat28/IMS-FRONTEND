@@ -41,12 +41,8 @@ const Dashboard = () => {
         if (totalProdRes.success && totalProdRes.data) setTotalProducts(totalProdRes.data.totalProducts);
         if (totalOrdRes.success && totalOrdRes.data) setTotalOrders(totalOrdRes.data.totalOrder);
 
-        console.log("Category Response:", categoryRes);
         if (categoryRes.success && categoryRes.data) {
-          console.log("Setting category counts:", categoryRes.data);
           setCategoryCounts(categoryRes.data);
-        } else {
-          console.error("Failed to load category counts", categoryRes);
         }
 
       } catch (err) {
@@ -67,19 +63,6 @@ const Dashboard = () => {
             Here is the summary of overall data
           </p>
         </div>
-
-        {/* <div className="flex gap-3">
-          <FilterSelect
-            value={month}
-            onChange={setMonth}
-            options={["Month", "January", "February", "March"]}
-          />
-          <FilterSelect
-            value={year}
-            onChange={setYear}
-            options={["Year", "2023", "2024", "2025"]}
-          />
-        </div> */}
       </div>
 
       {/* STATS */}

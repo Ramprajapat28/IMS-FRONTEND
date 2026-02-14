@@ -81,10 +81,10 @@ const GlobalCategoryPage = () => {
                     </div>
                 ) : globalCategories.length > 0 ? (
                     globalCategories.map((category) => (
-                        <button
+                        <div
                             key={category.global_category_id}
                             onClick={() => handleGlobalCategoryClick(category.global_category_id, category.category_name)}
-                            className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 hover:border-blue-300 group text-left"
+                            className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 hover:border-blue-300 group text-left cursor-pointer"
                         >
                             <div className="flex items-start justify-between mb-4">
                                 <div className="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center overflow-hidden border border-blue-100">
@@ -118,7 +118,7 @@ const GlobalCategoryPage = () => {
 
                             <h3 className="text-xl font-bold text-gray-900 mb-1 capitalize">{category.category_name}</h3>
                             <p className="text-sm text-gray-500">Click to view categories</p>
-                        </button>
+                        </div>
                     ))
                 ) : (
                     <div className="col-span-full py-20 text-center bg-gray-50 rounded-xl border border-dashed border-gray-300">

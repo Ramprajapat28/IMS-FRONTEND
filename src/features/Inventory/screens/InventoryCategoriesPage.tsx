@@ -128,10 +128,10 @@ const InventoryCategoriesPage = () => {
                     </div>
                 ) : categories.length > 0 ? (
                     categories.map((category) => (
-                        <button
+                        <div
                             key={category.id}
                             onClick={() => handleCategoryClick(category)}
-                            className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 hover:border-blue-300 group text-left"
+                            className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 hover:border-blue-300 group text-left cursor-pointer"
                         >
                             <div className="flex items-start justify-between mb-4">
                                 <div className={`w-12 h-12 rounded-lg ${category.color} flex items-center justify-center overflow-hidden`}>
@@ -161,7 +161,7 @@ const InventoryCategoriesPage = () => {
 
                             <h3 className="text-lg font-semibold text-gray-900 mb-1">{category.name}</h3>
                             <p className="text-sm text-gray-500">{category.count} items in stock</p>
-                        </button>
+                        </div>
                     ))
                 ) : (
                     <div className="col-span-full py-20 text-center bg-gray-50 rounded-xl border border-dashed border-gray-300">
