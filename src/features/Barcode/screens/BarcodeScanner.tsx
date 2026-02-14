@@ -622,17 +622,17 @@ const BarcodeScannerPage: React.FC = () => {
     }
 
     return (
-        <div className="h-screen lg:h-[95%] overflow-y-hidden bg-gray-50 flex flex-col">
+        <div className="min-h-screen md:min-h-[80%] bg-gray-50 flex flex-col">
             <Header />
 
-            <div className="flex-1 overflow-y-hidden">
-                <div className="h-full bg-white rounded-xl border shadow-sm p-3">
-                    <div className="h-full grid grid-cols-1 lg:grid-cols-12 gap-3">
+            <div className="flex-1">
+                <div className="bg-white rounded-xl border shadow-sm p-3">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
 
                         {/* LEFT: CAMERA SCANNER (HIDDEN WHEN PRODUCT FOUND) */}
                         {!product && (
-                            <div className="order-1 lg:order-1 lg:col-span-8 h-full">
-                                <div className="h-full rounded-lg border overflow-hidden flex flex-col bg-gray-900">
+                            <div className="order-1 overflow-hidden lg:order-1 lg:col-span-8">
+                                <div className="min-h-[400px] lg:min-h-[700px]  rounded-lg border flex flex-col bg-gray-900 overflow-hidden">
                                     <div className="bg-white border-b px-4 py-3 font-semibold text-gray-900 text-sm flex items-center justify-between">
                                         <span className="flex items-center gap-2">
                                             <Camera size={18} className="text-gray-700" />
@@ -642,7 +642,7 @@ const BarcodeScannerPage: React.FC = () => {
 
 
                                     {mode === "camera" && (
-                                        <div className="flex-1 relative bg-black">
+                                        <div className="flex-1  relative bg-black">
                                             {!cameraError ? (
                                                 <>
                                                     <video
@@ -746,279 +746,344 @@ const BarcodeScannerPage: React.FC = () => {
                         )}
 
                         {/* RIGHT: PRODUCT INFO */}
-                        <div className={`order-1 lg:order-1 ${product ? "md:col-span-12" : "hidden lg:block lg:col-span-4"} h-full overflow-hidden`}>
-                            <div className="h-full rounded-lg border overflow-hidden flex flex-col">
+                        <div className={`order-1 lg:order-1 ${product ? "md:col-span-12" : "hidden lg:block lg:col-span-4"}`}>
 
-                                {!product && (
-                                    <>
-                                        <div className="bg-gray-50 px-4 py-2 font-semibold border-b text-gray-900 text-sm">
-                                            Product Information
-                                        </div>
-                                        <div className="flex-1 flex items-center justify-center text-gray-400 text-sm p-6">
-                                            {isLoading ? (
-                                                <div className="text-center">
-                                                    <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-3" />
-                                                    <p className="text-gray-600">Loading product details...</p>
-                                                </div>
-                                            ) : error ? (
-                                                <div className="text-center">
-                                                    <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
-                                                    <p className="text-red-500 mb-3">{error}</p>
-                                                    <button
-                                                        onClick={() => {
-                                                            setError(null);
-                                                            setProduct(null);
-                                                        }}
-                                                        className="text-blue-600 hover:underline text-sm font-medium"
-                                                    >
-                                                        Try Scanning Again
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <div className="text-center">
-                                                    <Package className="w-16 h-16 mx-auto mb-3 text-gray-300" />
-                                                    <p className="text-gray-600 font-medium mb-1">Ready to Scan</p>
-                                                    <p className="text-gray-400 text-xs">Position barcode in camera view</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </>
-                                )}
-
-                                {product && (
-                                    <div className="flex-1 h-full overflow-auto p-3">
-                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-
-                                            {/* Product Details Box */}
-                                            <div className="border rounded-lg p-3 bg-white relative">
+                            
+                            {!product && (
+                                <>
+                                <div className="h-full  border rounded-lg ">
+                                    <div className=" bg-gray-50 px-4 py-2 font-semibold border-b text-gray-900 text-sm">
+                                        Product Information
+                                    </div>
+                                    <div className="flex-1 h-full  flex items-center justify-center text-gray-400 text-sm p-6">
+                                        {isLoading ? (
+                                            <div className="text-center">
+                                                <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-3" />
+                                                <p className="text-gray-600">Loading product details...</p>
+                                            </div>
+                                        ) : error ? (
+                                            <div className="text-center">
+                                                <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+                                                <p className="text-red-500 mb-3">{error}</p>
                                                 <button
-                                                    onClick={resetScanner}
-                                                    className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 z-10 transition"
-                                                    title="Clear and scan another"
+                                                    onClick={() => {
+                                                        setError(null);
+                                                        setProduct(null);
+                                                    }}
+                                                    className="text-blue-600 hover:underline text-sm font-medium"
                                                 >
-                                                    <X size={20} />
+                                                    Try Scanning Again
                                                 </button>
+                                            </div>
+                                        ) : (
+                                            <div className="text-center">
+                                                <Package className="w-16 h-16 mx-auto mb-3 text-gray-300" />
+                                                <p className="text-gray-600 font-medium mb-1">Ready to Scan</p>
+                                                <p className="text-gray-400 text-xs">Position barcode in camera view</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    </div>
+                                </>
+                            )}
+                            
 
-                                                <div className="flex gap-3">
-                                                    {/* Product Image */}
-                                                    <div className="flex-shrink-0">
-                                                        <div className="w-24 h-28 rounded-lg border-2 border-gray-300 overflow-hidden bg-gray-50">
-                                                            {(() => {
-                                                                const imgs = product.product_image;
-                                                                let url = "";
-                                                                if (Array.isArray(imgs) && imgs.length > 0) {
-                                                                    const item = imgs[0];
-                                                                    if (typeof item === 'object') {
-                                                                        url = item.file_path || item.cdnUrl || item.url || "";
-                                                                    } else {
-                                                                        url = String(item);
-                                                                    }
-                                                                } else if (typeof imgs === 'string') {
-                                                                    if (imgs.startsWith('[') || imgs.startsWith('{')) {
-                                                                        try {
-                                                                            const parsed = JSON.parse(imgs);
-                                                                            if (Array.isArray(parsed) && parsed.length > 0) {
-                                                                                const first = parsed[0];
-                                                                                url = typeof first === 'object' ? (first.file_path || "") : String(first);
-                                                                            } else if (typeof parsed === 'object') {
-                                                                                url = parsed.file_path || "";
-                                                                            }
-                                                                        } catch { url = imgs; }
-                                                                    } else {
-                                                                        url = imgs;
-                                                                    }
+                            {product && (
+                                <div className="flex-1 p-3">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+
+                                        {/* Product Details Box */}
+                                        <div className="border rounded-lg p-3 bg-white relative ">
+                                            <button
+                                                onClick={resetScanner}
+                                                className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 z-10 transition"
+                                                title="Clear and scan another"
+                                            >
+                                                <X size={20} />
+                                            </button>
+
+                                            <div className="flex gap-3">
+                                                {/* Product Image */}
+                                                <div className="flex-shrink-0">
+                                                    <div className="w-24 h-28 rounded-lg border-2 border-gray-300 overflow-hidden bg-gray-50">
+                                                        {(() => {
+                                                            const imgs = product.product_image;
+                                                            let url = "";
+                                                            if (Array.isArray(imgs) && imgs.length > 0) {
+                                                                const item = imgs[0];
+                                                                if (typeof item === 'object') {
+                                                                    url = item.file_path || item.cdnUrl || item.url || "";
+                                                                } else {
+                                                                    url = String(item);
                                                                 }
+                                                            } else if (typeof imgs === 'string') {
+                                                                if (imgs.startsWith('[') || imgs.startsWith('{')) {
+                                                                    try {
+                                                                        const parsed = JSON.parse(imgs);
+                                                                        if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                            const first = parsed[0];
+                                                                            url = typeof first === 'object' ? (first.file_path || "") : String(first);
+                                                                        } else if (typeof parsed === 'object') {
+                                                                            url = parsed.file_path || "";
+                                                                        }
+                                                                    } catch { url = imgs; }
+                                                                } else {
+                                                                    url = imgs;
+                                                                }
+                                                            }
 
-                                                                return url ? (
-                                                                    <img
-                                                                        src={url}
-                                                                        alt="Product"
-                                                                        className="w-full h-full object-cover"
-                                                                        onError={(e) => {
-                                                                            e.currentTarget.style.display = 'none';
-                                                                            const parent = e.currentTarget.parentElement;
-                                                                            if (parent) {
-                                                                                parent.innerHTML = '<div class="w-full h-full flex flex-col items-center justify-center text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg><p class="text-xs mt-1">No image</p></div>';
-                                                                            }
-                                                                        }}
-                                                                    />
-                                                                ) : (
-                                                                    <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
-                                                                        <Package size={24} />
-                                                                        <p className="text-xs mt-1">No image</p>
-                                                                    </div>
-                                                                );
-                                                            })()}
+                                                            return url ? (
+                                                                <img
+                                                                    src={url}
+                                                                    alt="Product"
+                                                                    className="w-full h-full object-cover"
+                                                                    onError={(e) => {
+                                                                        e.currentTarget.style.display = 'none';
+                                                                        const parent = e.currentTarget.parentElement;
+                                                                        if (parent) {
+                                                                            parent.innerHTML = '<div class="w-full h-full flex flex-col items-center justify-center text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg><p class="text-xs mt-1">No image</p></div>';
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                                                                    <Package size={24} />
+                                                                    <p className="text-xs mt-1">No image</p>
+                                                                </div>
+                                                            );
+                                                        })()}
+                                                    </div>
+                                                </div>
+
+                                                {/* Product Info */}
+                                                <div className="flex-1 space-y-3">
+                                                    <div className="flex items-start gap-2">
+                                                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                            <Edit3 className="w-3.5 h-3.5 text-gray-700" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-[14px] text-gray-400 mb-0.5">Product Name</p>
+                                                            <p className="text-sm font-semibold text-gray-900">{product.name}</p>
                                                         </div>
                                                     </div>
 
-                                                    {/* Product Info */}
-                                                    <div className="flex-1 space-y-2">
-                                                        <div className="flex items-start gap-2">
-                                                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                                                <Edit3 className="w-3.5 h-3.5 text-gray-700" />
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <p className="text-[14px] text-gray-400 mb-0.5">Product Name</p>
-                                                                <p className="text-sm font-semibold text-gray-900">{product.name}</p>
-                                                            </div>
+                                                    <div className="flex items-start gap-2">
+                                                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                            <Tag className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
-
-                                                        <div className="flex items-start gap-2">
-                                                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                                                <Tag className="w-3.5 h-3.5 text-gray-700" />
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <p className="text-[14px] text-gray-400 uppercase mb-0.5">Category</p>
-                                                                <p className="text-sm font-medium text-gray-900">{product.global_category_name || "-"}</p>
-                                                            </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-[14px] text-gray-400 uppercase mb-0.5">Category</p>
+                                                            <p className="text-sm font-medium text-gray-900">{product.global_category_name || "-"}</p>
                                                         </div>
+                                                    </div>
 
-                                                        <div className="flex items-start gap-2">
-                                                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                                                <Tag className="w-3.5 h-3.5 text-gray-700" />
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <p className="text-[14px] text-gray-400 uppercase mb-0.5">Sub Category</p>
-                                                                <p className="text-sm font-medium text-gray-900">{product.category_name || "-"}</p>
-                                                            </div>
+                                                    <div className="flex items-start gap-2">
+                                                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                            <Tag className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
-
-                                                        <div className="flex items-start gap-2">
-                                                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                                                <Hash className="w-3.5 h-3.5 text-gray-700" />
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <p className="text-[14px] text-gray-400 uppercase mb-0.5">SKU</p>
-                                                                <p className="text-sm font-bold text-gray-900">{product.sku}</p>
-                                                            </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-[14px] text-gray-400 uppercase mb-0.5">Sub Category</p>
+                                                            <p className="text-sm font-medium text-gray-900">{product.category_name || "-"}</p>
                                                         </div>
+                                                    </div>
 
-                                                        <div className="flex items-start gap-2">
-                                                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                                                <FileText className="w-3.5 h-3.5 text-gray-700" />
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <p className="text-[14px] text-gray-400 uppercase mb-0.5">HSN Code</p>
-                                                                <p className="text-sm font-medium text-gray-900">{product.hsn_code || "-"}</p>
-                                                            </div>
+                                                    <div className="flex items-start gap-2">
+                                                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                            <Hash className="w-3.5 h-3.5 text-gray-700" />
                                                         </div>
-
-                                                        <div className="flex items-start gap-2">
-                                                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                                                <Type className="w-3.5 h-3.5 text-gray-700" />
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <p className="text-[14px] text-gray-400 uppercase mb-0.5">Size</p>
-                                                                <p className="text-sm font-medium text-gray-900">{product.size || "-"}</p>
-                                                            </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-[14px] text-gray-400 uppercase mb-0.5">SKU</p>
+                                                            <p className="text-sm font-bold text-gray-900">{product.sku}</p>
                                                         </div>
+                                                    </div>
 
-                                                        <div className="flex items-start gap-2 col-span-full">
-                                                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                                                <FileText className="w-3.5 h-3.5 text-gray-700" />
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <p className="text-[14px] text-gray-400 uppercase mb-0.5">Description</p>
-                                                                <p className="text-sm text-gray-600 leading-relaxed">{product.description || "-"}</p>
-                                                            </div>
+                                                    <div className="flex items-start gap-2">
+                                                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                            <FileText className="w-3.5 h-3.5 text-gray-700" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-[14px] text-gray-400 uppercase mb-0.5">HSN Code</p>
+                                                            <p className="text-sm font-medium text-gray-900">{product.hsn_code || "-"}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-start gap-2">
+                                                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                            <Type className="w-3.5 h-3.5 text-gray-700" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-[14px] text-gray-400 uppercase mb-0.5">Size</p>
+                                                            <p className="text-sm font-medium text-gray-900">{product.size || "-"}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-start gap-2 col-span-full">
+                                                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                            <FileText className="w-3.5 h-3.5 text-gray-700" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-[14px] text-gray-400 uppercase mb-0.5">Description</p>
+                                                            <p className="text-sm text-gray-600 leading-relaxed">{product.description || "-"}</p>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
 
-                                            {/* Location & Actions Box */}
-                                            <div className="border rounded-lg p-3 bg-white">
-                                                <div className="space-y-2.5">
-                                                    {/* Mode Toggle */}
-                                                    <div className="flex gap-2 border-b pb-2">
-                                                        <button
-                                                            onClick={() => setIsReturnMode(false)}
-                                                            className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition ${!isReturnMode ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                                                }`}
-                                                        >
-                                                            Sell
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setIsReturnMode(true)}
-                                                            className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition ${isReturnMode ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                                                }`}
-                                                        >
-                                                            Return
-                                                        </button>
-                                                    </div>
+                                        {/* Location & Actions Box */}
+                                        <div className="border rounded-lg p-3 bg-white">
+                                            <div className="space-y-2.5">
+                                                {/* Mode Toggle */}
+                                                <div className="flex gap-2 border-b pb-2">
+                                                    <button
+                                                        onClick={() => setIsReturnMode(false)}
+                                                        className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition ${!isReturnMode ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                            }`}
+                                                    >
+                                                        Sell
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setIsReturnMode(true)}
+                                                        className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition ${isReturnMode ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                            }`}
+                                                    >
+                                                        Return
+                                                    </button>
+                                                </div>
 
-                                                    {/* SELL MODE */}
-                                                    {!isReturnMode && (
-                                                        <>
-                                                            <p className="text-sm font-semibold text-gray-900">1. Select Location:</p>
+                                                {/* SELL MODE */}
+                                                {!isReturnMode && (
+                                                    <>
+                                                        <p className="text-sm font-semibold text-gray-900">1. Select Location:</p>
 
-                                                            <div className="space-y-1.5">
-                                                                {/* Warehouse */}
-                                                                <div>
-                                                                    <label className="text-[11px] text-gray-500 mb-1 block">
-                                                                        Warehouse <span className="text-red-500">*</span>
-                                                                    </label>
-                                                                    <div className="relative">
-                                                                        {uniqueWarehouses.length === 1 ? (
-                                                                            <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
-                                                                                <span className="truncate">{uniqueWarehouses[0]?.warehouse_name}</span>
-                                                                                <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
-                                                                            </div>
-                                                                        ) : (
-                                                                            <>
-                                                                                <select
-                                                                                    className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                                                                                    value={selectedWarehouseId}
-                                                                                    onChange={(e) => {
-                                                                                        setSelectedWarehouseId(Number(e.target.value));
-                                                                                        setSelectedRoomId("");
-                                                                                        setSelectedShelfId("");
-                                                                                        setSelectedRackId("");
-                                                                                    }}
+                                                        <div className="space-y-1.5">
+                                                            {/* Warehouse */}
+                                                            <div>
+                                                                <label className="text-[11px] text-gray-500 mb-1 block">
+                                                                    Warehouse <span className="text-red-500">*</span>
+                                                                </label>
+                                                                <div className="relative">
+                                                                    {uniqueWarehouses.length === 1 ? (
+                                                                        <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                            <span className="truncate">{uniqueWarehouses[0]?.warehouse_name}</span>
+                                                                            <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <>
+                                                                            <select
+                                                                                className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                                                                                value={selectedWarehouseId}
+                                                                                onChange={(e) => {
+                                                                                    setSelectedWarehouseId(Number(e.target.value));
+                                                                                    setSelectedRoomId("");
+                                                                                    setSelectedShelfId("");
+                                                                                    setSelectedRackId("");
+                                                                                }}
 
-                                                                                >
-                                                                                    <option value="">Select Warehouse</option>
-                                                                                    {uniqueWarehouses.map((w) => (
-                                                                                        <option key={w?.warehouse_id} value={w?.warehouse_id}>
-                                                                                            {w?.warehouse_name}
-                                                                                        </option>
-                                                                                    ))}
+                                                                            >
+                                                                                <option value="">Select Warehouse</option>
+                                                                                {uniqueWarehouses.map((w) => (
+                                                                                    <option key={w?.warehouse_id} value={w?.warehouse_id}>
+                                                                                        {w?.warehouse_name}
+                                                                                    </option>
+                                                                                ))}
 
-                                                                                </select>
+                                                                            </select>
 
-                                                                            </>
-                                                                        )}
-                                                                    </div>
+                                                                        </>
+                                                                    )}
                                                                 </div>
+                                                            </div>
 
-                                                                {/* Room */}
+                                                            {/* Room */}
+                                                            <div>
+                                                                <label className="text-[11px] text-gray-500 mb-1 block">
+                                                                    Room <span className="text-red-500">*</span>
+                                                                </label>
+                                                                <div className="relative">
+                                                                    {uniqueRooms.length === 1 ? (
+                                                                        <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                            <span className="truncate">{uniqueRooms[0]?.room_name}</span>
+                                                                            <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <>
+                                                                            <select
+                                                                                className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
+                                                                                value={selectedRoomId}
+                                                                                onChange={(e) => {
+                                                                                    setSelectedRoomId(Number(e.target.value));
+                                                                                    setSelectedShelfId("");
+                                                                                    setSelectedRackId("");
+                                                                                }}
+                                                                                disabled={!selectedWarehouseId}
+                                                                            >
+                                                                                <option value="">Select Room</option>
+                                                                                {uniqueRooms.map((r) => (
+                                                                                    <option key={r?.room_id} value={r?.room_id}>
+                                                                                        {r?.room_name}
+                                                                                    </option>
+                                                                                ))}
+                                                                            </select>
+
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Storage Type Toggle */}
+                                                            <div className="flex flex-col gap-1.5 mt-2">
+                                                                <label className="text-[11px] text-gray-500 block">Storage Type</label>
+                                                                <div className="flex p-0.5 bg-gray-100 rounded-lg w-fit">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            setStorageType('shelf');
+                                                                            setSelectedRackId("");
+                                                                        }}
+                                                                        className={`px-3 py-1 text-[10px] font-medium rounded-md transition ${storageType === 'shelf' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
+                                                                            }`}
+                                                                    >
+                                                                        Shelf
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            setStorageType('rack');
+                                                                            setSelectedShelfId("");
+                                                                        }}
+                                                                        className={`px-3 py-1 text-[10px] font-medium rounded-md transition ${storageType === 'rack' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
+                                                                            }`}
+                                                                    >
+                                                                        Rack
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Shelf/Rack Selector */}
+                                                            {storageType === 'shelf' && (
                                                                 <div>
                                                                     <label className="text-[11px] text-gray-500 mb-1 block">
-                                                                        Room <span className="text-red-500">*</span>
+                                                                        Shelf <span className="text-red-500">*</span>
                                                                     </label>
                                                                     <div className="relative">
-                                                                        {uniqueRooms.length === 1 ? (
+                                                                        {uniqueShelves.length === 1 ? (
                                                                             <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
-                                                                                <span className="truncate">{uniqueRooms[0]?.room_name}</span>
+                                                                                <span className="truncate">{uniqueShelves[0]?.shelf_name}</span>
                                                                                 <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
                                                                             </div>
                                                                         ) : (
                                                                             <>
                                                                                 <select
                                                                                     className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
-                                                                                    value={selectedRoomId}
-                                                                                    onChange={(e) => {
-                                                                                        setSelectedRoomId(Number(e.target.value));
-                                                                                        setSelectedShelfId("");
-                                                                                        setSelectedRackId("");
-                                                                                    }}
-                                                                                    disabled={!selectedWarehouseId}
+                                                                                    value={selectedShelfId}
+                                                                                    onChange={(e) => setSelectedShelfId(Number(e.target.value))}
+                                                                                    disabled={!selectedRoomId}
                                                                                 >
-                                                                                    <option value="">Select Room</option>
-                                                                                    {uniqueRooms.map((r) => (
-                                                                                        <option key={r?.room_id} value={r?.room_id}>
-                                                                                            {r?.room_name}
+                                                                                    <option value="">Select Shelf</option>
+                                                                                    {uniqueShelves.map((s) => (
+                                                                                        <option key={s?.shelf_id} value={s?.shelf_id}>
+                                                                                            {s?.shelf_name} (Stock: {s?.item_count})
                                                                                         </option>
                                                                                     ))}
                                                                                 </select>
@@ -1027,214 +1092,31 @@ const BarcodeScannerPage: React.FC = () => {
                                                                         )}
                                                                     </div>
                                                                 </div>
+                                                            )}
 
-                                                                {/* Storage Type Toggle */}
-                                                                <div className="flex flex-col gap-1.5 mt-2">
-                                                                    <label className="text-[11px] text-gray-500 block">Storage Type</label>
-                                                                    <div className="flex p-0.5 bg-gray-100 rounded-lg w-fit">
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => {
-                                                                                setStorageType('shelf');
-                                                                                setSelectedRackId("");
-                                                                            }}
-                                                                            className={`px-3 py-1 text-[10px] font-medium rounded-md transition ${storageType === 'shelf' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
-                                                                                }`}
-                                                                        >
-                                                                            Shelf
-                                                                        </button>
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => {
-                                                                                setStorageType('rack');
-                                                                                setSelectedShelfId("");
-                                                                            }}
-                                                                            className={`px-3 py-1 text-[10px] font-medium rounded-md transition ${storageType === 'rack' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
-                                                                                }`}
-                                                                        >
-                                                                            Rack
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-
-                                                                {/* Shelf/Rack Selector */}
-                                                                {storageType === 'shelf' && (
-                                                                    <div>
-                                                                        <label className="text-[11px] text-gray-500 mb-1 block">
-                                                                            Shelf <span className="text-red-500">*</span>
-                                                                        </label>
-                                                                        <div className="relative">
-                                                                            {uniqueShelves.length === 1 ? (
-                                                                                <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
-                                                                                    <span className="truncate">{uniqueShelves[0]?.shelf_name}</span>
-                                                                                    <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
-                                                                                </div>
-                                                                            ) : (
-                                                                                <>
-                                                                                    <select
-                                                                                        className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
-                                                                                        value={selectedShelfId}
-                                                                                        onChange={(e) => setSelectedShelfId(Number(e.target.value))}
-                                                                                        disabled={!selectedRoomId}
-                                                                                    >
-                                                                                        <option value="">Select Shelf</option>
-                                                                                        {uniqueShelves.map((s) => (
-                                                                                            <option key={s?.shelf_id} value={s?.shelf_id}>
-                                                                                                {s?.shelf_name} (Stock: {s?.item_count})
-                                                                                            </option>
-                                                                                        ))}
-                                                                                    </select>
-
-                                                                                </>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-
-                                                                {storageType === 'rack' && (
-                                                                    <div>
-                                                                        <label className="text-[11px] text-gray-500 mb-1 block">
-                                                                            Rack <span className="text-red-500">*</span>
-                                                                        </label>
-                                                                        <div className="relative">
-                                                                            {uniqueRacks.length === 1 ? (
-                                                                                <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
-                                                                                    <span className="truncate">{uniqueRacks[0]?.rack_name}</span>
-                                                                                    <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
-                                                                                </div>
-                                                                            ) : (
-                                                                                <>
-                                                                                    <select
-                                                                                        className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
-                                                                                        value={selectedRackId}
-                                                                                        onChange={(e) => setSelectedRackId(Number(e.target.value))}
-                                                                                        disabled={!selectedRoomId}
-                                                                                    >
-                                                                                        <option value="">Select Rack</option>
-                                                                                        {uniqueRacks.map((r) => (
-                                                                                            <option key={r?.rack_id} value={r?.rack_id}>
-                                                                                                {r?.rack_name} (Stock: {r?.item_count})
-                                                                                            </option>
-                                                                                        ))}
-                                                                                    </select>
-
-                                                                                </>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-
-                                                            <p className="text-sm font-semibold text-gray-900 mt-3">2. Selling Details:</p>
-
-                                                            {/* Selling Mode */}
-                                                            <div className="w-[250px]">
-                                                                <label className="text-[11px] text-gray-500 mb-1 block">Mode</label>
-                                                                <div className="flex p-0.5 bg-gray-100 rounded-lg">
-                                                                    <button
-                                                                        onClick={() => setSellingMode("Online")}
-                                                                        className={`flex-1 px-3 py-1 text-[10px] font-medium rounded-md transition ${sellingMode === "Online" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
-                                                                            }`}
-                                                                    >
-                                                                        Online
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => setSellingMode("Offline")}
-                                                                        className={`flex-1 px-3 py-1 text-[10px] font-medium rounded-md transition ${sellingMode === "Offline" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
-                                                                            }`}
-                                                                    >
-                                                                        Offline
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Quantity */}
-                                                            <div className="w-[50px]">
-                                                                <label className="text-[11px] text-gray-500 mb-1 block">Quantity</label>
-                                                                <div className="flex items-center gap-2">
-                                                                    <button
-                                                                        onClick={() => setQuantity(prev => Math.max(1, (Number(prev) || 1) - 1))}
-                                                                        className="w- h-8 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
-                                                                    >
-                                                                        <Minus size={14} />
-                                                                    </button>
-                                                                    <input
-                                                                        type="number"
-                                                                        min="1"
-                                                                        value={quantity}
-                                                                        onChange={(e) => setQuantity(Number(e.target.value) || "")}
-                                                                        className="flex-1 border border-gray-300 rounded-md px-2.5 py-1.5 text-xs text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                                                                    />
-                                                                    <button
-                                                                        onClick={() => setQuantity(prev => {
-                                                                            const newQty = (Number(prev) || 1) + 1;
-                                                                            return currentLocationStock > 0 && newQty > currentLocationStock
-                                                                                ? currentLocationStock
-                                                                                : newQty;
-                                                                        })}
-                                                                        className="w-8 h-8 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
-                                                                    >
-                                                                        <Plus size={14} />
-                                                                    </button>
-                                                                </div>
-                                                                {currentLocationStock > 0 && (
-                                                                    <p className="text-[10px] text-gray-500 mt-1">
-                                                                        Available: <span className="font-semibold text-green-600">{currentLocationStock}</span>
-                                                                    </p>
-                                                                )}
-                                                            </div>
-
-                                                            {/* Sell Button */}
-                                                            <button
-                                                                onClick={handleSell}
-                                                                disabled={isSelling || !selectedShelfId && !selectedRackId}
-                                                                className="w-[200px] bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
-                                                            >
-                                                                {isSelling ? (
-                                                                    <>
-                                                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                                                        Processing...
-                                                                    </>
-                                                                ) : (
-                                                                    "✓ Sell Product"
-                                                                )}
-                                                            </button>
-                                                        </>
-                                                    )}
-
-                                                    {/* RETURN MODE - Similar structure, keeping it concise */}
-                                                    {isReturnMode && (
-                                                        <>
-                                                            <p className="text-sm font-semibold text-gray-900">1. Select Return Location:</p>
-
-                                                            <div className="space-y-1.5">
-                                                                {/* Warehouse */}
+                                                            {storageType === 'rack' && (
                                                                 <div>
                                                                     <label className="text-[11px] text-gray-500 mb-1 block">
-                                                                        Warehouse <span className="text-red-500">*</span>
+                                                                        Rack <span className="text-red-500">*</span>
                                                                     </label>
                                                                     <div className="relative">
-                                                                        {allWarehouses.length === 1 ? (
+                                                                        {uniqueRacks.length === 1 ? (
                                                                             <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
-                                                                                <span className="truncate">{allWarehouses[0]?.name}</span>
+                                                                                <span className="truncate">{uniqueRacks[0]?.rack_name}</span>
                                                                                 <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
                                                                             </div>
                                                                         ) : (
                                                                             <>
                                                                                 <select
-                                                                                    className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
-                                                                                    value={returnWarehouseId}
-                                                                                    onChange={(e) => {
-                                                                                        setReturnWarehouseId(Number(e.target.value));
-                                                                                        setReturnRoomId("");
-                                                                                        setReturnShelfId("");
-                                                                                        setReturnRackId("");
-                                                                                    }}
+                                                                                    className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
+                                                                                    value={selectedRackId}
+                                                                                    onChange={(e) => setSelectedRackId(Number(e.target.value))}
+                                                                                    disabled={!selectedRoomId}
                                                                                 >
-                                                                                    <option value="">Select Warehouse</option>
-                                                                                    {allWarehouses.map((w: any) => (
-                                                                                        <option key={w.warehouse_id} value={w.warehouse_id}>
-                                                                                            {w.name || w.warehouse_name}
+                                                                                    <option value="">Select Rack</option>
+                                                                                    {uniqueRacks.map((r) => (
+                                                                                        <option key={r?.rack_id} value={r?.rack_id}>
+                                                                                            {r?.rack_name} (Stock: {r?.item_count})
                                                                                         </option>
                                                                                     ))}
                                                                                 </select>
@@ -1243,34 +1125,217 @@ const BarcodeScannerPage: React.FC = () => {
                                                                         )}
                                                                     </div>
                                                                 </div>
+                                                            )}
+                                                        </div>
 
-                                                                {/* Room */}
+                                                        <p className="text-sm font-semibold text-gray-900 mt-3">2. Selling Details:</p>
+
+                                                        {/* Selling Mode */}
+                                                        <div className="w-[250px]">
+                                                            <label className="text-[11px] text-gray-500 mb-1 block">Mode</label>
+                                                            <div className="flex p-0.5 bg-gray-100 rounded-lg">
+                                                                <button
+                                                                    onClick={() => setSellingMode("Online")}
+                                                                    className={`flex-1 px-3 py-1 text-[10px] font-medium rounded-md transition ${sellingMode === "Online" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
+                                                                        }`}
+                                                                >
+                                                                    Online
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setSellingMode("Offline")}
+                                                                    className={`flex-1 px-3 py-1 text-[10px] font-medium rounded-md transition ${sellingMode === "Offline" ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
+                                                                        }`}
+                                                                >
+                                                                    Offline
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Quantity */}
+                                                        <div className="w-[50px]">
+                                                            <label className="text-[11px] text-gray-500 mb-1 block">Quantity</label>
+                                                            <div className="flex items-center gap-2">
+                                                                <button
+                                                                    onClick={() => setQuantity(prev => Math.max(1, (Number(prev) || 1) - 1))}
+                                                                    className="w- h-8 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
+                                                                >
+                                                                    <Minus size={14} />
+                                                                </button>
+                                                                <input
+                                                                    type="number"
+                                                                    min="1"
+                                                                    value={quantity}
+                                                                    onChange={(e) => setQuantity(Number(e.target.value) || "")}
+                                                                    className="flex-1 border border-gray-300 rounded-md px-2.5 py-1.5 text-xs text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                                                                />
+                                                                <button
+                                                                    onClick={() => setQuantity(prev => {
+                                                                        const newQty = (Number(prev) || 1) + 1;
+                                                                        return currentLocationStock > 0 && newQty > currentLocationStock
+                                                                            ? currentLocationStock
+                                                                            : newQty;
+                                                                    })}
+                                                                    className="w-8 h-8 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
+                                                                >
+                                                                    <Plus size={14} />
+                                                                </button>
+                                                            </div>
+                                                            {currentLocationStock > 0 && (
+                                                                <p className="text-[10px] text-gray-500 mt-1">
+                                                                    Available: <span className="font-semibold text-green-600">{currentLocationStock}</span>
+                                                                </p>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Sell Button */}
+                                                        <button
+                                                            onClick={handleSell}
+                                                            disabled={isSelling || !selectedShelfId && !selectedRackId}
+                                                            className="w-[200px] bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
+                                                        >
+                                                            {isSelling ? (
+                                                                <>
+                                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                                    Processing...
+                                                                </>
+                                                            ) : (
+                                                                "✓ Sell Product"
+                                                            )}
+                                                        </button>
+                                                    </>
+                                                )}
+
+                                                {/* RETURN MODE - Similar structure, keeping it concise */}
+                                                {isReturnMode && (
+                                                    <>
+                                                        <p className="text-sm font-semibold text-gray-900">1. Select Return Location:</p>
+
+                                                        <div className="space-y-1.5">
+                                                            {/* Warehouse */}
+                                                            <div>
+                                                                <label className="text-[11px] text-gray-500 mb-1 block">
+                                                                    Warehouse <span className="text-red-500">*</span>
+                                                                </label>
+                                                                <div className="relative">
+                                                                    {allWarehouses.length === 1 ? (
+                                                                        <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                            <span className="truncate">{allWarehouses[0]?.name}</span>
+                                                                            <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <>
+                                                                            <select
+                                                                                className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
+                                                                                value={returnWarehouseId}
+                                                                                onChange={(e) => {
+                                                                                    setReturnWarehouseId(Number(e.target.value));
+                                                                                    setReturnRoomId("");
+                                                                                    setReturnShelfId("");
+                                                                                    setReturnRackId("");
+                                                                                }}
+                                                                            >
+                                                                                <option value="">Select Warehouse</option>
+                                                                                {allWarehouses.map((w: any) => (
+                                                                                    <option key={w.warehouse_id} value={w.warehouse_id}>
+                                                                                        {w.name || w.warehouse_name}
+                                                                                    </option>
+                                                                                ))}
+                                                                            </select>
+
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Room */}
+                                                            <div>
+                                                                <label className="text-[11px] text-gray-500 mb-1 block">
+                                                                    Room <span className="text-red-500">*</span>
+                                                                </label>
+                                                                <div className="relative">
+                                                                    {returnRoomsFiltered.length === 1 ? (
+                                                                        <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                            <span className="truncate">{returnRoomsFiltered[0]?.room_name || returnRoomsFiltered[0]?.name}</span>
+                                                                            <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <>
+                                                                            <select
+                                                                                className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
+                                                                                value={returnRoomId}
+                                                                                onChange={(e) => {
+                                                                                    setReturnRoomId(Number(e.target.value));
+                                                                                    setReturnShelfId("");
+                                                                                    setReturnRackId("");
+                                                                                }}
+                                                                                disabled={!returnWarehouseId}
+                                                                            >
+                                                                                <option value="">Select Room</option>
+                                                                                {returnRoomsFiltered.map((r: any) => (
+                                                                                    <option key={r.room_id} value={r.room_id}>
+                                                                                        {r.name || r.room_name}
+                                                                                    </option>
+                                                                                ))}
+                                                                            </select>
+
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Storage Type Toggle */}
+                                                            <div className="flex flex-col gap-1.5 mt-2">
+                                                                <label className="text-[11px] text-gray-500 block">Storage Type</label>
+                                                                <div className="flex p-0.5 bg-gray-100 rounded-lg w-fit">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            setStorageType('shelf');
+                                                                            setReturnRackId("");
+                                                                        }}
+                                                                        className={`px-3 py-1 text-[10px] font-medium rounded-md transition ${storageType === 'shelf' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500'
+                                                                            }`}
+                                                                    >
+                                                                        Shelf
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            setStorageType('rack');
+                                                                            setReturnShelfId("");
+                                                                        }}
+                                                                        className={`px-3 py-1 text-[10px] font-medium rounded-md transition ${storageType === 'rack' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500'
+                                                                            }`}
+                                                                    >
+                                                                        Rack
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Shelf/Rack Selector */}
+                                                            {storageType === 'shelf' && (
                                                                 <div>
                                                                     <label className="text-[11px] text-gray-500 mb-1 block">
-                                                                        Room <span className="text-red-500">*</span>
+                                                                        Shelf <span className="text-red-500">*</span>
                                                                     </label>
                                                                     <div className="relative">
-                                                                        {returnRoomsFiltered.length === 1 ? (
+                                                                        {returnShelvesFiltered.length === 1 ? (
                                                                             <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
-                                                                                <span className="truncate">{returnRoomsFiltered[0]?.room_name || returnRoomsFiltered[0]?.name}</span>
+                                                                                <span className="truncate">{returnShelvesFiltered[0]?.shelf_name || returnShelvesFiltered[0]?.name}</span>
                                                                                 <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
                                                                             </div>
                                                                         ) : (
                                                                             <>
                                                                                 <select
                                                                                     className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
-                                                                                    value={returnRoomId}
-                                                                                    onChange={(e) => {
-                                                                                        setReturnRoomId(Number(e.target.value));
-                                                                                        setReturnShelfId("");
-                                                                                        setReturnRackId("");
-                                                                                    }}
-                                                                                    disabled={!returnWarehouseId}
+                                                                                    value={returnShelfId}
+                                                                                    onChange={(e) => setReturnShelfId(Number(e.target.value))}
+                                                                                    disabled={!returnRoomId}
                                                                                 >
-                                                                                    <option value="">Select Room</option>
-                                                                                    {returnRoomsFiltered.map((r: any) => (
-                                                                                        <option key={r.room_id} value={r.room_id}>
-                                                                                            {r.name || r.room_name}
+                                                                                    <option value="">Select Shelf</option>
+                                                                                    {returnShelvesFiltered.map((s: any) => (
+                                                                                        <option key={s.shelf_id} value={s.shelf_id}>
+                                                                                            {s.shelf_name || s.name}
                                                                                         </option>
                                                                                     ))}
                                                                                 </select>
@@ -1279,156 +1344,94 @@ const BarcodeScannerPage: React.FC = () => {
                                                                         )}
                                                                     </div>
                                                                 </div>
+                                                            )}
 
-                                                                {/* Storage Type Toggle */}
-                                                                <div className="flex flex-col gap-1.5 mt-2">
-                                                                    <label className="text-[11px] text-gray-500 block">Storage Type</label>
-                                                                    <div className="flex p-0.5 bg-gray-100 rounded-lg w-fit">
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => {
-                                                                                setStorageType('shelf');
-                                                                                setReturnRackId("");
-                                                                            }}
-                                                                            className={`px-3 py-1 text-[10px] font-medium rounded-md transition ${storageType === 'shelf' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500'
-                                                                                }`}
-                                                                        >
-                                                                            Shelf
-                                                                        </button>
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => {
-                                                                                setStorageType('rack');
-                                                                                setReturnShelfId("");
-                                                                            }}
-                                                                            className={`px-3 py-1 text-[10px] font-medium rounded-md transition ${storageType === 'rack' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500'
-                                                                                }`}
-                                                                        >
-                                                                            Rack
-                                                                        </button>
+                                                            {storageType === 'rack' && (
+                                                                <div>
+                                                                    <label className="text-[11px] text-gray-500 mb-1 block">
+                                                                        Rack <span className="text-red-500">*</span>
+                                                                    </label>
+                                                                    <div className="relative">
+                                                                        {returnRacksFiltered.length === 1 ? (
+                                                                            <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
+                                                                                <span className="truncate">{returnRacksFiltered[0]?.rack_name || returnRacksFiltered[0]?.name}</span>
+                                                                                <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <>
+                                                                                <select
+                                                                                    className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
+                                                                                    value={returnRackId}
+                                                                                    onChange={(e) => setReturnRackId(Number(e.target.value))}
+                                                                                    disabled={!returnRoomId}
+                                                                                >
+                                                                                    <option value="">Select Rack</option>
+                                                                                    {returnRacksFiltered.map((r: any) => (
+                                                                                        <option key={r.rack_id} value={r.rack_id}>
+                                                                                            {r.rack_name || r.name}
+                                                                                        </option>
+                                                                                    ))}
+
+                                                                                </select>
+
+                                                                            </>
+                                                                        )}
                                                                     </div>
                                                                 </div>
+                                                            )}
+                                                        </div>
 
-                                                                {/* Shelf/Rack Selector */}
-                                                                {storageType === 'shelf' && (
-                                                                    <div>
-                                                                        <label className="text-[11px] text-gray-500 mb-1 block">
-                                                                            Shelf <span className="text-red-500">*</span>
-                                                                        </label>
-                                                                        <div className="relative">
-                                                                            {returnShelvesFiltered.length === 1 ? (
-                                                                                <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
-                                                                                    <span className="truncate">{returnShelvesFiltered[0]?.shelf_name || returnShelvesFiltered[0]?.name}</span>
-                                                                                    <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
-                                                                                </div>
-                                                                            ) : (
-                                                                                <>
-                                                                                    <select
-                                                                                        className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
-                                                                                        value={returnShelfId}
-                                                                                        onChange={(e) => setReturnShelfId(Number(e.target.value))}
-                                                                                        disabled={!returnRoomId}
-                                                                                    >
-                                                                                        <option value="">Select Shelf</option>
-                                                                                        {returnShelvesFiltered.map((s: any) => (
-                                                                                            <option key={s.shelf_id} value={s.shelf_id}>
-                                                                                                {s.shelf_name || s.name}
-                                                                                            </option>
-                                                                                        ))}
-                                                                                    </select>
+                                                        <p className="text-sm font-semibold text-gray-900 mt-3">2. Return Quantity:</p>
 
-                                                                                </>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-
-                                                                {storageType === 'rack' && (
-                                                                    <div>
-                                                                        <label className="text-[11px] text-gray-500 mb-1 block">
-                                                                            Rack <span className="text-red-500">*</span>
-                                                                        </label>
-                                                                        <div className="relative">
-                                                                            {returnRacksFiltered.length === 1 ? (
-                                                                                <div className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs bg-gray-50 text-gray-700 flex items-center justify-between h-[32px]">
-                                                                                    <span className="truncate">{returnRacksFiltered[0]?.rack_name || returnRacksFiltered[0]?.name}</span>
-                                                                                    <span className="ml-2 flex-shrink-0 text-[9px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded uppercase tracking-tighter font-bold">Auto</span>
-                                                                                </div>
-                                                                            ) : (
-                                                                                <>
-                                                                                    <select
-                                                                                        className="w-[250px] border border-gray-300 rounded-md px-2.5 py-1.5 text-xs appearance-none bg-white pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 text-gray-900"
-                                                                                        value={returnRackId}
-                                                                                        onChange={(e) => setReturnRackId(Number(e.target.value))}
-                                                                                        disabled={!returnRoomId}
-                                                                                    >
-                                                                                        <option value="">Select Rack</option>
-                                                                                        {returnRacksFiltered.map((r: any) => (
-                                                                                            <option key={r.rack_id} value={r.rack_id}>
-                                                                                                {r.rack_name || r.name}
-                                                                                            </option>
-                                                                                        ))}
-
-                                                                                    </select>
-
-                                                                                </>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                )}
+                                                        {/* Quantity */}
+                                                        <div>
+                                                            <label className="text-[11px] text-gray-500 mb-1 block">Quantity</label>
+                                                            <div className="flex w-[200px] items-center gap-2">
+                                                                <button
+                                                                    onClick={() => setQuantity(prev => Math.max(1, (Number(prev) || 1) - 1))}
+                                                                    className="w-8 h-8 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
+                                                                >
+                                                                    <Minus size={14} />
+                                                                </button>
+                                                                <input
+                                                                    type="number"
+                                                                    min="1"
+                                                                    value={quantity}
+                                                                    onChange={(e) => setQuantity(Number(e.target.value) || "")}
+                                                                    className="flex-1 border border-gray-300 rounded-md px-2.5 py-1.5 text-xs text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                                                />
+                                                                <button
+                                                                    onClick={() => setQuantity(prev => (Number(prev) || 1) + 1)}
+                                                                    className="w-8 h-8 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
+                                                                >
+                                                                    <Plus size={14} />
+                                                                </button>
                                                             </div>
+                                                        </div>
 
-                                                            <p className="text-sm font-semibold text-gray-900 mt-3">2. Return Quantity:</p>
-
-                                                            {/* Quantity */}
-                                                            <div>
-                                                                <label className="text-[11px] text-gray-500 mb-1 block">Quantity</label>
-                                                                <div className="flex w-[200px] items-center gap-2">
-                                                                    <button
-                                                                        onClick={() => setQuantity(prev => Math.max(1, (Number(prev) || 1) - 1))}
-                                                                        className="w-8 h-8 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
-                                                                    >
-                                                                        <Minus size={14} />
-                                                                    </button>
-                                                                    <input
-                                                                        type="number"
-                                                                        min="1"
-                                                                        value={quantity}
-                                                                        onChange={(e) => setQuantity(Number(e.target.value) || "")}
-                                                                        className="flex-1 border border-gray-300 rounded-md px-2.5 py-1.5 text-xs text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                                                    />
-                                                                    <button
-                                                                        onClick={() => setQuantity(prev => (Number(prev) || 1) + 1)}
-                                                                        className="w-8 h-8 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
-                                                                    >
-                                                                        <Plus size={14} />
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Return Button */}
-                                                            <button
-                                                                onClick={handleReturn}
-                                                                disabled={isReturning || !returnShelfId && !returnRackId}
-                                                                className="w-[200px] bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
-                                                            >
-                                                                {isReturning ? (
-                                                                    <>
-                                                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                                                        Processing...
-                                                                    </>
-                                                                ) : (
-                                                                    "↩ Return Product"
-                                                                )}
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </div>
+                                                        {/* Return Button */}
+                                                        <button
+                                                            onClick={handleReturn}
+                                                            disabled={isReturning || !returnShelfId && !returnRackId}
+                                                            className="w-[200px] bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
+                                                        >
+                                                            {isReturning ? (
+                                                                <>
+                                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                                    Processing...
+                                                                </>
+                                                            ) : (
+                                                                "↩ Return Product"
+                                                            )}
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
+
                         </div>
                     </div>
                 </div>
