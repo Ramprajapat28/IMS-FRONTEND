@@ -325,7 +325,7 @@ const BarcodeScannerPage: React.FC = () => {
                     facingMode: 'environment',
                     width: { ideal: 1280 },
                     height: { ideal: 720 },
-                    aspectRatio: { ideal: window.innerWidth < 768 ? 1 : 16 / 9 },
+                    aspectRatio: { ideal: 16 / 9 },
                     frameRate: { ideal: 30 },
                     // @ts-ignore
                     focusMode: 'continuous',
@@ -642,12 +642,12 @@ const BarcodeScannerPage: React.FC = () => {
 
 
                                     {mode === "camera" && (
-                                        <div className="flex-1  relative bg-black">
+                                        <div className="flex-1 relative bg-black overflow-hidden">
                                             {!cameraError ? (
                                                 <>
                                                     <video
                                                         ref={videoRef}
-                                                        className="w-full h-full object-cover"
+                                                        className="absolute inset-0 w-full h-full object-cover"
                                                         autoPlay
                                                         muted
                                                         playsInline
@@ -668,21 +668,9 @@ const BarcodeScannerPage: React.FC = () => {
                                                             </div>
                                                         </div>
 
-                                                        {/* Top hint badge - Static White Pill */}
-                                                        <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-10">
-                                                            <div className="bg-white/95 backdrop-blur-md px-5 py-2 rounded-full shadow-xl flex items-center gap-2 border border-white/50">
-                                                                <span className="text-gray-900 font-bold text-xs tracking-tight uppercase">Position Barcode Within Frame</span>
-                                                            </div>
-                                                        </div>
 
-                                                        {/* Bottom instructions */}
-                                                        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
-                                                            <div className="bg-black/40 backdrop-blur-sm px-5 py-2 rounded-xl border border-white/10">
-                                                                <p className="text-white text-[10px] font-medium tracking-wide">
-                                                                    {isLoading ? "🔍 LOADING PRODUCT..." : "HOLD BARCODE STEADY WITHIN THE FRAME"}
-                                                                </p>
-                                                            </div>
-                                                        </div>
+
+
                                                     </div>
                                                 </>
                                             ) : (
