@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Menu, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSidebar } from "@/app/providers";
@@ -8,9 +8,9 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const { open } = useSidebar();
   const [avatar, setAvatar] = useState(""); // Default
-  const [isImgLoading, setIsImgLoading] = useState(true);
+  const [isImgLoading, setIsImgLoading] = useState(false);
 
-  const updateAvatar = async () => {
+  const updateAvatar = useCallback(async () => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
       try {
@@ -20,12 +20,11 @@ const Navbar: React.FC = () => {
             const res = await profileApi.getProfile(user.user_id);
             if (res.success && res.data) {
               const newUrl = res.data.profile_picture_url || "";
+              // Use functional update to avoid stale closures or just use the current one if preferred
               if (newUrl !== avatar) {
                 setAvatar(newUrl);
                 if (newUrl) setIsImgLoading(true);
-                else setIsImgLoading(false);
               } else {
-                // If it's the same URL, we are already loaded (or failed)
                 setIsImgLoading(false);
               }
             } else {
@@ -40,19 +39,13 @@ const Navbar: React.FC = () => {
         console.error("Failed to parse user from local storage", e);
       }
     }
-  };
+  }, [avatar]);
 
   useEffect(() => {
-    // Initial load
     updateAvatar();
-
-    // Listen for updates
     window.addEventListener("user_updated", updateAvatar);
-
-    return () => {
-      window.removeEventListener("user_updated", updateAvatar);
-    };
-  }, []);
+    return () => window.removeEventListener("user_updated", updateAvatar);
+  }, [updateAvatar]);
 
 
   return (
