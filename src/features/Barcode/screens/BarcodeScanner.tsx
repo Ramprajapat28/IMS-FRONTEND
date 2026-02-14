@@ -667,10 +667,15 @@ const BarcodeScannerPage: React.FC = () => {
                                                                 {/* <div className="scan-line"></div> */}
                                                             </div>
                                                         </div>
-
-
-
-
+                                                        {/* Scan Success Hint */}
+                                                        {isLoading && (
+                                                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20 w-fit">
+                                                                <div className="bg-green-500/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg flex items-center gap-2 border border-green-400/50 whitespace-nowrap">
+                                                                    <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
+                                                                    <span className="text-white font-bold text-[10px] tracking-wider uppercase">Scan Success: Loading Product...</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </>
                                             ) : (
