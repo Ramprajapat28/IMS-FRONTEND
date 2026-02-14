@@ -117,8 +117,6 @@ const TransferStockModal = ({ isOpen, onClose, product, onSuccess }: TransferSto
         }
     };
 
-    if (!isOpen) return null;
-
     const filteredRooms = useMemo(() => {
         if (!destWarehouseId) return [];
         return rooms.filter(r => r.warehouse_id === Number(destWarehouseId));
@@ -163,6 +161,8 @@ const TransferStockModal = ({ isOpen, onClose, product, onSuccess }: TransferSto
             }
         }
     }, [filteredShelves, filteredRacks, destRoomId, destShelfId, destRackId, destType]);
+
+    if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">

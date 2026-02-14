@@ -1224,10 +1224,10 @@ const EditProduct = () => {
                                                 <th className="pl-4 pr-2 py-3 font-semibold text-gray-600 uppercase tracking-wider">Date</th>
                                                 <th className="px-2 py-3 font-semibold text-gray-600 uppercase tracking-wider">Activity</th>
                                                 <th className="px-2 py-3 font-semibold text-gray-600 uppercase tracking-wider text-center">Qty</th>
-                                                <th className="px-2 py-2 font-semibold text-gray-600 uppercase tracking-wider">Source</th>
+                                                <th className="pl-6 py-2 font-semibold text-gray-600 uppercase tracking-wider">Source</th>
                                                 <th className="px-2 py-2 font-semibold text-gray-600 uppercase tracking-wider">Destination</th>
                                                 <th className="px-2 py-3 font-semibold text-gray-600 uppercase tracking-wider">Remarks</th>
-                                                <th className="pl-2 pr-4 py-3 font-semibold text-gray-600 uppercase tracking-wider text-right">User</th>
+                                                <th className="pr-4 py-3 font-semibold text-gray-600 uppercase tracking-wider text-right">User</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100 text-[13px]">
@@ -1249,23 +1249,23 @@ const EditProduct = () => {
                                                     </td>
                                                     <td className="px-2 py-3 leading-tight">
                                                         {log.source_location ? (
-                                                            <span className="text-gray-700 truncate max-w-[250px] inline-block" title={log.source_location}>
+                                                            <span className="text-gray-700 truncate max-w-[300px] inline-block" title={log.source_location}>
                                                                 {log.source_location}
                                                             </span>
                                                         ) : (
                                                             <span className="text-gray-300">-</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-2 py-3 leading-tight">
+                                                    <td className="pr-2 py-3 leading-tight">
                                                         {log.dest_location ? (
-                                                            <span className="text-blue-700 font-medium truncate max-w-[250px] inline-block" title={log.dest_location}>
+                                                            <span className="text-blue-700 font-medium truncate max-w-[300px] inline-block" title={log.dest_location}>
                                                                 {log.dest_location}
                                                             </span>
                                                         ) : (
                                                             <span className="text-gray-300">-</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-2 py-3 text-gray-600 max-w-[250px] truncate" title={log.remark}>
+                                                    <td className="px-2 py-3 text-gray-600 max-w-[300px] truncate" title={log.remark}>
                                                         {log.remark || '-'}
                                                     </td>
                                                     <td className="pl-2 pr-4 py-3 text-gray-700 text-right">

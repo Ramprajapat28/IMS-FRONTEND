@@ -419,7 +419,7 @@ const ProductDetailsPage = () => {
                                                     <td className="px-3 py-2 text-gray-700">{s.room_name}</td>
                                                     <td className="px-3 py-2 text-gray-700">{s.shelf_name || "-"}</td>
                                                     <td className="px-3 py-2 text-gray-700">{s.rack_name || "-"}</td>
-                                                    <td className="px-3 py-2 text-gray-900 font-medium text-right">{s.item_count}</td>
+                                                    <td className="pr-5 py-2 text-gray-900 font-medium text-right">{s.item_count}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
