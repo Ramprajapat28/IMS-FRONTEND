@@ -42,7 +42,7 @@ export const productsApi = {
 
     delete: async (id: number) => {
         return apiRequest<ApiResponse<Product>>(`/api/products/delete/${id}`, {
-            method: 'POST',
+            method: 'DELETE',
         });
     },
 

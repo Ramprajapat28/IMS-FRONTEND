@@ -33,13 +33,21 @@ export const AppRoutes = () => {
       {/* Auth routes */}
       <Route path="/auth" element={<AuthPage />} />
 
-      {/* Protected Routes */}
+      {/* Protected Routes - Require Authentication */}
       <Route element={<ProtectedRoute />}>
-        {/* Main Dashboard Layout */}
+        {/* Main Dashboard Layout - Shared by all internal pages */}
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
 
-          {/* Inventory Routes - Hierarchy */}
+          {/* 
+              Inventory Routes - Hierarchy for managing items by categories 
+              - /inventory: Shows global categories
+              - /inventory/add-global: Form to add a new global category
+              - /inventory/global-category/:globalId/categories: Shows sub-categories under a global one
+              - /inventory/category/:categoryId: List products in a specific category
+              - /inventory/details/:id: Specific product inventory details
+              - /inventory/variants/:id: Variant details for a product
+          */}
           <Route path="/inventory" element={<GlobalCategoryPage />} />
           <Route path="/inventory/add-global" element={<AddGlobalCategoryPage />} />
           <Route path="/inventory/global-category/:globalId/categories" element={<InventoryCategoriesPage />} />
@@ -50,17 +58,30 @@ export const AppRoutes = () => {
           <Route path="/inventory/details/:id" element={<InventoryProductDetailsPage />} />
           <Route path="/inventory/variants/:id" element={<InventoryVariantsPage />} />
 
-          {/* Warehouse Routes - Drill-down navigation */}
+          {/* 
+              Warehouse Routes - Infrastructure and location management 
+              - /warehouse: List of all warehouses
+              - /warehouse/:id: Specific warehouse details (rooms)
+              - /warehouse/:id/room/:roomId: Specific room details (racks/shelves)
+          */}
           <Route path="/warehouse" element={<WarehouseListPage />} />
           <Route path="/warehouse/:id" element={<WarehouseDetailsPage />} />
           <Route path="/warehouse/:id/room/:roomId" element={<RoomDetailsPage />} />
 
           <Route path="/orders" element={<Order />} />
+
+          {/* Barcode Management System */}
           <Route path="/barcode/generate" element={<BarcodeGenerate />} />
           <Route path="/barcode/history" element={<BarcodeHistory />} />
           <Route path="/barcode/scanner" element={<BarcodeScanner />} />
 
-          {/* Products Routes - WITHOUT categories (back to original) */}
+          {/* 
+              Products Routes - Independent product view and management 
+              - /products: Main product list (GroupItem)
+              - /products/add: Form to create new product
+              - /products/category/:name: Products filtered by name
+              - /products/edit/:id: Update existing product info
+          */}
           <Route path="/products" element={<GroupItem />} />
           <Route path="/products/add" element={<AddProduct />} />
           <Route path="/products/category/:name" element={<CategoryProducts />} />
@@ -74,7 +95,9 @@ export const AppRoutes = () => {
           <Route path="/notifications" element={<Notifications />} />
         </Route>
 
-        {/* Settings Layout */}
+        {/* 
+            Settings Layout - App-wide settings and support 
+        */}
         <Route path="/settings" element={<SettingsLayout />}>
           <Route path="general" element={<GeneralSettings />} />
           <Route path="notifications" element={<Notifications />} />

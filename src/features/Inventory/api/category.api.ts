@@ -20,9 +20,7 @@ export const categoriesApi = {
     },
 
     getListWithCounts: async () => {
-        return apiRequest<ApiResponse<(Category & { total_products: number })[]>>('/api/category/list-with-counts', {
-            method: 'POST'
-        });
+        return apiRequest<ApiResponse<(Category & { total_products: number })[]>>('/api/category/list-with-counts');
     },
 
     getAllGlobal: async () => {
@@ -52,7 +50,7 @@ export const categoriesApi = {
 
     deleteGlobal: async (id: number) => {
         return apiRequest<ApiResponse<any>>(`/api/category/delete_global/${id}`, {
-            method: 'POST'
+            method: 'DELETE'
         });
     },
 
@@ -65,7 +63,7 @@ export const categoriesApi = {
 
     deleteCategory: async (id: number) => {
         return apiRequest<ApiResponse<any>>(`/api/category/delete/${id}`, {
-            method: 'POST'
+            method: 'DELETE'
         });
     }
 };
