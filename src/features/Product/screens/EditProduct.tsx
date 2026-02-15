@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2, ChevronLeft, ChevronRight, Save, ArrowRightLeft } from "lucide-react";
 import { productsApi } from "@/features/Product/api/product.api";
@@ -76,6 +76,7 @@ const EditProduct = () => {
     const [logsPage, setLogsPage] = useState(1);
     const [logsRowsPerPage, setLogsRowsPerPage] = useState(10);
     const [totalLogs, setTotalLogs] = useState(0);
+    const isFirstLoad = useRef(true);
 
     // Autocomplete State
     const [suggestions, setSuggestions] = useState<{ id: number, code: string, name: string }[]>([]);
@@ -93,7 +94,7 @@ const EditProduct = () => {
     // Load product data
     useEffect(() => {
         const fetchProduct = async () => {
-            if (!id) return;
+            if (!id || !isFirstLoad.current) return;
 
             setIsLoading(true);
             try {
@@ -115,20 +116,21 @@ const EditProduct = () => {
                         size: product.size || "",
                         sku: product.sku,
                         product_code: product.product_code || "",
-                        quantity: "", // Reset quantity for "Add Stock", don't prefill with total stock
+                        quantity: "",
                         warehouse_id: "",
                         room_id: "",
                         shelf_id: "",
                         rack_id: "",
                         refundable: false,
-                        mrp: Number(product.mrp) || "",
-                        discounted_price: Number(product.discounted_price) || "",
-                        cost_to_company: Number(product.cost_to_company) || "",
-                        gst_percentage: Number(product.gst_percentage) || "",
-                        reorder_level: Number(product.reorder_level) || "",
+                        mrp: product.mrp !== undefined && product.mrp !== null ? Number(product.mrp) : "",
+                        discounted_price: product.discounted_price !== undefined && product.discounted_price !== null ? Number(product.discounted_price) : "",
+                        cost_to_company: product.cost_to_company !== undefined && product.cost_to_company !== null ? Number(product.cost_to_company) : "",
+                        gst_percentage: product.gst_percentage !== undefined && product.gst_percentage !== null ? Number(product.gst_percentage) : "",
+                        reorder_level: product.reorder_level !== undefined && product.reorder_level !== null ? Number(product.reorder_level) : "",
                         hsn_code: product.hsn_code || "",
                     });
                     setLastAddedDate(product.last_added_date || null);
+                    isFirstLoad.current = false; // Mark as loaded
 
                     // Handle Images
                     if (product.product_image) {
