@@ -234,13 +234,13 @@ const Profile = () => {
     }
   };
 
-  const handleDiscard = () => {
-    if (savedProfile.avatar !== formProfile.avatar) {
-      setIsImgLoading(true);
-    }
-    setFormProfile(savedProfile);
-    toast("Changes discarded", { icon: "↩️" });
-  };
+  // const handleDiscard = () => {
+  //   if (savedProfile.avatar !== formProfile.avatar) {
+  //     setIsImgLoading(true);
+  //   }
+  //   setFormProfile(savedProfile);
+  //   toast("Changes discarded", { icon: "↩️" });
+  // };
 
   return (
     <div className="w-full">
@@ -361,12 +361,12 @@ const Profile = () => {
 
             {/* ACTION BUTTONS */}
             <div className="flex flex-col sm:flex-row justify-end gap-4 mt-8">
-              <button
+              {/* <button
                 onClick={handleDiscard}
                 className="px-6 py-2 rounded-lg border text-gray-700 hover:bg-gray-100"
               >
                 Discard Changes
-              </button>
+              </button> */}
 
               <button
                 onClick={handleSave}
