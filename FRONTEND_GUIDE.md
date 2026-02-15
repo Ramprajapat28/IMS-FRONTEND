@@ -1,38 +1,40 @@
-# Frontend Technical Guide
+# Frontend Technical Deep Dive
 
 ## 1. Feature-Based Architecture
-The frontend is organized into modules under `src/features/`. Each feature follows a consistent structure:
-- `api/`: Feature-specific API calls.
-- `components/`: Feature-specific UI components.
-- `screens/`: Main page components.
-- `types/`: TypeScript definitions for the feature.
+The application is logic-grouped rather than type-grouped. Look inside `src/features/` for the core code.
 
-## 2. Category Hierarchy in UI
-To maintain consistency with the backend logic, the UI labels are as follows:
-- **Category Selection**: Fetches data from `global_category`.
-- **Sub Category Selection**: Fetches data from the `category` table based on the selected `global_category_id`.
+### Anatomy of a Feature (e.g., `features/Inventory`)
+- **`api/`**: Contains `<feature>.api.ts`. This file holds all Axios calls to the backend. No data fetching should happen directly in components.
+- **`components/`**: Feature-specific UI like tables, modals, or specialized input fields.
+- **`screens/`**: The top-level pages. These screens pull data using hooks/API and pass it down to components.
+- **`types/`**: TypeScript interfaces defining what a "Product" or "StockItem" looks like to the frontend.
 
-Example from `AddProduct.tsx`:
-```tsx
-// Global Category
-<select value={form.global_category_id}>
-  {globalCategories.map((gc) => (...))}
-</select>
+## 2. Component Data Flow
+1. **Request**: A screen (like `AddProduct.tsx`) calls `productsApi.create(payload)`.
+2. **Execution**: The API service in `src/features/Product/api/product.api.ts` makes the POST request to the backend.
+3. **Internal State**: The screen uses `useState` to manage form data and `useEffect` to fetch initial data (like Categories) on page load.
+4. **Validation**: Before sending to the API, the screen checks if required fields like SKU and Category are filled.
 
-// Sub Category (filtered by global_category_id)
-<select value={form.category_id}>
-  {categories.filter(c => c.global_category_id === ...).map((c) => (...))}
-</select>
+## 3. The "Category" UI Mapping
+To match the backend's hierarchy, the frontend uses two separate dropdowns:
+
+```mermaid
+graph TD
+    A[Global Category API] --> B[UI: Select Category]
+    B --> C{User Selection}
+    C --> D[Filter Category Table]
+    D --> E[UI: Select Sub Category]
 ```
 
-## 3. Product Variants & SKU Logic
-- **SKU**: Unique identifier for a specific product item (e.g., "SHIRT-RED-XL").
-- **Product Code**: Used to group variants. If a product has a `product_code`, it is treated as part of a variant group in the inventory view.
+- **Selection 1 (Label: Category)**: Populates from the `global_category` backend table.
+- **Selection 2 (Label: Sub Category)**: Populates from the `category` backend table, filtered by the ID of the first selection.
 
-## 4. Barcode Scanning
-The system uses `lucide-react` icons and custom scanning logic (integrated via `features/Barcode`). It supports both camera scanning and manual entry.
+## 4. State Management & Hooks
+- **React Context**: Used for global states like User Authentication and Theme.
+- **Local State**: Managed via standard `useState` and `useReducer` for complex forms.
+- **Custom Hooks**: Found in `src/hooks/`, these contain shared logic like scanning detection or window resizing.
 
-## 5. UI/UX Principles
-- **Clean Aesthetic**: Uses a white/blue color palette for a professional look.
-- **Responsive**: Layouts are designed to work on both desktop and tablet resolutions.
-- **Feedback**: Toast notifications are used for success/error messages during data entry.
+## 5. Styling & UI Components
+- **Tailwind CSS**: Used for 90% of the styling. Configuration is in `tailwind.config.js`.
+- **Lucide Icons**: Standardized icon set for the entire app.
+- **Reusable UI**: Found in `src/components/`, these are generic elements like `Button`, `Modal`, and `Table` that are used across all features.
