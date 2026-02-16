@@ -536,7 +536,7 @@ const ProductsPage = () => {
   const [page, setPage] = useState(1);
   const [rows, setRows] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [selectedProducts, setSelectedProducts] = useState<Map<number, DisplayProduct>>(new Map());
 
   // Modal State
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
@@ -550,28 +550,38 @@ const ProductsPage = () => {
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedIds(new Set(data.map(p => p.id)));
+      setSelectedProducts(prev => {
+        const next = new Map(prev);
+        data.forEach(p => next.set(p.id, p));
+        return next;
+      });
     } else {
-      setSelectedIds(new Set());
+      setSelectedProducts(prev => {
+        const next = new Map(prev);
+        data.forEach(p => next.delete(p.id));
+        return next;
+      });
     }
   };
 
-  const handleSelectRow = (id: number, e: React.MouseEvent | React.ChangeEvent) => {
+  const handleSelectRow = (p: DisplayProduct, e: React.MouseEvent | React.ChangeEvent) => {
     e.stopPropagation();
-    const newSelected = new Set(selectedIds);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
-    setSelectedIds(newSelected);
+    setSelectedProducts(prev => {
+      const next = new Map(prev);
+      if (next.has(p.id)) {
+        next.delete(p.id);
+      } else {
+        next.set(p.id, p);
+      }
+      return next;
+    });
   };
 
   const handleBulkDownload = async () => {
-    const selectedProducts = data.filter(p => selectedIds.has(p.id));
-    if (selectedProducts.length === 0) return;
+    const productsToDownload = Array.from(selectedProducts.values());
+    if (productsToDownload.length === 0) return;
 
-    for (const p of selectedProducts) {
+    for (const p of productsToDownload) {
       if (!p.sku || p.sku === "-----") continue;
 
       try {
@@ -751,12 +761,12 @@ const ProductsPage = () => {
       </div>
 
       {/* BULK ACTIONS */}
-      {selectedIds.size > 0 && (
+      {selectedProducts.size > 0 && (
         <div className="flex items-center flex-col md:flex-row gap-4 bg-blue-50 border border-blue-100 p-3 rounded-lg animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center justify-around w-full md:w-auto gap-4 ">
-            <span className="text-sm font-medium text-blue-700">{selectedIds.size} products selected</span>
+            <span className="text-sm font-medium text-blue-700">{selectedProducts.size} products selected</span>
             <button
-              onClick={() => setSelectedIds(new Set())}
+              onClick={() => setSelectedProducts(new Map())}
               className="text-xs border border-blue-200 p-2 rounded-md bg-white text-blue-600 hover:bg-blue-100"
             >
               Clear selection
@@ -788,7 +798,7 @@ const ProductsPage = () => {
                 <input
                   type="checkbox"
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  checked={selectedIds.size === data.length && data.length > 0}
+                  checked={data.length > 0 && data.every(p => selectedProducts.has(p.id))}
                   onChange={handleSelectAll}
                 />
               </th>
@@ -817,8 +827,8 @@ const ProductsPage = () => {
                     <input
                       type="checkbox"
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      checked={selectedIds.has(p.id)}
-                      onChange={(e) => handleSelectRow(p.id, e)}
+                      checked={selectedProducts.has(p.id)}
+                      onChange={(e) => handleSelectRow(p, e)}
                     />
                   </td>
                   <td className="p-3 whitespace-nowrap">{(page - 1) * rows + index + 1}</td>
@@ -909,8 +919,7 @@ const ProductsPage = () => {
       <BulkBarcodePrintModal
         isOpen={isBulkPrintModalOpen}
         onClose={() => setIsBulkPrintModalOpen(false)}
-        products={data
-          .filter(p => selectedIds.has(p.id))
+        products={Array.from(selectedProducts.values())
           .map(p => ({
             name: p.name,
             sku: p.sku,
