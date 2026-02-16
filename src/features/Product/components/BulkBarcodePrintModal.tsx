@@ -124,7 +124,6 @@ const BulkBarcodePrintModal: React.FC<BulkBarcodePrintModalProps> = ({ isOpen, o
                                                 breakInside: "avoid",
                                                 pageBreakInside: "avoid",
                                                 display: "flex",
-                                                flexDirection: "column",
                                                 alignItems: "center",
                                                 justifyContent: "center",
                                                 overflow: "hidden"
