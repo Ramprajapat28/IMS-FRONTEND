@@ -537,6 +537,7 @@ const ProductsPage = () => {
   const [rows, setRows] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedProducts, setSelectedProducts] = useState<Map<number, DisplayProduct>>(new Map());
+  const [activePage, setActivePage] = useState(1); // Track the page of the currently visible data
 
   // Modal State
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
@@ -642,6 +643,7 @@ const ProductsPage = () => {
             };
           });
           setData(products);
+          setActivePage(page); // Update active page only when new data is set
 
           if (response.pagination) {
             setTotalPages(response.pagination.totalPages);
@@ -789,9 +791,16 @@ const ProductsPage = () => {
         </div>
       )}
 
-      {/* TABLE */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+      <div className="relative overflow-x-auto">
+        {(isLoading || page !== activePage) && data.length > 0 && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 backdrop-blur-[1px] transition-all">
+            <div className="flex flex-col items-center gap-2 bg-white px-6 py-3 rounded-full shadow-lg border border-blue-100">
+              <Loader2 className="animate-spin text-blue-600" size={24} />
+              <span className="text-sm font-medium text-gray-600">Updating...</span>
+            </div>
+          </div>
+        )}
+        <table className={`w-full text-sm transition-opacity duration-200 ${(isLoading || page !== activePage) && data.length > 0 ? 'opacity-40' : 'opacity-100'}`}>
           <thead className="bg-gray-100 text-left">
             <tr>
               <th className="p-3 w-10">
@@ -831,7 +840,7 @@ const ProductsPage = () => {
                       onChange={(e) => handleSelectRow(p, e)}
                     />
                   </td>
-                  <td className="p-3 whitespace-nowrap">{(page - 1) * rows + index + 1}</td>
+                  <td className="p-3 whitespace-nowrap">{(activePage - 1) * rows + index + 1}</td>
                   <td className="p-3">
                     <div className="flex gap-3 items-center min-w-[180px]">
                       {p.image ? (
