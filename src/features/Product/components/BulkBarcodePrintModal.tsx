@@ -116,11 +116,18 @@ const BulkBarcodePrintModal: React.FC<BulkBarcodePrintModalProps> = ({ isOpen, o
                                             className="border border-gray-100 flex flex-col items-center justify-center text-center overflow-hidden printable-label"
                                             style={{
                                                 width: "2in",
-                                                height: "1in",
+                                                height: "0.97in", // Tiny safety buffer (0.03in) to prevent browser splitting
                                                 fontFamily: "monospace",
                                                 padding: "4px",
                                                 pageBreakAfter: "always",
-                                                marginBottom: "4px"
+                                                boxSizing: "border-box",
+                                                breakInside: "avoid",
+                                                pageBreakInside: "avoid",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                overflow: "hidden"
                                             }}
                                         >
                                             {selectedTemplate >= 2 && (
@@ -181,16 +188,20 @@ const BulkBarcodePrintModal: React.FC<BulkBarcodePrintModalProps> = ({ isOpen, o
             <style>{`
                 @media print {
                     @page {
-                        margin: 0;
+                        margin: 0 !important;
                         size: 2in 1in;
                     }
                     body {
-                        margin: 0;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        -webkit-print-color-adjust: exact;
                     }
                     .printable-label {
                         border: none !important;
                         margin: 0 !important;
                         page-break-after: always !important;
+                        break-inside: avoid !important;
+                        page-break-inside: avoid !important;
                     }
                 }
             `}</style>
