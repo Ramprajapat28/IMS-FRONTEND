@@ -341,6 +341,7 @@ const TransferStockModal = ({ isOpen, onClose, product, onSuccess }: TransferSto
                                 <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Quantity to Transfer</label>
                                 <input
                                     type="number"
+                                    min="1"
                                     value={quantity}
                                     onChange={(e) => setQuantity(e.target.value)}
                                     className="w-full border-2 border-gray-200 p-3 rounded-xl text-lg font-bold text-gray-900 focus:border-blue-500 focus:outline-none"
