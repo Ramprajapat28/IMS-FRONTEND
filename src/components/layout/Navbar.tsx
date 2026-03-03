@@ -12,34 +12,36 @@ const Navbar: React.FC = () => {
 
   const updateAvatar = useCallback(async () => {
     const userStr = localStorage.getItem("user");
-    if (userStr) {
+    if (!userStr) return;
+
+    try {
+      const user = JSON.parse(userStr);
+      if (!user.user_id) return;
+
       try {
-        const user = JSON.parse(userStr);
-        if (user.user_id) {
-          try {
-            const res = await profileApi.getProfile(user.user_id);
-            if (res.success && res.data) {
-              const newUrl = res.data.profile_picture_url || "";
-              // Use functional update to avoid stale closures or just use the current one if preferred
-              if (newUrl !== avatar) {
-                setAvatar(newUrl);
-                if (newUrl) setIsImgLoading(true);
-              } else {
-                setIsImgLoading(false);
-              }
-            } else {
-              setIsImgLoading(false);
+        const res = await profileApi.getProfile(user.user_id);
+        if (res.success && res.data) {
+          const newUrl = res.data.profile_picture_url || "";
+
+          setAvatar((currentAvatar) => {
+            if (newUrl !== currentAvatar) {
+              if (newUrl) setIsImgLoading(true);
+              return newUrl;
             }
-          } catch (apiErr) {
-            console.error("Failed to fetch profile for navbar", apiErr);
             setIsImgLoading(false);
-          }
+            return currentAvatar;
+          });
+        } else {
+          setIsImgLoading(false);
         }
-      } catch (e) {
-        console.error("Failed to parse user from local storage", e);
+      } catch (apiErr) {
+        console.error("Failed to fetch profile for navbar", apiErr);
+        setIsImgLoading(false);
       }
+    } catch (e) {
+      console.error("Failed to parse user from local storage", e);
     }
-  }, [avatar]);
+  }, []);
 
   useEffect(() => {
     updateAvatar();
