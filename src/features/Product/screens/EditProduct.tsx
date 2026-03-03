@@ -919,21 +919,21 @@ const EditProduct = () => {
                                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                                     Quantity <span className="text-xs text-gray-500 font-normal">(Stock Adjustment)</span>
                                 </label>
-                               
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        value={form.quantity}
-                                        onFocus={(e) => e.target.select()}
-                                        onChange={(e) => {
-                                            const value = Math.max(0, parseInt(e.target.value) || 0);
-                                            updateField("quantity", String(value));
-                                        }}
-                                        placeholder="0"
-                                        className="w-32 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    />
-                                   
-                               
+
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={form.quantity}
+                                    onFocus={(e) => e.target.select()}
+                                    onChange={(e) => {
+                                        const value = Math.max(0, parseInt(e.target.value) || 0);
+                                        updateField("quantity", String(value));
+                                    }}
+                                    placeholder="0"
+                                    className="w-32 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+
+
                             </div>
 
                             <div className="flex-1 w-full max-w-md">
@@ -949,16 +949,16 @@ const EditProduct = () => {
                                 />
                             </div>
                             <div className="flex-shrink-0 mt-auto">
-                             <button
-                                        type="button"
-                                        onClick={handleDeductStock}
-                                        disabled={isDeducting || !form.quantity || parseInt(form.quantity) <= 0}
-                                        className="px-4 py-2.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition flex items-center gap-2 text-sm font-semibold border border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {isDeducting ? <Loader2 size={16} className="animate-spin" /> : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="12" x2="6" y2="12"></line></svg>}
-                                        Deduct
-                                    </button>
-                                    </div>
+                                <button
+                                    type="button"
+                                    onClick={handleDeductStock}
+                                    disabled={isDeducting || !form.quantity || parseInt(form.quantity) <= 0}
+                                    className="px-4 py-2.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition flex items-center gap-2 text-sm font-semibold border border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isDeducting ? <Loader2 size={16} className="animate-spin" /> : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="12" x2="6" y2="12"></line></svg>}
+                                    Deduct
+                                </button>
+                            </div>
                         </div>
 
                         {/* Location */}
@@ -968,14 +968,14 @@ const EditProduct = () => {
                             </label>
 
                             {/* Desktop Layout - Horizontal */}
-                            <div className="hidden md:flex items-start gap-3">
+                            <div className="hidden lg:flex items-start gap-3 w-full">
                                 {/* Warehouse */}
-                                <div>
+                                <div className="flex-1 max-w-[300px]">
                                     <label className="text-sm text-gray-700 mb-2 block">
                                         Warehouse <span className="text-red-500">*</span>
                                     </label>
                                     {warehouses.length === 1 ? (
-                                        <div className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[42px]">
+                                        <div className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[42px]">
                                             <span className="truncate">{warehouses[0].name}</span>
                                             <span className="ml-2 flex-shrink-0 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Auto</span>
                                         </div>
@@ -983,7 +983,7 @@ const EditProduct = () => {
                                         <select
                                             value={form.warehouse_id}
                                             onChange={(e) => updateField("warehouse_id", e.target.value)}
-                                            className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                                         >
                                             <option value="">Select Warehouse</option>
                                             {warehouses.map(w => (
@@ -1001,12 +1001,12 @@ const EditProduct = () => {
                                 </div>
 
                                 {/* Room */}
-                                <div>
+                                <div className="flex-1 max-w-[300px]">
                                     <label className="text-sm text-gray-700 mb-2 block">
                                         Room <span className="text-red-500">*</span>
                                     </label>
                                     {filteredRooms.length === 1 ? (
-                                        <div className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[42px]">
+                                        <div className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[42px]">
                                             <span className="truncate">{filteredRooms[0].room_name || filteredRooms[0].name}</span>
                                             <span className="ml-2 flex-shrink-0 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Auto</span>
                                         </div>
@@ -1015,7 +1015,7 @@ const EditProduct = () => {
                                             value={form.room_id}
                                             onChange={(e) => updateField("room_id", e.target.value)}
                                             disabled={!form.warehouse_id}
-                                            className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                                         >
                                             <option value="">Select Room</option>
                                             {filteredRooms.map(r => (
@@ -1078,13 +1078,13 @@ const EditProduct = () => {
                                 </div>
 
                                 {/* Selection Dropdown */}
-                                <div>
+                                <div className="flex-1 max-w-[300px]">
                                     <label className="text-sm text-gray-700 mb-2 block">
                                         {selectionType === 'shelf' ? 'Shelf' : 'Rack'} <span className="text-red-500">*</span>
                                     </label>
                                     {selectionType === 'shelf' ? (
                                         filteredShelves.length === 1 ? (
-                                            <div className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[42px]">
+                                            <div className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[42px]">
                                                 <span className="truncate">{filteredShelves[0].shelf_name || filteredShelves[0].name}</span>
                                                 <span className="ml-2 flex-shrink-0 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Auto</span>
                                             </div>
@@ -1093,7 +1093,7 @@ const EditProduct = () => {
                                                 value={form.shelf_id}
                                                 onChange={(e) => setForm(prev => ({ ...prev, shelf_id: e.target.value, rack_id: "" }))}
                                                 disabled={!form.room_id}
-                                                className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                                             >
                                                 <option value="">Select Shelf</option>
                                                 {filteredShelves.map(s => (
@@ -1103,7 +1103,7 @@ const EditProduct = () => {
                                         )
                                     ) : (
                                         filteredRacks.length === 1 ? (
-                                            <div className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[42px]">
+                                            <div className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-700 flex items-center justify-between h-[42px]">
                                                 <span className="truncate">{filteredRacks[0].rack_name || filteredRacks[0].name}</span>
                                                 <span className="ml-2 flex-shrink-0 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Auto</span>
                                             </div>
@@ -1112,7 +1112,7 @@ const EditProduct = () => {
                                                 value={form.rack_id}
                                                 onChange={(e) => setForm(prev => ({ ...prev, rack_id: e.target.value, shelf_id: "" }))}
                                                 disabled={!form.room_id}
-                                                className="w-64 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                                             >
                                                 <option value="">Select Rack</option>
                                                 {filteredRacks.map(r => (
@@ -1125,9 +1125,9 @@ const EditProduct = () => {
                             </div>
 
                             {/* Mobile Layout - Vertical */}
-                            <div className="md:hidden space-y-4">
+                            <div className="lg:hidden space-y-4">
                                 {/* Warehouse */}
-                                <div>
+                                <div className=" max-w-[300px]">
                                     <label className="text-sm text-gray-700 mb-2 block">
                                         Warehouse <span className="text-red-500">*</span>
                                     </label>
@@ -1151,7 +1151,7 @@ const EditProduct = () => {
                                 </div>
 
                                 {/* Room */}
-                                <div>
+                                <div className=" max-w-[300px]">
                                     <label className="text-sm text-gray-700 mb-2 block">
                                         Room <span className="text-red-500">*</span>
                                     </label>
@@ -1179,7 +1179,7 @@ const EditProduct = () => {
                                 </div>
 
                                 {/* Toggle and Selection */}
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col gap-2 max-w-[300px]">
                                     <label className="text-sm text-gray-700 block">
                                         Select Storage Type
                                     </label>
@@ -1214,7 +1214,7 @@ const EditProduct = () => {
                                 </div>
 
                                 {/* Selection Dropdown */}
-                                <div>
+                                <div className=" max-w-[300px]">
                                     <label className="text-sm text-gray-700 mb-2 block">
                                         {selectionType === 'shelf' ? 'Shelf' : 'Rack'} <span className="text-red-500">*</span>
                                     </label>
