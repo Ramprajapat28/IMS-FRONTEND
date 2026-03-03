@@ -17,6 +17,7 @@ export interface AddStockData {
     shelf_id?: number;
     rack_id?: number;
     quantity: number;
+    remark?: string;
 }
 
 export interface RemoveStockData {
@@ -27,6 +28,7 @@ export interface RemoveStockData {
     status?: string;
     mode?: string; // 🆕 Added mode
     order_id?: number; // Required for returns to update existing order
+    remark?: string;
 }
 
 export interface OutwardScanData {

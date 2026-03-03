@@ -71,6 +71,8 @@ const EditProduct = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [lastAddedDate, setLastAddedDate] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [adjustmentRemark, setAdjustmentRemark] = useState("");
+    const [isDeducting, setIsDeducting] = useState(false);
     const [stockLogs, setStockLogs] = useState<any[]>([]);
     const [isLogsLoading, setIsLogsLoading] = useState(false);
     const [logsPage, setLogsPage] = useState(1);
@@ -407,6 +409,57 @@ const EditProduct = () => {
         setCurrentPage(1);
     };
 
+    const handleDeductStock = async () => {
+        const deductQty = parseInt(form.quantity) || 0;
+        if (deductQty <= 0) {
+            toast.error("Please enter a valid quantity to deduct");
+            return;
+        }
+
+        if (!form.warehouse_id || !form.room_id || (!form.shelf_id && !form.rack_id)) {
+            toast.error("Please select a location to deduct stock from");
+            return;
+        }
+
+        setIsDeducting(true);
+        try {
+            await itemsApi.removeStock({
+                product_id: Number(id),
+                quantity: deductQty,
+                shelf_id: selectionType === 'shelf' ? Number(form.shelf_id) : undefined,
+                rack_id: selectionType === 'rack' ? Number(form.rack_id) : undefined,
+                mode: 'adjustment',
+                remark: adjustmentRemark || "Manual Correction"
+            });
+
+            toast.success("Stock deducted successfully");
+            setForm(prev => ({ ...prev, quantity: "" }));
+            setAdjustmentRemark("");
+
+            // Refresh product data and logs
+            const [basicRes, detailRes, logsRes] = await Promise.all([
+                productsApi.getById(Number(id)),
+                productsApi.getDetails(Number(id)),
+                productsApi.getStockLogs(Number(id), 1, logsRowsPerPage)
+            ]);
+
+            if (basicRes.success && basicRes.data) {
+                setFullProductData(detailRes.data || null);
+                setLastAddedDate(basicRes.data.last_added_date || null);
+            }
+            if (logsRes.success && logsRes.data) {
+                setStockLogs(logsRes.data);
+                setTotalLogs(logsRes.pagination?.total || logsRes.data.length);
+                setLogsPage(1);
+            }
+
+        } catch (err: any) {
+            toast.error(err.message || "Failed to deduct stock");
+        } finally {
+            setIsDeducting(false);
+        }
+    };
+
     const handleSubmit = async () => {
         // Validation: basic fields required. Stock fields optional if quantity is 0 or empty.
         // If quantity is provided, warehouse info is required.
@@ -462,7 +515,8 @@ const EditProduct = () => {
                     product_id: Number(id),
                     shelf_id: form.shelf_id ? Number(form.shelf_id) : undefined,
                     rack_id: form.rack_id ? Number(form.rack_id) : undefined,
-                    quantity: stockQuantity
+                    quantity: stockQuantity,
+                    remark: adjustmentRemark || "New Stock Received"
                 });
             }
 
@@ -860,32 +914,51 @@ const EditProduct = () => {
             {currentPage === 2 && (
                 <div className="bg-white rounded-xl shadow-sm border p-6 ">
                     <div className="space-y-6">
-                        {/* Quantity */}
-                        <div>
-                            <label className="text-sm font-medium text-gray-700 mb-2 block">
-                                Add Stock Quantity <span className="text-xs text-gray-500 font-normal">(Optional - leave 0 to only update details)</span>
-                            </label>
-                            <input
-                                type="number"
-                                min="0"
-                                value={form.quantity}
-                                onFocus={(e) => e.target.select()}
-                                onChange={(e) => {
-                                    const value = Math.max(0, parseInt(e.target.value) || 0);
-                                    updateField("quantity", String(value));
-                                }}
-                                placeholder=""
-                                className="w-52 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            />
+                        <div className="flex flex-col md:flex-row   gap-4">
+                            <div className="">
+                                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                                    Quantity <span className="text-xs text-gray-500 font-normal">(Stock Adjustment)</span>
+                                </label>
+                               
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={form.quantity}
+                                        onFocus={(e) => e.target.select()}
+                                        onChange={(e) => {
+                                            const value = Math.max(0, parseInt(e.target.value) || 0);
+                                            updateField("quantity", String(value));
+                                        }}
+                                        placeholder="0"
+                                        className="w-32 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                   
+                               
+                            </div>
 
-                            {/* <button
-                                type="button"
-                                onClick={() => setIsTransferModalOpen(true)}
-                                className="ml-4 px-4 py-2.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition flex items-center gap-2 text-sm font-semibold border border-blue-200"
-                            >
-                                <MapPin size={16} />
-                                Relocate / Transfer Stock
-                            </button> */}
+                            <div className="flex-1 w-full max-w-md">
+                                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                                    Adjustment Remark <span className="text-xs text-gray-500 font-normal">(Reason for adjustment)</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={adjustmentRemark}
+                                    onChange={(e) => setAdjustmentRemark(e.target.value)}
+                                    placeholder="e.g., Damaged item, Inventory correction..."
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+                            <div className="flex-shrink-0 mt-auto">
+                             <button
+                                        type="button"
+                                        onClick={handleDeductStock}
+                                        disabled={isDeducting || !form.quantity || parseInt(form.quantity) <= 0}
+                                        className="px-4 py-2.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition flex items-center gap-2 text-sm font-semibold border border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isDeducting ? <Loader2 size={16} className="animate-spin" /> : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="12" x2="6" y2="12"></line></svg>}
+                                        Deduct
+                                    </button>
+                                    </div>
                         </div>
 
                         {/* Location */}
@@ -1241,7 +1314,8 @@ const EditProduct = () => {
                                                     <td className="px-2 py-3">
                                                         <span className={`px-2 py-0.5 rounded-full font-medium ${log.activity === 'Added' ? 'bg-green-100 text-green-700' :
                                                             log.activity === 'Transferred' ? 'bg-blue-100 text-blue-700' :
-                                                                'bg-orange-100 text-orange-700'
+                                                                log.activity === 'Removed' ? 'bg-red-100 text-red-700' :
+                                                                    'bg-orange-100 text-orange-700'
                                                             }`}>
                                                             {log.activity}
                                                         </span>
