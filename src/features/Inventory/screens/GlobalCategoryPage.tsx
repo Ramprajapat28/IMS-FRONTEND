@@ -88,11 +88,16 @@ const GlobalCategoryPage = () => {
                         >
                             <div className="flex items-start justify-between mb-4">
                                 <div className="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center overflow-hidden border border-blue-100">
-                                    <img
-                                        src={resolveUrl(category.logo_url) || "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=200"}
+                                    {resolveUrl(category.logo_url) ? <img
+                                        src={resolveUrl(category.logo_url)}
                                         alt={category.category_name}
                                         className="w-full h-full object-cover"
-                                    />
+                                    /> : (
+                                        <div className="text-gray-400 text-center">
+                                            <Package size={36} className="mx-auto" />
+                                            {/* <p className="text-sm">No image available</p> */}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button
