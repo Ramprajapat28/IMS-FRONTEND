@@ -925,6 +925,7 @@ const EditProduct = () => {
                                     min="0"
                                     value={form.quantity}
                                     onFocus={(e) => e.target.select()}
+                                    onWheel={(e) => e.currentTarget.blur()}
                                     onChange={(e) => {
                                         const value = Math.max(0, parseInt(e.target.value) || 0);
                                         updateField("quantity", String(value));
