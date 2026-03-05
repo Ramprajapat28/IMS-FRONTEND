@@ -106,7 +106,7 @@ const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({ isOpen, onClose, 
                             <div
                                 ref={printRef}
                                 className="bg-white p-2 shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center overflow-hidden"
-                                style={{ width: "2in", height: "1.2in", fontFamily: "monospace" }}
+                                style={{ width: "2.25in", height: "1.4in", fontFamily: "monospace" }}
                             >
                                 {selectedTemplate >= 2 && (
                                     <h3 className="text-[11px] font-bold uppercase truncate w-full mb-1" style={{ margin: "0 0 2px 0" }}>{product.name}</h3>
@@ -117,7 +117,7 @@ const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({ isOpen, onClose, 
                                         src={barcodeUrl}
                                         alt="Barcode"
                                         className="w-full h-auto object-contain"
-                                        style={{ maxHeight: "0.55in", imageRendering: "pixelated" }}
+                                        style={{ maxHeight: "0.8in", imageRendering: "pixelated" }}
                                     />
                                 ) : (
                                     <div className="h-8 w-full bg-gray-200 flex items-center justify-center text-[8px] text-gray-400">Barcode Not Available</div>
