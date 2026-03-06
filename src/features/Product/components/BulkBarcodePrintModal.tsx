@@ -27,7 +27,7 @@ const templates = [
 
 // Sticker sheet: 2 columns of 6cm×4cm stickers, sheet is 12cm wide
 const STICKER_W = "6cm";
-const STICKER_H = "3.5cm";
+const STICKER_H = "3.4cm";
 const COLS = 2;
 
 const BulkBarcodePrintModal: React.FC<BulkBarcodePrintModalProps> = ({ isOpen, onClose, products }) => {
@@ -79,7 +79,7 @@ const BulkBarcodePrintModal: React.FC<BulkBarcodePrintModalProps> = ({ isOpen, o
                     width: STICKER_W,
                     height: STICKER_H,
                     fontFamily: "monospace",
-                    padding: "0.5mm",
+                    padding: "1.5mm",
 
                     boxSizing: "border-box",
                     breakInside: "avoid",
@@ -87,15 +87,15 @@ const BulkBarcodePrintModal: React.FC<BulkBarcodePrintModalProps> = ({ isOpen, o
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    justifyContent: "space-between",
+                    justifyContent: "flex-end",
                     textAlign: "center",
                     overflow: "hidden",
 
                 }}
             > <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
-                    <p style={{ margin: "0 0 0 0", fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", width: "100%", overflow: "hidden", textOverflow: "ellipsis", visibility: selectedTemplate >= 2 ? "visible" : "hidden",whiteSpace: "nowrap" }}>
+                    {/* <p style={{ margin: "0 0 0 0", fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", width: "100%", paddingLeft: "1.5mm", paddingRight: "1.5mm", overflow: "hidden", textOverflow: "ellipsis", visibility: selectedTemplate >= 2 ? "visible" : "hidden", whiteSpace: "nowrap" }}>
                         {product.name || "\u00a0"}
-                    </p>
+                    </p> */}
 
                     {/* Barcode + SKU grouped as one unit so they never get separated */}
 
@@ -103,7 +103,7 @@ const BulkBarcodePrintModal: React.FC<BulkBarcodePrintModalProps> = ({ isOpen, o
                         <img
                             src={barcodeUrl}
                             alt="Barcode"
-                            style={{ width: "100%", height: "auto", display: "block", maxHeight: "4cm" }}
+                            style={{ width: "100%", height: "auto", display: "block", maxHeight: "3cm" }}
                         />
                     ) : (
                         <div style={{ height: "3cm", width: "100%", background: "#eee", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#999" }}>
@@ -262,7 +262,7 @@ const BulkBarcodePrintModal: React.FC<BulkBarcodePrintModalProps> = ({ isOpen, o
                     .printable-label {
                         border: none !important;
                         width: 6cm !important;
-                        height: 3.5cm !important;
+                        height: 3.4cm !important;
                         break-inside: avoid !important;
                         page-break-inside: avoid !important;
                     }
