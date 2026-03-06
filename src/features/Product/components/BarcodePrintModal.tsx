@@ -105,26 +105,26 @@ const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({ isOpen, onClose, 
                             {/* This is the printable area */}
                             <div
                                 ref={printRef}
-                                className="bg-white p-2 shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center overflow-hidden"
-                                style={{ width: "2.25in", height: "1.4in", fontFamily: "monospace" }}
+                                className="bg-white shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center overflow-hidden"
+                                style={{ width: "6cm", height: "4cm", fontFamily: "monospace", padding: "1.5mm 2mm", boxSizing: "border-box" }}
                             >
                                 {selectedTemplate >= 2 && (
-                                    <h3 className="text-[11px] font-bold uppercase truncate w-full mb-1" style={{ margin: "0 0 2px 0" }}>{product.name}</h3>
+                                    <h3 className="text-[11px] font-bold uppercase truncate w-full" style={{ margin: "0 0 2px 0" }}>{product.name}</h3>
                                 )}
 
                                 {barcodeUrl ? (
                                     <img
                                         src={barcodeUrl}
                                         alt="Barcode"
-                                        className="w-full h-auto object-contain"
-                                        style={{ maxHeight: "0.8in", imageRendering: "pixelated" }}
+                                        className="w-full block"
+                                        style={{ height: "auto", maxHeight: "3cm", objectFit: "contain" }}
                                     />
                                 ) : (
                                     <div className="h-8 w-full bg-gray-200 flex items-center justify-center text-[8px] text-gray-400">Barcode Not Available</div>
                                 )}
-                                <p className="text-[9px] font-bold" style={{ margin: "1px 0 0 0" }}>{product.sku}</p>
+                                <p className="text-[10px] font-bold" style={{ margin: "2px 0 0 0", letterSpacing: "0.5px" }}>{product.sku}</p>
 
-                                <div className="flex gap-2 mt-0.5">
+                                <div className="flex gap-2">
                                     {selectedTemplate >= 3 && (
                                         <p className={`text-[9px] font-bold ${selectedTemplate === 4 ? 'line-through text-gray-400' : ''}`} style={{ margin: 0 }}>
                                             MRP: {formatCurrency(product.mrp || 0)}
@@ -138,7 +138,7 @@ const BarcodePrintModal: React.FC<BarcodePrintModalProps> = ({ isOpen, onClose, 
                                 </div>
                             </div>
                         </div>
-                        <p className="text-[10px] text-gray-400 text-center italic">Labels are optimized for 2" x 1" thermal stickers</p>
+                        <p className="text-[10px] text-gray-400 text-center italic">Labels are optimized for 6cm × 4cm thermal stickers</p>
                     </div>
                 </div>
 

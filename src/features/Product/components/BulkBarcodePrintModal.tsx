@@ -27,7 +27,7 @@ const templates = [
 
 // Sticker sheet: 2 columns of 6cm×4cm stickers, sheet is 12cm wide
 const STICKER_W = "6cm";
-const STICKER_H = "4cm";
+const STICKER_H = "3.5cm";
 const COLS = 2;
 
 const BulkBarcodePrintModal: React.FC<BulkBarcodePrintModalProps> = ({ isOpen, onClose, products }) => {
@@ -79,46 +79,52 @@ const BulkBarcodePrintModal: React.FC<BulkBarcodePrintModalProps> = ({ isOpen, o
                     width: STICKER_W,
                     height: STICKER_H,
                     fontFamily: "monospace",
-                    padding: "3mm",
+                    padding: "0.5mm",
+
                     boxSizing: "border-box",
                     breakInside: "avoid",
                     pageBreakInside: "avoid",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    justifyContent: "center",
+                    justifyContent: "space-between",
                     textAlign: "center",
                     overflow: "hidden",
+
                 }}
-            >
-                {selectedTemplate >= 2 && (
-                    <p style={{ margin: "0 0 1px 0", fontSize: "8px", fontWeight: "bold", textTransform: "uppercase", width: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {product.name}
-                    </p>
-                )}
-                {barcodeUrl ? (
-                    <img
-                        src={barcodeUrl}
-                        alt="Barcode"
-                        style={{ width: "100%", height: "auto", maxHeight: "2cm", objectFit: "contain" }}
-                    />
-                ) : (
-                    <div style={{ height: "2cm", width: "100%", background: "#eee", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8px", color: "#999" }}>
-                        No Barcode
+            > <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                    {selectedTemplate >= 2 && (
+                        <p style={{ margin: "0 0 0 0", fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", width: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {product.name}
+                        </p>
+                    )}
+
+                    {/* Barcode + SKU grouped as one unit so they never get separated */}
+
+                    {barcodeUrl ? (
+                        <img
+                            src={barcodeUrl}
+                            alt="Barcode"
+                            style={{ width: "100%", height: "auto", display: "block", maxHeight: "4cm" }}
+                        />
+                    ) : (
+                        <div style={{ height: "3cm", width: "100%", background: "#eee", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8px", color: "#999" }}>
+                            No Barcode
+                        </div>
+                    )}
+                    <p style={{ margin: "0", fontSize: "8px", fontWeight: "bold", letterSpacing: "0.5px", lineHeight: 1 }}>{product.sku}</p>
+                    <div style={{ display: "flex", gap: "6px" }}>
+                        {selectedTemplate >= 3 && (
+                            <p style={{ margin: 0, fontSize: "7px", fontWeight: "bold", textDecoration: selectedTemplate === 4 ? "line-through" : "none", color: selectedTemplate === 4 ? "#aaa" : "inherit" }}>
+                                MRP: {formatCurrency(product.mrp || 0)}
+                            </p>
+                        )}
+                        {selectedTemplate === 4 && (
+                            <p style={{ margin: 0, fontSize: "7px", fontWeight: "bold" }}>
+                                SALE: {formatCurrency(product.discounted_price || 0)}
+                            </p>
+                        )}
                     </div>
-                )}
-                <p style={{ margin: "1px 0 0 0", fontSize: "9px", fontWeight: "bold" }}>{product.sku}</p>
-                <div style={{ display: "flex", gap: "6px" }}>
-                    {selectedTemplate >= 3 && (
-                        <p style={{ margin: 0, fontSize: "7px", fontWeight: "bold", textDecoration: selectedTemplate === 4 ? "line-through" : "none", color: selectedTemplate === 4 ? "#aaa" : "inherit" }}>
-                            MRP: {formatCurrency(product.mrp || 0)}
-                        </p>
-                    )}
-                    {selectedTemplate === 4 && (
-                        <p style={{ margin: 0, fontSize: "7px", fontWeight: "bold" }}>
-                            SALE: {formatCurrency(product.discounted_price || 0)}
-                        </p>
-                    )}
                 </div>
             </div>
         );
@@ -209,6 +215,7 @@ const BulkBarcodePrintModal: React.FC<BulkBarcodePrintModalProps> = ({ isOpen, o
                                 style={{
                                     display: "grid",
                                     gridTemplateColumns: `repeat(${COLS}, ${STICKER_W})`,
+                                    gridAutoRows: STICKER_H,
                                     gap: "0",
                                     margin: "0",
                                     padding: "0",
@@ -257,7 +264,7 @@ const BulkBarcodePrintModal: React.FC<BulkBarcodePrintModalProps> = ({ isOpen, o
                     .printable-label {
                         border: none !important;
                         width: 6cm !important;
-                        height: 4cm !important;
+                        height: 3.5cm !important;
                         break-inside: avoid !important;
                         page-break-inside: avoid !important;
                     }
