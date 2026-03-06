@@ -93,11 +93,9 @@ const BulkBarcodePrintModal: React.FC<BulkBarcodePrintModalProps> = ({ isOpen, o
 
                 }}
             > <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
-                    {selectedTemplate >= 2 && (
-                        <p style={{ margin: "0 0 0 0", fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", width: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {product.name}
-                        </p>
-                    )}
+                    <p style={{ margin: "0 0 0 0", fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", width: "100%", overflow: "hidden", textOverflow: "ellipsis", visibility: selectedTemplate >= 2 ? "visible" : "hidden",whiteSpace: "nowrap" }}>
+                        {product.name || "\u00a0"}
+                    </p>
 
                     {/* Barcode + SKU grouped as one unit so they never get separated */}
 
@@ -108,11 +106,11 @@ const BulkBarcodePrintModal: React.FC<BulkBarcodePrintModalProps> = ({ isOpen, o
                             style={{ width: "100%", height: "auto", display: "block", maxHeight: "4cm" }}
                         />
                     ) : (
-                        <div style={{ height: "3cm", width: "100%", background: "#eee", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8px", color: "#999" }}>
+                        <div style={{ height: "3cm", width: "100%", background: "#eee", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#999" }}>
                             No Barcode
                         </div>
                     )}
-                    <p style={{ margin: "0", fontSize: "8px", fontWeight: "bold", letterSpacing: "0.5px", lineHeight: 1 }}>{product.sku}</p>
+                    <p style={{ margin: "1px 0 0 0", fontSize: "8px", fontWeight: "bold", letterSpacing: "0.5px", lineHeight: 1 }}>{product.sku}</p>
                     <div style={{ display: "flex", gap: "6px" }}>
                         {selectedTemplate >= 3 && (
                             <p style={{ margin: 0, fontSize: "7px", fontWeight: "bold", textDecoration: selectedTemplate === 4 ? "line-through" : "none", color: selectedTemplate === 4 ? "#aaa" : "inherit" }}>
