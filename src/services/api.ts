@@ -1,7 +1,7 @@
 // Comprehensive API service for all backend endpoints
 // All API functions handle authentication via token in localStorage
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ;
 
 // ============================================
 // TOKEN MANAGEMENT
