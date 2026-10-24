@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Plus, Loader2, User } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { profileApi } from "../api";
+import { uploadToCloudinary } from "@/utils/cloudinaryUpload";
 
 /* ---------------- TYPES ---------------- */
 
@@ -115,38 +116,20 @@ const Profile = () => {
 
     try {
       setIsImageUploading(true);
-      const functionality = "user";
-      const subFunctionality = "profile_image";
 
-      const presignedRes = await profileApi.getPresignedUrl(file.name, functionality, subFunctionality);
-
-      if (!presignedRes || !presignedRes.presignedUrl) {
-        throw new Error("Failed to get presigned URL");
-      }
-
-      const uploadRes = await fetch(presignedRes.presignedUrl, {
-        method: "PUT",
-        body: file,
-        headers: {
-          "Content-Type": file.type
-        }
-      });
-
-      if (!uploadRes.ok) {
-        throw new Error("Failed to upload image");
-      }
-
-      const uploadedUrl = presignedRes.cdnUrl;
+      const uploadedUrl = await uploadToCloudinary(
+        file,
+        "user",
+        "profile_image",
+        profileApi.getPresignedUrl
+      );
 
       setFormProfile((prev) => {
-        if (prev.avatar !== uploadedUrl) {
-          setIsImgLoading(true);
-        }
+        if (prev.avatar !== uploadedUrl) setIsImgLoading(true);
         return { ...prev, avatar: uploadedUrl };
       });
 
       toast.success("Image uploaded successfully");
-
     } catch (err) {
       console.error("Image upload failed:", err);
       toast.error("Failed to upload image");

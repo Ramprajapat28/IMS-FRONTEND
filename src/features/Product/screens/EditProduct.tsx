@@ -9,6 +9,7 @@ import { UI } from "@/constants";
 import toast from "react-hot-toast";
 import TransferStockModal from "../components/TransferStockModal";
 import type { Product } from "../types";
+import { uploadToCloudinary } from "@/utils/cloudinaryUpload";
 
 type ProductForm = {
     name: string;
@@ -358,29 +359,18 @@ const EditProduct = () => {
         }
     };
 
-    const uploadImagesToS3 = async () => {
+    const uploadImagesToCloudinary = async () => {
         if (selectedFiles.length === 0) return [];
 
         const uploadPromises = selectedFiles.map(async (file) => {
             try {
-                // 1. Get Presigned URL
-                const presigned = await productsApi.getPresignedUrl(file.name, "product", "images");
-
-                // 2. Upload to S3
-                const uploadRes = await fetch(presigned.presignedUrl, {
-                    method: "PUT",
-                    body: file,
-                    headers: {
-                        "Content-Type": file.type,
-                    },
-                });
-
-                if (!uploadRes.ok) throw new Error("Failed to upload to S3");
-
-                return {
-                    file_path: presigned.cdnUrl,
-                    view: "front" // default view
-                };
+                const cdnUrl = await uploadToCloudinary(
+                    file,
+                    "product",
+                    "images",
+                    productsApi.getPresignedUrl
+                );
+                return { file_path: cdnUrl, view: "front" };
             } catch (err) {
                 console.error(`Failed to upload ${file.name}`, err);
                 throw err;
@@ -477,7 +467,7 @@ const EditProduct = () => {
 
         try {
             // 1. Upload New Images
-            const newUploadedImages = await uploadImagesToS3();
+            const newUploadedImages = await uploadImagesToCloudinary();
 
             // Combine existing (formatted correctly) and new
             // Existing might be strings or objects. normalize to { file_path }

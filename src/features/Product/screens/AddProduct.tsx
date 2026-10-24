@@ -5,6 +5,7 @@ import { productsApi } from "@/features/Product/api/product.api";
 import { categoriesApi, type Category } from "@/features/Inventory/api/category.api";
 import { UI } from "@/constants";
 import toast from "react-hot-toast";
+import { uploadToCloudinary } from "@/utils/cloudinaryUpload";
 
 /* ----------------------------- TYPES ----------------------------- */
 type ProductForm = {
@@ -92,24 +93,13 @@ const AddProduct = () => {
 
   const uploadSingleFile = async (file: File): Promise<string | null> => {
     try {
-      // 1. Get Presigned URL
-      const presigned = await productsApi.getPresignedUrl(file.name, "product", "images");
-
-      // 2. Upload to S3
-      const uploadRes = await fetch(presigned.presignedUrl, {
-        method: "PUT",
-        body: file,
-        headers: {
-          // Use exact content type if provided, otherwise fallback to file.type, but respecting user's recent changes
-          "Content-Type": presigned.contentType || file.type
-        },
-      });
-
-      if (!uploadRes.ok) {
-        throw new Error(`Failed to upload to S3: ${uploadRes.status}`);
-      }
-
-      return presigned.cdnUrl;
+      const cdnUrl = await uploadToCloudinary(
+        file,
+        "product",
+        "images",
+        productsApi.getPresignedUrl
+      );
+      return cdnUrl;
     } catch (err) {
       console.error(`Failed to upload ${file.name}`, err);
       return null;

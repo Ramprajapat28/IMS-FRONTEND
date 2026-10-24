@@ -28,7 +28,16 @@ export const profileApi = {
     },
 
     getPresignedUrl: async (fileName: string, functionality: string, subFunctionality?: string) => {
-        return apiRequest<{ presignedUrl: string; cdnUrl: string; filePath: string; contentType: string }>('/api/products/presigned-url', {
+        return apiRequest<{
+            uploadUrl: string;
+            cdnUrl: string;
+            signature: string;
+            timestamp: number;
+            cloud_name: string;
+            api_key: string;
+            folder: string;
+            public_id: string;
+        }>('/api/products/presigned-url', {
             method: 'POST',
             body: JSON.stringify({ fileName, functionality, subFunctionality }),
         });
