@@ -215,7 +215,7 @@ const AddProduct = () => {
         hsn_code: form.hsn_code,
         category_id: Number(form.category_id),
         global_category_id: Number(form.global_category_id),
-        product_image: productImages
+        product_images: productImages
       };
 
       const productRes = await productsApi.create(payload as any);
