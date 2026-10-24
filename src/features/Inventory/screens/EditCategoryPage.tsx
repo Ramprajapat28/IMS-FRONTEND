@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2, Save, Upload } from "lucide-react";
 import { categoriesApi, type GlobalCategory } from "../api/category.api";
 import { productsApi } from "@/features/Product/api/product.api";
+import { uploadToCloudinary } from "@/utils/cloudinaryUpload";
 
 const EditCategoryPage = () => {
     const navigate = useNavigate();
@@ -53,15 +54,8 @@ const EditCategoryPage = () => {
         setIsUploading(true);
         setError(null);
         try {
-            const presigned = await productsApi.getPresignedUrl(file.name, "category", "logo");
-            const uploadRes = await fetch(presigned.presignedUrl, {
-                method: "PUT",
-                body: file,
-                headers: { "Content-Type": file.type }
-            });
-
-            if (!uploadRes.ok) throw new Error("Upload failed");
-            setLogoUrl(presigned.cdnUrl);
+            const cdnUrl = await uploadToCloudinary(file, "category", "logo", productsApi.getPresignedUrl);
+            setLogoUrl(cdnUrl);
         } catch (err) {
             setError("Failed to upload logo");
         } finally {

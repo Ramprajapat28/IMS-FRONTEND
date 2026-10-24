@@ -23,22 +23,30 @@ const ProductsNavbar = ({ breadcrumbs, onRefresh }: ProductsNavbarProps) => {
     if (!file) return;
 
     try {
-      // 1. Get Presigned URL
+      // 1. Get Presigned Upload Payload
       // Use 'product' and 'bulk_import' as configured in backend
       const presigned = await import("@/features/Product/api/product.api").then(m => m.productsApi.getPresignedUrl(file.name, "product", "bulk_import"));
 
-      // 2. Upload to S3
-      const uploadRes = await fetch(presigned.presignedUrl, {
-        method: "PUT",
-        body: file,
-        headers: { "Content-Type": presigned.contentType || file.type }
+      // 2. Upload to Cloudinary via signed POST
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("api_key", presigned.api_key);
+      formData.append("timestamp", String(presigned.timestamp));
+      formData.append("signature", presigned.signature);
+      formData.append("folder", presigned.folder);
+      formData.append("public_id", presigned.public_id);
+
+      const uploadRes = await fetch(presigned.uploadUrl, {
+        method: "POST",
+        body: formData,
       });
 
       if (!uploadRes.ok) throw new Error("Failed to upload file");
+      const uploadResult = await uploadRes.json();
 
-      // 3. Trigger Backend Import
+      // 3. Trigger Backend Import using the actual uploaded URL
       const { productsApi } = await import("@/features/Product/api/product.api");
-      const importRes = await productsApi.importBulk(presigned.cdnUrl);
+      const importRes = await productsApi.importBulk(uploadResult.secure_url);
 
 
       if (importRes.success && importRes.data) {
